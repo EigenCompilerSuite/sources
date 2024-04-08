@@ -1,0 +1,1890 @@
+// AVR32 instruction set definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef INSTR
+	#define INSTR(mnem, code, mask, type0, type1, type2, type3, type4)
+#endif
+
+#ifndef MNEM
+	#define MNEM(name, mnem, ...)
+#endif
+
+#ifndef TYPE
+	#define TYPE(type)
+#endif
+
+// mnemonics
+
+MNEM (abs,            ABS,           Absolute Value)
+MNEM (acall,          ACALL,         Application Call)
+MNEM (acr,            ACR,           Add Carry to Register)
+MNEM (adc,            ADC,           Add with Carry)
+MNEM (add,            ADD,           Add without Carry)
+MNEM (addabs,         ADDABS,        Add Absolute Value)
+MNEM (addal,          ADDAL,         Conditional Add Always)
+MNEM (addcc,          ADDCC,         Conditional Add if Carry Cleared)
+MNEM (addcs,          ADDCS,         Conditional Add if Carry Set)
+MNEM (addeq,          ADDEQ,         Conditional Add if Equal)
+MNEM (addge,          ADDGE,         Conditional Add if Greater than or Equal)
+MNEM (addgt,          ADDGT,         Conditional Add if Greater Than)
+MNEM (addhh.w,        ADDHHW,        Add Halfwords into Word)
+MNEM (addhi,          ADDHI,         Conditional Add if Higher)
+MNEM (addhs,          ADDHS,         Conditional Add if Higher or Same)
+MNEM (addle,          ADDLE,         Conditional Add if Less than or Equal)
+MNEM (addlo,          ADDLO,         Conditional Add if Lower)
+MNEM (addls,          ADDLS,         Conditional Add if Lower or Same)
+MNEM (addlt,          ADDLT,         Conditional Add if Less Than)
+MNEM (addmi,          ADDMI,         Conditional Add if Negative)
+MNEM (addne,          ADDNE,         Conditional Add if Not Equal)
+MNEM (addpl,          ADDPL,         Conditional Add if Positive)
+MNEM (addqs,          ADDQS,         Conditional Add if Saturated)
+MNEM (addvc,          ADDVC,         Conditional Add if Overflow Cleared)
+MNEM (addvs,          ADDVS,         Conditional Add if Overflow Set)
+MNEM (and,            AND,           Logical AND)
+MNEM (andal,          ANDAL,         Conditional AND Always)
+MNEM (andcc,          ANDCC,         Conditional AND if Carry Cleared)
+MNEM (andcs,          ANDCS,         Conditional AND if Carry Set)
+MNEM (andeq,          ANDEQ,         Conditional AND if Equal)
+MNEM (andge,          ANDGE,         Conditional AND if Greater than or Equal)
+MNEM (andgt,          ANDGT,         Conditional AND if Greater Than)
+MNEM (andh,           ANDH,          Logical AND into High Half of Register)
+MNEM (andhi,          ANDHI,         Conditional AND if Higher)
+MNEM (andhs,          ANDHS,         Conditional AND if Higher or Same)
+MNEM (andl,           ANDL,          Logical AND into Low Half of Register)
+MNEM (andle,          ANDLE,         Conditional AND if Less than or Equal)
+MNEM (andlo,          ANDLO,         Conditional AND if Lower)
+MNEM (andls,          ANDLS,         Conditional AND if Lower or Same)
+MNEM (andlt,          ANDLT,         Conditional AND if Less Than)
+MNEM (andmi,          ANDMI,         Conditional AND if Negative)
+MNEM (andn,           ANDN,          Logical AND NOT)
+MNEM (andne,          ANDNE,         Conditional AND if Not Equal)
+MNEM (andpl,          ANDPL,         Conditional AND if Positive)
+MNEM (andqs,          ANDQS,         Conditional AND if Saturated)
+MNEM (andvc,          ANDVC,         Conditional AND if Overflow Cleared)
+MNEM (andvs,          ANDVS,         Conditional AND if Overflow Set)
+MNEM (asr,            ASR,           Arithmetic Shift Right)
+MNEM (bfexts,         BFEXTS,        Bitfield Extract and Sign-extend)
+MNEM (bfextu,         BFEXTU,        Bitfield Extract and Zero-extend)
+MNEM (bfins,          BFINS,         Bitfield Insert)
+MNEM (bld,            BLD,           Bit Load from Register to C and Z)
+MNEM (bral,           BRAL,          Branch Always)
+MNEM (brcc,           BRCC,          Branch if Carry Cleared)
+MNEM (brcs,           BRCS,          Branch if Carry Set)
+MNEM (breakpoint,     BREAKPOINT,    Software Debug Breakpoint)
+MNEM (breq,           BREQ,          Branch if Equal)
+MNEM (brev,           BREV,          Bit Reverse)
+MNEM (brge,           BRGE,          Branch if Greater than or Equal)
+MNEM (brgt,           BRGT,          Branch if Greater Than)
+MNEM (brhi,           BRHI,          Branch if Higher)
+MNEM (brhs,           BRHS,          Branch if Higher or Same)
+MNEM (brle,           BRLE,          Branch if Less than or Equal)
+MNEM (brlo,           BRLO,          Branch if Lower)
+MNEM (brls,           BRLS,          Branch if Lower or Same)
+MNEM (brlt,           BRLT,          Branch if Less Than)
+MNEM (brmi,           BRMI,          Branch if Less Negative)
+MNEM (brne,           BRNE,          Branch if Not Equal)
+MNEM (brpl,           BRPL,          Branch if Less Positive)
+MNEM (brqs,           BRQS,          Branch if Saturated)
+MNEM (brvc,           BRVC,          Branch if Overflow Cleared)
+MNEM (brvs,           BRVS,          Branch if Overflow Set)
+MNEM (bst,            BST,           Copy C to Register Bit)
+MNEM (cache,          CACHE,         Perform Cache Control Operation)
+MNEM (casts.b,        CASTSB,        Typecast Byte to Signed Word)
+MNEM (casts.h,        CASTSH,        Typecast Halfword to Signed Word)
+MNEM (castu.b,        CASTUB,        Typecast Byte to Unsigned Word)
+MNEM (castu.h,        CASTUH,        Typecast Halfword to Unsigned Word)
+MNEM (cbr,            CBR,           Clear Bit in Register)
+MNEM (clz,            CLZ,           Count Leading Zeros)
+MNEM (com,            COM,           One`s Compliment)
+MNEM (cop,            COP,           Coprocessor Operation)
+MNEM (cp.b,           CPB,           Compare Byte)
+MNEM (cp.h,           CPH,           Compare Halfword)
+MNEM (cp.w,           CPW,           Compare Word)
+MNEM (cpc,            CPC,           Compare with Carry)
+MNEM (csrf,           CSRF,          Clear Status Register Flag)
+MNEM (csrfcz,         CSRFCZ,        Copy Status Register Flag to C and Z)
+MNEM (divs,           DIVS,          Signed Divide)
+MNEM (divu,           DIVU,          Unsigned Divide)
+MNEM (eor,            EOR,           Logical EOR)
+MNEM (eoral,          EORAL,         Conditional Logical EOR Always)
+MNEM (eorcc,          EORCC,         Conditional Logical EOR if Carry Cleared)
+MNEM (eorcs,          EORCS,         Conditional Logical EOR if Carry Set)
+MNEM (eoreq,          EOREQ,         Conditional Logical EOR if Equal)
+MNEM (eorge,          EORGE,         Conditional Logical EOR if Greater than or Equal)
+MNEM (eorgt,          EORGT,         Conditional Logical EOR if Greater Than)
+MNEM (eorh,           EORH,          Logical EOR into High Half of Register)
+MNEM (eorhi,          EORHI,         Conditional Logical EOR if Higher)
+MNEM (eorhs,          EORHS,         Conditional Logical EOR if Higher or Same)
+MNEM (eorl,           EORL,          Logical EOR into Low Half of Register)
+MNEM (eorle,          EORLE,         Conditional Logical EOR if Less than or Equal)
+MNEM (eorlo,          EORLO,         Conditional Logical EOR if Lower)
+MNEM (eorls,          EORLS,         Conditional Logical EOR if Lower or Same)
+MNEM (eorlt,          EORLT,         Conditional Logical EOR if Less Than)
+MNEM (eormi,          EORMI,         Conditional Logical EOR if Negative)
+MNEM (eorne,          EORNE,         Conditional Logical EOR if Not Equal)
+MNEM (eorpl,          EORPL,         Conditional Logical EOR if Positive)
+MNEM (eorqs,          EORQS,         Conditional Logical EOR if Saturated)
+MNEM (eorvc,          EORVC,         Conditional Logical EOR if Overflow Cleared)
+MNEM (eorvs,          EORVS,         Conditional Logical EOR if Overflow Set)
+MNEM (frs,            FRS,           Flush Return Stack)
+MNEM (icall,          ICALL,         Indirect Call to Subroutine)
+MNEM (incjosp,        INCJOSP,       Increment Java Operand Stack Pointer)
+MNEM (ld.d,           LDD,           Load Doubleword)
+MNEM (ld.sb,          LDSB,          Load Sign-extended Byte)
+MNEM (ld.sbal,        LDSBAL,        Conditionally Load Sign-extended Byte Always)
+MNEM (ld.sbcc,        LDSBCC,        Conditionally Load Sign-extended Byte if Carry Cleared)
+MNEM (ld.sbcs,        LDSBCS,        Conditionally Load Sign-extended Byte if Carry Set)
+MNEM (ld.sbeq,        LDSBEQ,        Conditionally Load Sign-extended Byte if Equal)
+MNEM (ld.sbge,        LDSBGE,        Conditionally Load Sign-extended Byte if Greater than or Equal)
+MNEM (ld.sbgt,        LDSBGT,        Conditionally Load Sign-extended Byte if Greater Than)
+MNEM (ld.sbhi,        LDSBHI,        Conditionally Load Sign-extended Byte if Higher)
+MNEM (ld.sbhs,        LDSBHS,        Conditionally Load Sign-extended Byte if Higher or Same)
+MNEM (ld.sble,        LDSBLE,        Conditionally Load Sign-extended Byte if Less than or Equal)
+MNEM (ld.sblo,        LDSBLO,        Conditionally Load Sign-extended Byte if Lower)
+MNEM (ld.sbls,        LDSBLS,        Conditionally Load Sign-extended Byte if Lower or Same)
+MNEM (ld.sblt,        LDSBLT,        Conditionally Load Sign-extended Byte if Less Than)
+MNEM (ld.sbmi,        LDSBMI,        Conditionally Load Sign-extended Byte if Negative)
+MNEM (ld.sbne,        LDSBNE,        Conditionally Load Sign-extended Byte if Not Equal)
+MNEM (ld.sbpl,        LDSBPL,        Conditionally Load Sign-extended Byte if Positive)
+MNEM (ld.sbqs,        LDSBQS,        Conditionally Load Sign-extended Byte if Saturated)
+MNEM (ld.sbvc,        LDSBVC,        Conditionally Load Sign-extended Byte if Overflow Cleared)
+MNEM (ld.sbvs,        LDSBVS,        Conditionally Load Sign-extended Byte if Overflow Set)
+MNEM (ld.sh,          LDSH,          Load Sign-extended Halfword)
+MNEM (ld.shal,        LDSHAL,        Conditionally Load Sign-extended Halfword Always)
+MNEM (ld.shcc,        LDSHCC,        Conditionally Load Sign-extended Halfword if Carry Cleared)
+MNEM (ld.shcs,        LDSHCS,        Conditionally Load Sign-extended Halfword if Carry Set)
+MNEM (ld.sheq,        LDSHEQ,        Conditionally Load Sign-extended Halfword if Equal)
+MNEM (ld.shge,        LDSHGE,        Conditionally Load Sign-extended Halfword if Greater than or Equal)
+MNEM (ld.shgt,        LDSHGT,        Conditionally Load Sign-extended Halfword if Greater Than)
+MNEM (ld.shhi,        LDSHHI,        Conditionally Load Sign-extended Halfword if Higher)
+MNEM (ld.shhs,        LDSHHS,        Conditionally Load Sign-extended Halfword if Higher or Same)
+MNEM (ld.shle,        LDSHLE,        Conditionally Load Sign-extended Halfword if Less than or Equal)
+MNEM (ld.shlo,        LDSHLO,        Conditionally Load Sign-extended Halfword if Lower)
+MNEM (ld.shls,        LDSHLS,        Conditionally Load Sign-extended Halfword if Lower or Same)
+MNEM (ld.shlt,        LDSHLT,        Conditionally Load Sign-extended Halfword if Less Than)
+MNEM (ld.shmi,        LDSHMI,        Conditionally Load Sign-extended Halfword if Negative)
+MNEM (ld.shne,        LDSHNE,        Conditionally Load Sign-extended Halfword if Not Equal)
+MNEM (ld.shpl,        LDSHPL,        Conditionally Load Sign-extended Halfword if Positive)
+MNEM (ld.shqs,        LDSHQS,        Conditionally Load Sign-extended Halfword if Saturated)
+MNEM (ld.shvc,        LDSHVC,        Conditionally Load Sign-extended Halfword if Overflow Cleared)
+MNEM (ld.shvs,        LDSHVS,        Conditionally Load Sign-extended Halfword if Overflow Set)
+MNEM (ld.ub,          LDUB,          Load Zero-extended Byte)
+MNEM (ld.ubal,        LDUBAL,        Conditionally Load Zero-extended Byte Always)
+MNEM (ld.ubcc,        LDUBCC,        Conditionally Load Zero-extended Byte if Carry Cleared)
+MNEM (ld.ubcs,        LDUBCS,        Conditionally Load Zero-extended Byte if Carry Set)
+MNEM (ld.ubeq,        LDUBEQ,        Conditionally Load Zero-extended Byte if Equal)
+MNEM (ld.ubge,        LDUBGE,        Conditionally Load Zero-extended Byte if Greater than or Equal)
+MNEM (ld.ubgt,        LDUBGT,        Conditionally Load Zero-extended Byte if Greater Than)
+MNEM (ld.ubhi,        LDUBHI,        Conditionally Load Zero-extended Byte if Higher)
+MNEM (ld.ubhs,        LDUBHS,        Conditionally Load Zero-extended Byte if Higher or Same)
+MNEM (ld.uble,        LDUBLE,        Conditionally Load Zero-extended Byte if Less than or Equal)
+MNEM (ld.ublo,        LDUBLO,        Conditionally Load Zero-extended Byte if Lower)
+MNEM (ld.ubls,        LDUBLS,        Conditionally Load Zero-extended Byte if Lower or Same)
+MNEM (ld.ublt,        LDUBLT,        Conditionally Load Zero-extended Byte if Less Than)
+MNEM (ld.ubmi,        LDUBMI,        Conditionally Load Zero-extended Byte if Negative)
+MNEM (ld.ubne,        LDUBNE,        Conditionally Load Zero-extended Byte if Not Equal)
+MNEM (ld.ubpl,        LDUBPL,        Conditionally Load Zero-extended Byte if Positive)
+MNEM (ld.ubqs,        LDUBQS,        Conditionally Load Zero-extended Byte if Saturated)
+MNEM (ld.ubvc,        LDUBVC,        Conditionally Load Zero-extended Byte if Overflow Cleared)
+MNEM (ld.ubvs,        LDUBVS,        Conditionally Load Zero-extended Byte if Overflow Set)
+MNEM (ld.uh,          LDUH,          Load Zero-extended Halfword)
+MNEM (ld.uhal,        LDUHAL,        Conditionally Load Zero-extended Halfword Always)
+MNEM (ld.uhcc,        LDUHCC,        Conditionally Load Zero-extended Halfword if Carry Cleared)
+MNEM (ld.uhcs,        LDUHCS,        Conditionally Load Zero-extended Halfword if Carry Set)
+MNEM (ld.uheq,        LDUHEQ,        Conditionally Load Zero-extended Halfword if Equal)
+MNEM (ld.uhge,        LDUHGE,        Conditionally Load Zero-extended Halfword if Greater than or Equal)
+MNEM (ld.uhgt,        LDUHGT,        Conditionally Load Zero-extended Halfword if Greater Than)
+MNEM (ld.uhhi,        LDUHHI,        Conditionally Load Zero-extended Halfword if Higher)
+MNEM (ld.uhhs,        LDUHHS,        Conditionally Load Zero-extended Halfword if Higher or Same)
+MNEM (ld.uhle,        LDUHLE,        Conditionally Load Zero-extended Halfword if Less than or Equal)
+MNEM (ld.uhlo,        LDUHLO,        Conditionally Load Zero-extended Halfword if Lower)
+MNEM (ld.uhls,        LDUHLS,        Conditionally Load Zero-extended Halfword if Lower or Same)
+MNEM (ld.uhlt,        LDUHLT,        Conditionally Load Zero-extended Halfword if Less Than)
+MNEM (ld.uhmi,        LDUHMI,        Conditionally Load Zero-extended Halfword if Negative)
+MNEM (ld.uhne,        LDUHNE,        Conditionally Load Zero-extended Halfword if Not Equal)
+MNEM (ld.uhpl,        LDUHPL,        Conditionally Load Zero-extended Halfword if Positive)
+MNEM (ld.uhqs,        LDUHQS,        Conditionally Load Zero-extended Halfword if Saturated)
+MNEM (ld.uhvc,        LDUHVC,        Conditionally Load Zero-extended Halfword if Overflow Cleared)
+MNEM (ld.uhvs,        LDUHVS,        Conditionally Load Zero-extended Halfword if Overflow Set)
+MNEM (ld.w,           LDW,           Load Word)
+MNEM (ld.wal,         LDWAL,         Conditionally Word Always)
+MNEM (ld.wcc,         LDWCC,         Conditionally Word if Carry Cleared)
+MNEM (ld.wcs,         LDWCS,         Conditionally Word if Carry Set)
+MNEM (ld.weq,         LDWEQ,         Conditionally Word if Equal)
+MNEM (ld.wge,         LDWGE,         Conditionally Word if Greater than or Equal)
+MNEM (ld.wgt,         LDWGT,         Conditionally Word if Greater Than)
+MNEM (ld.whi,         LDWHI,         Conditionally Word if Higher)
+MNEM (ld.whs,         LDWHS,         Conditionally Word if Higher or Same)
+MNEM (ld.wle,         LDWLE,         Conditionally Word if Less than or Equal)
+MNEM (ld.wlo,         LDWLO,         Conditionally Word if Lower)
+MNEM (ld.wls,         LDWLS,         Conditionally Word if Lower or Same)
+MNEM (ld.wlt,         LDWLT,         Conditionally Word if Less Than)
+MNEM (ld.wmi,         LDWMI,         Conditionally Word if Negative)
+MNEM (ld.wne,         LDWNE,         Conditionally Word if Not Equal)
+MNEM (ld.wpl,         LDWPL,         Conditionally Word if Positive)
+MNEM (ld.wqs,         LDWQS,         Conditionally Word if Saturated)
+MNEM (ld.wvc,         LDWVC,         Conditionally Word if Overflow Cleared)
+MNEM (ld.wvs,         LDWVS,         Conditionally Word if Overflow Set)
+MNEM (ldc.d,          LDCD,          Load Coprocessor Doubleword)
+MNEM (ldc.w,          LDCW,          Load Coprocessor Word)
+MNEM (ldc0.d,         LDC0D,         Load Doubleword into Coprocessor 0)
+MNEM (ldc0.w,         LDC0W,         Load Word into Coprocessor 0)
+MNEM (lddpc,          LDDPC,         Load PC-relative with Displacement)
+MNEM (lddsp,          LDDSP,         Load SP-relative with Displacement)
+MNEM (ldins.b,        LDINSB,        Load and Insert Byte into register)
+MNEM (ldins.h,        LDINSH,        Load and Insert Halfword into register)
+MNEM (ldswp.sh,       LDSWPSH,       Load and Swap Sign-extended Halfword)
+MNEM (ldswp.uh,       LDSWPUH,       Load and Swap Zero-extended Halfword)
+MNEM (ldswp.w,        LDSWPW,        Load and Swap Word)
+MNEM (lsl,            LSL,           Logical Shift Left)
+MNEM (lsr,            LSR,           Logical Shift Right)
+MNEM (mac,            MAC,           Multiply Accumulate)
+MNEM (machh.d,        MACHHD,        Multiply Halfwords and Accumulate in Doubleword)
+MNEM (machh.w,        MACHHW,        Multiply Halfwords and Accumulate in Word)
+MNEM (macs.d,         MACSD,         Multiply Accumulate Signed)
+MNEM (macsathh.w,     MACSATHHW,     Multiply-Accumulate Halfwords with Saturation into Word)
+MNEM (macu.d,         MACUD,         Multiply Accumulate Unsigned)
+MNEM (macwh.d,        MACWHD,        Multiply Word with Halfword and Accumulate in Doubleword)
+MNEM (max,            MAX,           Return Maximum Value)
+MNEM (mcall,          MCALL,         Subroutine Call)
+MNEM (memc,           MEMC,          Clear Bit in Memory)
+MNEM (mems,           MEMS,          Set Bit in Memory)
+MNEM (memt,           MEMT,          Toggle Bit in Memory)
+MNEM (mfdr,           MFDR,          Move from Debug Register)
+MNEM (mfsr,           MFSR,          Move from System Register)
+MNEM (min,            MIN,           Return Minimum Value)
+MNEM (mov,            MOV,           Move Data into Register)
+MNEM (moval,          MOVAL,         Conditional Move Register Always)
+MNEM (movcc,          MOVCC,         Conditional Move Register if Carry Cleared)
+MNEM (movcs,          MOVCS,         Conditional Move Register if Carry Set)
+MNEM (moveq,          MOVEQ,         Conditional Move Register if Equal)
+MNEM (movge,          MOVGE,         Conditional Move Register if Greater than or Equal)
+MNEM (movgt,          MOVGT,         Conditional Move Register if Greater Than)
+MNEM (movh,           MOVH,          Move Data into High Halfword of Register)
+MNEM (movhi,          MOVHI,         Conditional Move Register if Higher)
+MNEM (movhs,          MOVHS,         Conditional Move Register if Higher or Same)
+MNEM (movl,           MOVL,          Move Data into Low Halfword of Register)
+MNEM (movle,          MOVLE,         Conditional Move Register if Less than or Equal)
+MNEM (movlo,          MOVLO,         Conditional Move Register if Lower)
+MNEM (movls,          MOVLS,         Conditional Move Register if Lower or Same)
+MNEM (movlt,          MOVLT,         Conditional Move Register if Less Than)
+MNEM (movmi,          MOVMI,         Conditional Move Register if Negative)
+MNEM (movne,          MOVNE,         Conditional Move Register if Not Equal)
+MNEM (movpl,          MOVPL,         Conditional Move Register if Positive)
+MNEM (movqs,          MOVQS,         Conditional Move Register if Saturated)
+MNEM (movvc,          MOVVC,         Conditional Move Register if Overflow Cleared)
+MNEM (movvs,          MOVVS,         Conditional Move Register if Overflow Set)
+MNEM (mtdr,           MTDR,          Move to Debug Register)
+MNEM (mtsr,           MTSR,          Move to System Register)
+MNEM (mul,            MUL,           Multiply)
+MNEM (mulhh.w,        MULHHW,        Multiply Halfword with Halfword)
+MNEM (mulnhh.w,       MULNHHW,       Multiply Halfword with Negated Halfword)
+MNEM (mulnwh.d,       MULNWHD,       Multiply Word with Negated Halfword)
+MNEM (muls.d,         MULSD,         Multiply Signed)
+MNEM (mulsathh.h,     MULSATHHH,     Multiply Halfwords with Saturation into Halfword)
+MNEM (mulsathh.w,     MULSATHHW,     Multiply Halfwords with Saturation into Word)
+MNEM (mulsatrndhh.h,  MULSATRNDHHH,  Multiply Halfwords with Saturation and Rounding into Halfword)
+MNEM (mulsatrndhh.w,  MULSATRNDHHW,  Multiply Halfwords with Saturation and Rounding into Word)
+MNEM (mulsatwh.w,     MULSATWHW,     Multiply Word and Halfword with Saturation into Word)
+MNEM (mulu.d,         MULUD,         Multiply Unsigned)
+MNEM (mulwh.d,        MULWHD,        Multiply Word with Halfword)
+MNEM (musfr,          MUSFR,         Copy Register to Status Register)
+MNEM (mustr,          MUSTR,         Copy Status Register to Register)
+MNEM (mvcr.d,         MVCRD,         Move Doubleword Coprocessor Register to Register file)
+MNEM (mvcr.w,         MVCRW,         Move Word Coprocessor Register to Register file)
+MNEM (mvrc.d,         MVRCD,         Move Doubleword Register file Register to Coprocessor Register)
+MNEM (mvrc.w,         MVRCW,         Move Word Coprocessor Word Register to Register file)
+MNEM (neg,            NEG,           Two`s Complement)
+MNEM (nop,            NOP,           No Operation)
+MNEM (or,             OR,            Logical OR)
+MNEM (oral,           ORAL,          Conditional Logical OR Always)
+MNEM (orcc,           ORCC,          Conditional Logical OR if Carry Cleared)
+MNEM (orcs,           ORCS,          Conditional Logical OR if Carry Set)
+MNEM (oreq,           OREQ,          Conditional Logical OR if Equal)
+MNEM (orge,           ORGE,          Conditional Logical OR if Greater than or Equal)
+MNEM (orgt,           ORGT,          Conditional Logical OR if Greater Than)
+MNEM (orh,            ORH,           Logical OR into High Half of Register)
+MNEM (orhi,           ORHI,          Conditional Logical OR if Higher)
+MNEM (orhs,           ORHS,          Conditional Logical OR if Higher or Same)
+MNEM (orl,            ORL,           Logical OR into Low Half of Register)
+MNEM (orle,           ORLE,          Conditional Logical OR if Less than or Equal)
+MNEM (orlo,           ORLO,          Conditional Logical OR if Lower)
+MNEM (orls,           ORLS,          Conditional Logical OR if Lower or Same)
+MNEM (orlt,           ORLT,          Conditional Logical OR if Less Than)
+MNEM (ormi,           ORMI,          Conditional Logical OR if Negative)
+MNEM (orne,           ORNE,          Conditional Logical OR if Not Equal)
+MNEM (orpl,           ORPL,          Conditional Logical OR if Positive)
+MNEM (orqs,           ORQS,          Conditional Logical OR if Saturated)
+MNEM (orvc,           ORVC,          Conditional Logical OR if Overflow Cleared)
+MNEM (orvs,           ORVS,          Conditional Logical OR if Overflow Set)
+MNEM (pabs.sb,        PABSSB,        Packed Absolute Value of Signed Bytes)
+MNEM (pabs.sh,        PABSSH,        Packed Absolute Value of Signed Halfwords)
+MNEM (packsh.sb,      PACKSHSB,      Pack Signed Halfwords to Signed Bytes)
+MNEM (packsh.ub,      PACKSHUB,      Pack Signed Halfwords to Unsigned Bytes)
+MNEM (packw.sh,       PACKWSHS,      Pack Words to Signed Halfwords)
+MNEM (padd.b,         PADDB,         Packed Addition on Bytes)
+MNEM (padd.h,         PADDH,         Packed Addition on Halfwords)
+MNEM (paddh.sh,       PADDHSH,       Packed Addition with Halving on Signed Halfwords)
+MNEM (paddh.ub,       PADDHUB,       Packed Addition with Halving on Unsigned Bytes)
+MNEM (padds.sb,       PADDSSB,       Packed Addition with Saturation on Signed Bytes)
+MNEM (padds.sh,       PADDSSH,       Packed Addition with Saturation on Signed Halfwords)
+MNEM (padds.ub,       PADDSUB,       Packed Addition with Saturation on Unsigned Bytes)
+MNEM (padds.uh,       PADDSUH,       Packed Addition with Saturation on Unsigned Halfwords)
+MNEM (paddsub.h,      PADDSUBH,      Packed Halfword Addition and Subtraction)
+MNEM (paddsubh.sh,    PADDSUBHSH,    Packed Halfword Addition and Subtraction with Halving)
+MNEM (paddsubs.sh,    PADDSUBSSH,    Packed Signed Halfword Addition and Subtraction with Saturation)
+MNEM (paddsubs.uh,    PADDSUBSUH,    Packed Unsigned Halfword Addition and Subtraction with Saturation)
+MNEM (paddx.h,        PADDXH,        Packed Halfword Addition with Crossed Operand)
+MNEM (paddxh.sh,      PADDXHSH,      Packed Signed Halfword Addition with Crossed Operand and Halving)
+MNEM (paddxs.sh,      PADDXSSH,      Packed Signed Halfword Addition with Crossed Operand and Saturation)
+MNEM (paddxs.uh,      PADDXSUH,      Packed Unsigned Halfword Addition with Crossed Operand and Saturation)
+MNEM (pasr.b,         PASRB,         Packed Arithmetic Shift Right on Bytes)
+MNEM (pasr.h,         PASRH,         Packed Arithmetic Shift Right on Halfwords)
+MNEM (pavg.sh,        PAVGSH,        Packed Average of Signed Halfwords)
+MNEM (pavg.ub,        PAVGUB,        Packed Average of Unsigned Bytes)
+MNEM (plsl.b,         PLSLB,         Packed Logical Shift Left on Bytes)
+MNEM (plsl.h,         PLSLH,         Packed Logical Shift Left on Halfwords)
+MNEM (plsr.b,         PLSRB,         Packed Logical Shift Right on Bytes)
+MNEM (plsr.h,         PLSRH,         Packed Logical Shift Right on Halfwords)
+MNEM (pmax.sh,        PMAXSH,        Packed Maximum Value of Signed Halfwords)
+MNEM (pmax.ub,        PMAXUB,        Packed Maximum Value of Unsigned Bytes)
+MNEM (pmin.sh,        PMINSH,        Packed Minimum Value of Signed Halfwords)
+MNEM (pmin.ub,        PMINUB,        Packed Minimum Value of Unsigned Bytes)
+MNEM (popjc,          POPJC,         Pop Java Context from Frame)
+MNEM (pref,           PREF,          Cache Prefetch)
+MNEM (psad,           PSAD,          Packed Sum of Absolute Differences)
+MNEM (psub.b,         PSUBB,         Packed Subtraction on Bytes)
+MNEM (psub.h,         PSUBH,         Packed Subtraction on Halfwords)
+MNEM (psubadd.h,      PSUBADDH,      Packed Halfword Subtraction and Addition)
+MNEM (psubaddh.sh,    PSUBADDHSH,    Packed Signed Halfword Subtraction and Addition with Halving)
+MNEM (psubadds.sh,    PSUBADDSSH,    Packed Halfword Subtraction and Addition with Saturation on Signed Halfwords)
+MNEM (psubadds.uh,    PSUBADDSUH,    Packed Halfword Subtraction and Addition with Saturation on Unsigned Halfwords)
+MNEM (psubh.sh,       PSUBHSH,       Packed Subtraction with Halving on Signed Halfwords)
+MNEM (psubh.ub,       PSUBHUB,       Packed Subtraction with Halving on Unsigned Bytes)
+MNEM (psubs.sb,       PSUBSSB,       Packed Subtraction with Saturation on Signed Bytes)
+MNEM (psubs.sh,       PSUBSSH,       Packed Subtraction with Saturation on Signed Halfwords)
+MNEM (psubs.ub,       PSUBSUB,       Packed Subtraction with Saturation on Unsigned Bytes)
+MNEM (psubs.uh,       PSUBSUH,       Packed Subtraction with Saturation on Unsigned Halfwords)
+MNEM (psubx.h,        PSUBXH,        Packed Halfword Subtraction with Crossed Operand)
+MNEM (psubxh.sh,      PSUBXHSH,      Packed Signed Halfword Subtraction with Crossed Operand and Halving)
+MNEM (psubxs.sh,      PSUBXSSH,      Packed Signed Halfword Subtraction with Crossed Operand and Saturation)
+MNEM (psubxs.uh,      PSUBXSUH,      Packed Unsigned Halfword Subtraction with Crossed Operand and Saturation)
+MNEM (punpcksb.h,     PUNPCKSBH,     Unpack Signed Bytes to Halfwords)
+MNEM (punpckub.h,     PUNPCKUBH,     Unpack Unsigned Bytes to Halfwords)
+MNEM (pushjc,         PUSHJC,        Push Java Context to Frame)
+MNEM (rcall,          RCALL,         Relative Subroutine Call)
+MNEM (retal,          RETAL,         Conditional Return from Subroutine Always)
+MNEM (retcc,          RETCC,         Conditional Return from Subroutine if Carry Cleared)
+MNEM (retcs,          RETCS,         Conditional Return from Subroutine if Carry Set)
+MNEM (retd,           RETD,          Return from Debug Mode)
+MNEM (rete,           RETE,          Return from Event Handler)
+MNEM (reteq,          RETEQ,         Conditional Return from Subroutine if Equal)
+MNEM (retge,          RETGE,         Conditional Return from Subroutine if Greater than or Equal)
+MNEM (retgt,          RETGT,         Conditional Return from Subroutine if Greater Than)
+MNEM (rethi,          RETHI,         Conditional Return from Subroutine if Higher)
+MNEM (reths,          RETHS,         Conditional Return from Subroutine if Higher or Same)
+MNEM (retj,           RETJ,          Return from Java Trap)
+MNEM (retle,          RETLE,         Conditional Return from Subroutine if Less than or Equal)
+MNEM (retlo,          RETLO,         Conditional Return from Subroutine if Lower)
+MNEM (retls,          RETLS,         Conditional Return from Subroutine if Lower or Same)
+MNEM (retlt,          RETLT,         Conditional Return from Subroutine if Less Than)
+MNEM (retmi,          RETMI,         Conditional Return from Subroutine if Negative)
+MNEM (retne,          RETNE,         Conditional Return from Subroutine if Not Equal)
+MNEM (retpl,          RETPL,         Conditional Return from Subroutine if Positive)
+MNEM (retqs,          RETQS,         Conditional Return from Subroutine if Saturated)
+MNEM (rets,           RETS,          Return from Supervisor Call)
+MNEM (retss,          RETSS,         Return from Secure State)
+MNEM (retvc,          RETVC,         Conditional Return from Subroutine if Overflow Cleared)
+MNEM (retvs,          RETVS,         Conditional Return from Subroutine if Overflow Set)
+MNEM (rjmp,           RJMP,          Relative Jump)
+MNEM (rol,            ROL,           Rotate Left through Carry)
+MNEM (ror,            ROR,           Rotate Right through Carry)
+MNEM (rsub,           RSUB,          Reverse Subtract)
+MNEM (rsubal,         RSUBAL,        Conditional Reverse Subtract Always)
+MNEM (rsubcc,         RSUBCC,        Conditional Reverse Subtract if Carry Cleared)
+MNEM (rsubcs,         RSUBCS,        Conditional Reverse Subtract if Carry Set)
+MNEM (rsubeq,         RSUBEQ,        Conditional Reverse Subtract if Equal)
+MNEM (rsubge,         RSUBGE,        Conditional Reverse Subtract if Greater than or Equal)
+MNEM (rsubgt,         RSUBGT,        Conditional Reverse Subtract if Greater Than)
+MNEM (rsubhi,         RSUBHI,        Conditional Reverse Subtract if Higher)
+MNEM (rsubhs,         RSUBHS,        Conditional Reverse Subtract if Higher or Same)
+MNEM (rsuble,         RSUBLE,        Conditional Reverse Subtract if Less than or Equal)
+MNEM (rsublo,         RSUBLO,        Conditional Reverse Subtract if Lower)
+MNEM (rsubls,         RSUBLS,        Conditional Reverse Subtract if Lower or Same)
+MNEM (rsublt,         RSUBLT,        Conditional Reverse Subtract if Less Than)
+MNEM (rsubmi,         RSUBMI,        Conditional Reverse Subtract if Negative)
+MNEM (rsubne,         RSUBNE,        Conditional Reverse Subtract if Not Equal)
+MNEM (rsubpl,         RSUBPL,        Conditional Reverse Subtract if Positive)
+MNEM (rsubqs,         RSUBQS,        Conditional Reverse Subtract if Saturated)
+MNEM (rsubvc,         RSUBVC,        Conditional Reverse Subtract if Overflow Cleared)
+MNEM (rsubvs,         RSUBVS,        Conditional Reverse Subtract if Overflow Set)
+MNEM (satadd.h,       SATADDH,       Saturated Add of Halfwords)
+MNEM (satadd.w,       SATADDW,       Saturated Add of Words)
+MNEM (satrnds,        SATRNDS,       Saturate with Rounding Signed)
+MNEM (satrndu,        SATRNDU,       Saturate with Rounding Unsigned)
+MNEM (sats,           SATS,          Saturate Signed)
+MNEM (satsub.h,       SATSUBH,       Saturated Subtract of Halfwords)
+MNEM (satsub.w,       SATSUBW,       Saturated Subtract of Words)
+MNEM (satu,           SATU,          Saturate Unsigned)
+MNEM (sbc,            SBC,           Subtract with Carry)
+MNEM (sbr,            SBR,           Set Bit in Register)
+MNEM (scall,          SCALL,         Supervisor Call)
+MNEM (scr,            SCR,           Subtract Carry from Register)
+MNEM (sleep,          SLEEP,         Set CPU Activity Mode)
+MNEM (sral,           SRAL,          Set Register Conditionally Always)
+MNEM (srcc,           SRCC,          Set Register Conditionally if Carry Cleared)
+MNEM (srcs,           SRCS,          Set Register Conditionally if Carry Set)
+MNEM (sreq,           SREQ,          Set Register Conditionally if Equal)
+MNEM (srge,           SRGE,          Set Register Conditionally if Greater than or Equal)
+MNEM (srgt,           SRGT,          Set Register Conditionally if Greater Than)
+MNEM (srhi,           SRHI,          Set Register Conditionally if Higher)
+MNEM (srhs,           SRHS,          Set Register Conditionally if Higher or Same)
+MNEM (srle,           SRLE,          Set Register Conditionally if Less than or Equal)
+MNEM (srlo,           SRLO,          Set Register Conditionally if Lower)
+MNEM (srls,           SRLS,          Set Register Conditionally if Lower or Same)
+MNEM (srlt,           SRLT,          Set Register Conditionally if Less Than)
+MNEM (srmi,           SRMI,          Set Register Conditionally if Negative)
+MNEM (srne,           SRNE,          Set Register Conditionally if Not Equal)
+MNEM (srpl,           SRPL,          Set Register Conditionally if Positive)
+MNEM (srqs,           SRQS,          Set Register Conditionally if Saturated)
+MNEM (srvc,           SRVC,          Set Register Conditionally if Overflow Cleared)
+MNEM (srvs,           SRVS,          Set Register Conditionally if Overflow Set)
+MNEM (sscall,         SSCALL,        Secure State Call)
+MNEM (ssrf,           SSRF,          Set Status Register Flag)
+MNEM (st.b,           STB,           Store Byte)
+MNEM (st.bal,         STBAL,         Conditionally Store Byte Always)
+MNEM (st.bcc,         STBCC,         Conditionally Store Byte if Carry Cleared)
+MNEM (st.bcs,         STBCS,         Conditionally Store Byte if Carry Set)
+MNEM (st.beq,         STBEQ,         Conditionally Store Byte if Equal)
+MNEM (st.bge,         STBGE,         Conditionally Store Byte if Greater than or Equal)
+MNEM (st.bgt,         STBGT,         Conditionally Store Byte if Greater Than)
+MNEM (st.bhi,         STBHI,         Conditionally Store Byte if Higher)
+MNEM (st.bhs,         STBHS,         Conditionally Store Byte if Higher or Same)
+MNEM (st.ble,         STBLE,         Conditionally Store Byte if Less than or Equal)
+MNEM (st.blo,         STBLO,         Conditionally Store Byte if Lower)
+MNEM (st.bls,         STBLS,         Conditionally Store Byte if Lower or Same)
+MNEM (st.blt,         STBLT,         Conditionally Store Byte if Less Than)
+MNEM (st.bmi,         STBMI,         Conditionally Store Byte if Negative)
+MNEM (st.bne,         STBNE,         Conditionally Store Byte if Not Equal)
+MNEM (st.bpl,         STBPL,         Conditionally Store Byte if Positive)
+MNEM (st.bqs,         STBQS,         Conditionally Store Byte if Saturated)
+MNEM (st.bvc,         STBVC,         Conditionally Store Byte if Overflow Cleared)
+MNEM (st.bvs,         STBVS,         Conditionally Store Byte if Overflow Set)
+MNEM (st.d,           STD,           Store Doubleword)
+MNEM (st.h,           STH,           Store Halfword)
+MNEM (st.hal,         STHAL,         Conditionally Store Halfword Always)
+MNEM (st.hcc,         STHCC,         Conditionally Store Halfword if Carry Cleared)
+MNEM (st.hcs,         STHCS,         Conditionally Store Halfword if Carry Set)
+MNEM (st.heq,         STHEQ,         Conditionally Store Halfword if Equal)
+MNEM (st.hge,         STHGE,         Conditionally Store Halfword if Greater than or Equal)
+MNEM (st.hgt,         STHGT,         Conditionally Store Halfword if Greater Than)
+MNEM (st.hhi,         STHHI,         Conditionally Store Halfword if Higher)
+MNEM (st.hhs,         STHHS,         Conditionally Store Halfword if Higher or Same)
+MNEM (st.hle,         STHLE,         Conditionally Store Halfword if Less than or Equal)
+MNEM (st.hlo,         STHLO,         Conditionally Store Halfword if Lower)
+MNEM (st.hls,         STHLS,         Conditionally Store Halfword if Lower or Same)
+MNEM (st.hlt,         STHLT,         Conditionally Store Halfword if Less Than)
+MNEM (st.hmi,         STHMI,         Conditionally Store Halfword if Negative)
+MNEM (st.hne,         STHNE,         Conditionally Store Halfword if Not Equal)
+MNEM (st.hpl,         STHPL,         Conditionally Store Halfword if Positive)
+MNEM (st.hqs,         STHQS,         Conditionally Store Halfword if Saturated)
+MNEM (st.hvc,         STHVC,         Conditionally Store Halfword if Overflow Cleared)
+MNEM (st.hvs,         STHVS,         Conditionally Store Halfword if Overflow Set)
+MNEM (st.w,           STW,           Store Word)
+MNEM (st.wal,         STWAL,         Conditionally Store Word Always)
+MNEM (st.wcc,         STWCC,         Conditionally Store Word if Carry Cleared)
+MNEM (st.wcs,         STWCS,         Conditionally Store Word if Carry Set)
+MNEM (st.weq,         STWEQ,         Conditionally Store Word if Equal)
+MNEM (st.wge,         STWGE,         Conditionally Store Word if Greater than or Equal)
+MNEM (st.wgt,         STWGT,         Conditionally Store Word if Greater Than)
+MNEM (st.whi,         STWHI,         Conditionally Store Word if Higher)
+MNEM (st.whs,         STWHS,         Conditionally Store Word if Higher or Same)
+MNEM (st.wle,         STWLE,         Conditionally Store Word if Less than or Equal)
+MNEM (st.wlo,         STWLO,         Conditionally Store Word if Lower)
+MNEM (st.wls,         STWLS,         Conditionally Store Word if Lower or Same)
+MNEM (st.wlt,         STWLT,         Conditionally Store Word if Less Than)
+MNEM (st.wmi,         STWMI,         Conditionally Store Word if Negative)
+MNEM (st.wne,         STWNE,         Conditionally Store Word if Not Equal)
+MNEM (st.wpl,         STWPL,         Conditionally Store Word if Positive)
+MNEM (st.wqs,         STWQS,         Conditionally Store Word if Saturated)
+MNEM (st.wvc,         STWVC,         Conditionally Store Word if Overflow Cleared)
+MNEM (st.wvs,         STWVS,         Conditionally Store Word if Overflow Set)
+MNEM (stc.d,          STCD,          Store Coprocessor Doubleword)
+MNEM (stc.w,          STCW,          Store Coprocessor Word)
+MNEM (stc0.d,         STC0D,         Store Coprocessor 0 Doubleword Register)
+MNEM (stc0.w,         STC0W,         Store Coprocessor 0 Word Register)
+MNEM (stcond,         STCOND,        Store Word Conditionally)
+MNEM (stdsp,          STDSP,         Store SP-relative with Displacement)
+MNEM (sthh.w,         STHHW,         Store Halfwords into Word)
+MNEM (stswp.h,        STSWPH,        Swap and Store Halfword)
+MNEM (stswp.w,        STSWPW,        Swap and Store Word)
+MNEM (sub,            SUB,           Subtract (without Carry))
+MNEM (subal,          SUBAL,         Conditionally Subtract Always)
+MNEM (subcc,          SUBCC,         Conditionally Subtract if Carry Cleared)
+MNEM (subcs,          SUBCS,         Conditionally Subtract if Carry Set)
+MNEM (subeq,          SUBEQ,         Conditionally Subtract if Equal)
+MNEM (subfal,         SUBFAL,        Conditionally Subtract and Update Flags Always)
+MNEM (subfcc,         SUBFCC,        Conditionally Subtract and Update Flags if Carry Cleared)
+MNEM (subfcs,         SUBFCS,        Conditionally Subtract and Update Flags if Carry Set)
+MNEM (subfeq,         SUBFEQ,        Conditionally Subtract and Update Flags if Equal)
+MNEM (subfge,         SUBFGE,        Conditionally Subtract and Update Flags if Greater than or Equal)
+MNEM (subfgt,         SUBFGT,        Conditionally Subtract and Update Flags if Greater Than)
+MNEM (subfhi,         SUBFHI,        Conditionally Subtract and Update Flags if Higher)
+MNEM (subfhs,         SUBFHS,        Conditionally Subtract and Update Flags if Higher or Same)
+MNEM (subfle,         SUBFLE,        Conditionally Subtract and Update Flags if Less than or Equal)
+MNEM (subflo,         SUBFLO,        Conditionally Subtract and Update Flags if Lower)
+MNEM (subfls,         SUBFLS,        Conditionally Subtract and Update Flags if Lower or Same)
+MNEM (subflt,         SUBFLT,        Conditionally Subtract and Update Flags if Less Than)
+MNEM (subfmi,         SUBFMI,        Conditionally Subtract and Update Flags if Negative)
+MNEM (subfne,         SUBFNE,        Conditionally Subtract and Update Flags if Not Equal)
+MNEM (subfpl,         SUBFPL,        Conditionally Subtract and Update Flags if Positive)
+MNEM (subfqs,         SUBFQS,        Conditionally Subtract and Update Flags if Saturated)
+MNEM (subfvc,         SUBFVC,        Conditionally Subtract and Update Flags if Overflow Cleared)
+MNEM (subfvs,         SUBFVS,        Conditionally Subtract and Update Flags if Overflow Set)
+MNEM (subge,          SUBGE,         Conditionally Subtract if Greater than or Equal)
+MNEM (subgt,          SUBGT,         Conditionally Subtract if Greater Than)
+MNEM (subhh.w,        SUBHHW,        Subtract Halfwords into Word)
+MNEM (subhi,          SUBHI,         Conditionally Subtract if Higher)
+MNEM (subhs,          SUBHS,         Conditionally Subtract if Higher or Same)
+MNEM (suble,          SUBLE,         Conditionally Subtract if Less than or Equal)
+MNEM (sublo,          SUBLO,         Conditionally Subtract if Lower)
+MNEM (subls,          SUBLS,         Conditionally Subtract if Lower or Same)
+MNEM (sublt,          SUBLT,         Conditionally Subtract if Less Than)
+MNEM (submi,          SUBMI,         Conditionally Subtract if Negative)
+MNEM (subne,          SUBNE,         Conditionally Subtract if Not Equal)
+MNEM (subpl,          SUBPL,         Conditionally Subtract if Positive)
+MNEM (subqs,          SUBQS,         Conditionally Subtract if Saturated)
+MNEM (subvc,          SUBVC,         Conditionally Subtract if Overflow Cleared)
+MNEM (subvs,          SUBVS,         Conditionally Subtract if Overflow Set)
+MNEM (swap.b,         SWAPB,         Swap Bytes)
+MNEM (swap.bh,        SWAPBH,        Swap Bytes in Halfword)
+MNEM (swap.h,         SWAPH,         Swap Halfwords)
+MNEM (sync,           SYNC,          Synchronize memory)
+MNEM (tlbr,           TLBR,          Read TLB Entry)
+MNEM (tlbs,           TLBS,          Search TLB For Entry)
+MNEM (tlbw,           TLBW,          Write TLB Entry)
+MNEM (tnbz,           TNBZ,          Test if No Byte is Equal to Zero)
+MNEM (tst,            TST,           Test Register)
+MNEM (xchg,           XCHG,          Exchange Register and Memory)
+
+// instructions
+
+INSTR (ABS,           0x00005c40,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (ACALL,         0x0000d000,  0x0000f00f,  U48T4,           Void,         Void,      Void,  Void)
+
+INSTR (ACR,           0x00005c00,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (ADC,           0xe0000040,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADD,           0x00000000,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (ADD,           0xe0000000,  0xe1f0ffc0,  R0,              R25,          R16L42,    Void,  Void)
+
+INSTR (ADDEQ,         0xe1d0e000,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDNE,         0xe1d0e100,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDCC,         0xe1d0e200,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDHS,         0xe1d0e200,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDCS,         0xe1d0e300,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDLO,         0xe1d0e300,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDGE,         0xe1d0e400,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDLT,         0xe1d0e500,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDMI,         0xe1d0e600,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDPL,         0xe1d0e700,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDLS,         0xe1d0e800,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDGT,         0xe1d0e900,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDLE,         0xe1d0ea00,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDHI,         0xe1d0eb00,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDVS,         0xe1d0ec00,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDVC,         0xe1d0ed00,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDQS,         0xe1d0ee00,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDAL,         0xe1d0ef00,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDABS,        0xe0000e40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ADDHHW,        0xe0000e00,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (AND,           0x00000060,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (AND,           0xe1e00000,  0xe1f0fe00,  R0,              R25,          R16L45,    Void,  Void)
+INSTR (AND,           0xe1e00200,  0xe1f0fe00,  R0,              R25,          R16R45,    Void,  Void)
+
+INSTR (ANDEQ,         0xe1d0e020,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDNE,         0xe1d0e120,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDCC,         0xe1d0e220,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDHS,         0xe1d0e220,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDCS,         0xe1d0e320,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDLO,         0xe1d0e320,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDGE,         0xe1d0e420,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDLT,         0xe1d0e520,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDMI,         0xe1d0e620,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDPL,         0xe1d0e720,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDLS,         0xe1d0e820,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDGT,         0xe1d0e920,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDLE,         0xe1d0ea20,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDHI,         0xe1d0eb20,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDVS,         0xe1d0ec20,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDVC,         0xe1d0ed20,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDQS,         0xe1d0ee20,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDAL,         0xe1d0ef20,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ANDH,          0xe4100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+INSTR (ANDH,          0xe6100000,  0xfff00000,  R16,             U016,         COH,       Void,  Void)
+
+INSTR (ANDL,          0xe0100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+INSTR (ANDL,          0xe2100000,  0xfff00000,  R16,             U016,         COH,       Void,  Void)
+
+INSTR (ANDN,          0x00000080,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+
+INSTR (ASR,           0xe0000840,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+INSTR (ASR,           0x0000a140,  0x0000e1e0,  R0,              U4194,        Void,      Void,  Void)
+INSTR (ASR,           0xe0001400,  0xe1f0ffe0,  R16,             R25,          U05,       Void,  Void)
+
+INSTR (BFEXTS,        0xe1d0b000,  0xe1f0fc00,  R25,             R16,          U55,       U05,   Void)
+
+INSTR (BFEXTU,        0xe1d0c000,  0xe1f0fc00,  R25,             R16,          U55,       U05,   Void)
+
+INSTR (BFINS,         0xe1d0d000,  0xe1f0fc00,  R25,             R16,          U55,       U05,   Void)
+
+INSTR (BLD,           0xedb00000,  0xfff0ffe0,  R16,             U05,          Void,      Void,  Void)
+
+INSTR (BREQ,          0x0000c000,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BREQ,          0xe0800000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRNE,          0x0000c001,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRNE,          0xe0810000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRCC,          0x0000c002,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRCC,          0xe0820000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRHS,          0x0000c002,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRHS,          0xe0820000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRCS,          0x0000c003,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRCS,          0xe0830000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRLO,          0x0000c003,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRLO,          0xe0830000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRGE,          0x0000c004,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRGE,          0xe0840000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRLT,          0x0000c005,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRLT,          0xe0850000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRMI,          0x0000c006,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRMI,          0xe0860000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRPL,          0x0000c007,  0x0000f00f,  S48T2,           Void,         Void,      Void,  Void)
+INSTR (BRPL,          0xe0870000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRLS,          0xe0880000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRGT,          0xe0890000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRLE,          0xe08a0000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRHI,          0xe08b0000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRVS,          0xe08c0000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRVC,          0xe08d0000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRQS,          0xe08e0000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BRAL,          0xe08f0000,  0xe1ef0000,  S01620254T2,     Void,         Void,      Void,  Void)
+
+INSTR (BREAKPOINT,    0x0000d673,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (BREV,          0x00005c90,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (BST,           0xefb00000,  0xfff0ffe0,  R16,             U05,          Void,      Void,  Void)
+
+INSTR (CACHE,         0xf4100000,  0xfff00000,  P16S011,         U115,         Void,      Void,  Void)
+
+INSTR (CASTSH,        0x00005c80,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (CASTSB,        0x00005c60,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (CASTUH,        0x00005c70,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (CASTUB,        0x00005c50,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (CBR,           0x0000a1c0,  0x0000e1e0,  R0,              U4194,        Void,      Void,  Void)
+
+INSTR (CLZ,           0xe0001200,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+
+INSTR (COM,           0x00005cd0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (COP,           0xe1a00000,  0xf9f00000,  CP13,            CR8,          CR4,       CR0,   COP)
+
+INSTR (CPB,           0xe0001800,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+
+INSTR (CPH,           0xe0001900,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+
+INSTR (CPW,           0x00000030,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (CPW,           0x00005800,  0x0000fc00,  R0,              S46,          Void,      Void,  Void)
+INSTR (CPW,           0xe0400000,  0xe1e00000,  R0,              S01620254,    Void,      Void,  Void)
+
+INSTR (CPC,           0xe0001300,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (CPC,           0x00005c20,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (CSRF,          0x0000d403,  0x0000fe0f,  U45,             Void,         Void,      Void,  Void)
+
+INSTR (CSRFCZ,        0x0000d003,  0x0000fe0f,  U45,             Void,         Void,      Void,  Void)
+
+INSTR (DIVS,          0xe0000c00,  0xe1f0fff0,  R0D,             R25,          R16,       Void,  Void)
+
+INSTR (DIVU,          0xe0000d00,  0xe1f0fff0,  R0D,             R25,          R16,       Void,  Void)
+
+INSTR (EOR,           0x00000050,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (EOR,           0xe1e02000,  0xe1f0fe00,  R0,              R25,          R16L45,    Void,  Void)
+INSTR (EOR,           0xe1e02200,  0xe1f0fe00,  R0,              R25,          R16R45,    Void,  Void)
+
+INSTR (EOREQ,         0xe1d0e040,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORNE,         0xe1d0e140,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORCC,         0xe1d0e240,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORHS,         0xe1d0e240,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORCS,         0xe1d0e340,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORLO,         0xe1d0e340,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORGE,         0xe1d0e440,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORLT,         0xe1d0e540,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORMI,         0xe1d0e640,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORPL,         0xe1d0e740,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORLS,         0xe1d0e840,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORGT,         0xe1d0e940,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORLE,         0xe1d0ea40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORHI,         0xe1d0eb40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORVS,         0xe1d0ec40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORVC,         0xe1d0ed40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORQS,         0xe1d0ee40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORAL,         0xe1d0ef40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (EORH,          0xee100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+
+INSTR (EORL,          0xec100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+
+INSTR (FRS,           0x0000d743,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (ICALL,         0x00005d10,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (INCJOSP,       0x0000d683,  0x0000ff8f,  S43WZ,           Void,         Void,      Void,  Void)
+
+INSTR (LDD,           0x0000a101,  0x0000e1f1,  R1D,             P9I,          Void,      Void,  Void)
+INSTR (LDD,           0x0000a110,  0x0000e1f1,  R1D,             P9D,          Void,      Void,  Void)
+INSTR (LDD,           0x0000a100,  0x0000e1f1,  R1D,             R9,           Void,      Void,  Void)
+INSTR (LDD,           0xe0e00000,  0xe1f10000,  R16D,            P25S016,      Void,      Void,  Void)
+INSTR (LDD,           0xe0000200,  0xe1f0ffc0,  R0D,             P25L16S42,    Void,      Void,  Void)
+
+INSTR (LDSB,          0xe1200000,  0xe1f00000,  R16,             P25S016,      Void,      Void,  Void)
+INSTR (LDSB,          0xe0000600,  0xe1f0ffc0,  R0,              P25L16S42,    Void,      Void,  Void)
+
+INSTR (LDSBEQ,        0xe1f00600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBNE,        0xe1f01600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBCC,        0xe1f02600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBHS,        0xe1f02600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBCS,        0xe1f03600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBLO,        0xe1f03600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBGE,        0xe1f04600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBLT,        0xe1f05600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBMI,        0xe1f06600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBPL,        0xe1f07600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBLS,        0xe1f08600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBGT,        0xe1f09600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBLE,        0xe1f0a600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBHI,        0xe1f0b600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBVS,        0xe1f0c600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBVC,        0xe1f0d600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBQS,        0xe1f0e600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSBAL,        0xe1f0f600,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUB,          0x00000130,  0x0000e1f0,  R0,              P9I,          Void,      Void,  Void)
+INSTR (LDUB,          0x00000170,  0x0000e1f0,  R0,              P9D,          Void,      Void,  Void)
+INSTR (LDUB,          0x00000180,  0x0000e180,  R0,              P9U43,        Void,      Void,  Void)
+INSTR (LDUB,          0xe1300000,  0xe1f00000,  R16,             P25S016,      Void,      Void,  Void)
+INSTR (LDUB,          0xe0000700,  0xe1f0ffc0,  R0,              P25L16S42,    Void,      Void,  Void)
+
+INSTR (LDUBEQ,        0xe1f00800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBNE,        0xe1f01800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBCC,        0xe1f02800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBHS,        0xe1f02800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBCS,        0xe1f03800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBLO,        0xe1f03800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBGE,        0xe1f04800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBLT,        0xe1f05800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBMI,        0xe1f06800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBPL,        0xe1f07800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBLS,        0xe1f08800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBGT,        0xe1f09800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBLE,        0xe1f0a800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBHI,        0xe1f0b800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBVS,        0xe1f0c800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBVC,        0xe1f0d800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBQS,        0xe1f0e800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDUBAL,        0xe1f0f800,  0xe1f0fe00,  R16,             P25U09,       Void,      Void,  Void)
+
+INSTR (LDSH,          0x00000110,  0x0000e1f0,  R0,              P9I,          Void,      Void,  Void)
+INSTR (LDSH,          0x00000150,  0x0000e1f0,  R0,              P9D,          Void,      Void,  Void)
+INSTR (LDSH,          0x00008000,  0x0000e180,  R0,              P9U43T2,      Void,      Void,  Void)
+INSTR (LDSH,          0xe1000000,  0xe1f00000,  R16,             P25S016,      Void,      Void,  Void)
+INSTR (LDSH,          0xe0000600,  0xe1f0ffc0,  R0,              P25L16S42,    Void,      Void,  Void)
+
+INSTR (LDSHEQ,        0xe1f00200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHNE,        0xe1f01200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHCC,        0xe1f02200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHHS,        0xe1f02200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHCS,        0xe1f03200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHLO,        0xe1f03200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHGE,        0xe1f04200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHLT,        0xe1f05200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHMI,        0xe1f06200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHPL,        0xe1f07200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHLS,        0xe1f08200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHGT,        0xe1f09200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHLE,        0xe1f0a200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHHI,        0xe1f0b200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHVS,        0xe1f0c200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHVC,        0xe1f0d200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHQS,        0xe1f0e200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDSHAL,        0xe1f0f200,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUH,          0x00000120,  0x0000e1f0,  R0,              P9I,          Void,      Void,  Void)
+INSTR (LDUH,          0x00000160,  0x0000e1f0,  R0,              P9D,          Void,      Void,  Void)
+INSTR (LDUH,          0x00008080,  0x0000e180,  R0,              P9U43T2,      Void,      Void,  Void)
+INSTR (LDUH,          0xe1100000,  0xe1f00000,  R16,             P25S016,      Void,      Void,  Void)
+INSTR (LDUH,          0xe0000500,  0xe1f0ffc0,  R0,              P25L16S42,    Void,      Void,  Void)
+
+INSTR (LDUHEQ,        0xe1f00400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHNE,        0xe1f01400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHCC,        0xe1f02400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHHS,        0xe1f02400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHCS,        0xe1f03400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHLO,        0xe1f03400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHGE,        0xe1f04400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHLT,        0xe1f05400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHMI,        0xe1f06400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHPL,        0xe1f07400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHLS,        0xe1f08400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHGT,        0xe1f09400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHLE,        0xe1f0a400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHHI,        0xe1f0b400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHVS,        0xe1f0c400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHVC,        0xe1f0d400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHQS,        0xe1f0e400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDUHAL,        0xe1f0f400,  0xe1f0fe00,  R16,             P25U09T2,     Void,      Void,  Void)
+
+INSTR (LDW,           0x00000100,  0x0000e1f0,  R0,              P9I,          Void,      Void,  Void)
+INSTR (LDW,           0x00000140,  0x0000e1f0,  R0,              P9D,          Void,      Void,  Void)
+INSTR (LDW,           0x00006000,  0x0000e000,  R0,              P9U45T4,      Void,      Void,  Void)
+INSTR (LDW,           0xe0f00000,  0xe1f00000,  R16,             P25S016,      Void,      Void,  Void)
+INSTR (LDW,           0xe0000300,  0xe1f0ffc0,  R0,              P25L16S42,    Void,      Void,  Void)
+
+INSTR (LDWEQ,         0xe1f00000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWNE,         0xe1f01000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWCC,         0xe1f02000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWHS,         0xe1f02000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWCS,         0xe1f03000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWLO,         0xe1f03000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWGE,         0xe1f04000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWLT,         0xe1f05000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWMI,         0xe1f06000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWPL,         0xe1f07000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWLS,         0xe1f08000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWGT,         0xe1f09000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWLE,         0xe1f0a000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWHI,         0xe1f0b000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWVS,         0xe1f0c000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWVC,         0xe1f0d000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWQS,         0xe1f0e000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDWAL,         0xe1f0f000,  0xe1f0fe00,  R16,             P25U09T4,     Void,      Void,  Void)
+
+INSTR (LDCD,          0xe9a01000,  0xfff01100,  CP13,            CR9D,         P16U08T4,  Void,  Void)
+INSTR (LDCD,          0xefa00050,  0xfff011ff,  CP13,            CR9D,         P16D,      Void,  Void)
+INSTR (LDCD,          0xefa01040,  0xfff011c0,  CP13,            CR9D,         P16L0S42,  Void,  Void)
+
+INSTR (LDCW,          0xe9a00000,  0xfff01000,  CP13,            CR8,          P16U08T4,  Void,  Void)
+INSTR (LDCW,          0xefa00040,  0xfff010ff,  CP13,            CR8,          P16D,      Void,  Void)
+INSTR (LDCW,          0xefa01000,  0xfff010c0,  CP13,            CR8,          P16L0S42,  Void,  Void)
+
+INSTR (LDC0D,         0xf3a00000,  0xfff00100,  CR9D,            P16U08124T4,  Void,      Void,  Void)
+
+INSTR (LDC0W,         0xf1a00000,  0xfff00000,  CR8,             P16U08124T4,  Void,      Void,  Void)
+
+INSTR (LDDPC,         0x00004800,  0x0000f800,  R0,              PPCU47T4,     Void,      Void,  Void)
+
+INSTR (LDDSP,         0x00004000,  0x0000f800,  R0,              PSPU47T4,     Void,      Void,  Void)
+
+INSTR (LDINSB,        0xe1d04000,  0xe1f0c000,  R16P122,         P25S012,      Void,      Void,  Void)
+
+INSTR (LDINSH,        0xe1d00000,  0xe1f0e000,  R16P121,         P25S012T2,    Void,      Void,  Void)
+
+INSTR (LDSWPSH,       0xe1d02000,  0xe1f0f000,  R16,             P25S012T2,    Void,      Void,  Void)
+
+INSTR (LDSWPUH,       0xe1d03000,  0xe1f0f000,  R16,             P25S012T2,    Void,      Void,  Void)
+
+INSTR (LDSWPW,        0xe1d08000,  0xe1f0f000,  R16,             P25S012T4,    Void,      Void,  Void)
+
+INSTR (LSL,           0xe0000940,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+INSTR (LSL,           0x0000a160,  0x0000e1e0,  R0,              U4194,        Void,      Void,  Void)
+INSTR (LSL,           0xe0001500,  0xe1f0ffe0,  R16,             R25,          U05,       Void,  Void)
+
+INSTR (LSR,           0xe0000a40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+INSTR (LSR,           0x0000a180,  0x0000e1e0,  R0,              U4194,        Void,      Void,  Void)
+INSTR (LSR,           0xe0001600,  0xe1f0ffe0,  R16,             R25,          U05,       Void,  Void)
+
+INSTR (MAC,           0xe0000340,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (MACHHD,        0xe0000580,  0xe1f0ffc0,  R0D,             R25P51,       R16P41,    Void,  Void)
+
+INSTR (MACHHW,        0xe0000480,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MACSD,         0xe0000540,  0xe1f0fff0,  R0D,             R25,          R16,       Void,  Void)
+
+INSTR (MACSATHHW,     0xe0000680,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MACUD,         0xe0000740,  0xe1f0fff0,  R0D,             R25,          R16,       Void,  Void)
+
+INSTR (MACWHD,        0xe0000c80,  0xe1f0ffe0,  R0D,             R25,          R16P41,    Void,  Void)
+
+INSTR (MAX,           0xe0000c40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (MCALL,         0xf0100000,  0xfff00000,  P16S016T4,       Void,         Void,      Void,  Void)
+
+INSTR (MEMC,          0xf6100000,  0xfff00000,  S015T4,          U155,         Void,      Void,  Void)
+
+INSTR (MEMS,          0xf8100000,  0xfff00000,  S015T4,          U155,         Void,      Void,  Void)
+
+INSTR (MEMT,          0xfa100000,  0xfff00000,  S015T4,          U155,         Void,      Void,  Void)
+
+INSTR (MFDR,          0xe5b00000,  0xfff0ff00,  R16,             U08T4,        Void,      Void,  Void)
+
+INSTR (MFSR,          0xe1b00000,  0xfff0ff00,  R16,             U08T4,        Void,      Void,  Void)
+
+INSTR (MIN,           0xe0000d40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (MOV,           0x00003000,  0x0000f000,  R0,              S48,          Void,      Void,  Void)
+INSTR (MOV,           0xe0600000,  0xe1e00000,  R16,             S01620254,    Void,      Void,  Void)
+INSTR (MOV,           0x00000090,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+
+INSTR (MOVEQ,         0xe0001700,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVEQ,         0xf9b00000,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVNE,         0xe0001710,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVNE,         0xf9b00100,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVCC,         0xe0001720,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVCC,         0xf9b00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVHS,         0xe0001720,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVHS,         0xf9b00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVCS,         0xe0001730,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVCS,         0xf9b00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVLO,         0xe0001730,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVLO,         0xf9b00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVGE,         0xe0001740,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVGE,         0xf9b00400,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVLT,         0xe0001750,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVLT,         0xf9b00500,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVMI,         0xe0001760,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVMI,         0xf9b00600,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVPL,         0xe0001770,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVPL,         0xf9b00700,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVLS,         0xe0001780,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVLS,         0xf9b00800,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVGT,         0xe0001790,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVGT,         0xf9b00900,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVLE,         0xe00017a0,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVLE,         0xf9b00a00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVHI,         0xe00017b0,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVHI,         0xf9b00b00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVVS,         0xe00017c0,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVVS,         0xf9b00c00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVVC,         0xe00017d0,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVVC,         0xf9b00d00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVQS,         0xe00017e0,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVQS,         0xf9b00e00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVAL,         0xe00017f0,  0xe1f0ffff,  R16,             R25,          Void,      Void,  Void)
+INSTR (MOVAL,         0xf9b00f00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (MOVH,          0xfc100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+
+INSTR (MOVL,          0xe0600000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+
+INSTR (MTDR,          0xe7b00000,  0xfff0ff00,  U08T4,           R16,          Void,      Void,  Void)
+
+INSTR (MTSR,          0xe3b00000,  0xfff0ff00,  U08T4,           R16,          Void,      Void,  Void)
+
+INSTR (MUL,           0x0000a130,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (MUL,           0xe0000240,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+INSTR (MUL,           0xe0001000,  0xe1f0ff00,  R16,             R25,          S08,       Void,  Void)
+
+INSTR (MULHHW,        0xe0000780,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MULNHHW,       0xe0000180,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MULNWHD,       0xe0000280,  0xe1f0ffe0,  R0D,             R25,          R16P41,    Void,  Void)
+
+INSTR (MULSD,         0xe0000440,  0xe1f0fff0,  R0D,             R25,          R16,       Void,  Void)
+
+INSTR (MULSATHHH,     0xe0000880,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MULSATHHW,     0xe0000980,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MULSATRNDHHH,  0xe0000a80,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MULSATRNDHHW,  0xe0000b80,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (MULSATWHW,     0xe0000e80,  0xe1f0ffe0,  R0,              R25,          R16P41,    Void,  Void)
+
+INSTR (MULUD,         0xe0000640,  0xe1f0fff0,  R0D,             R25,          R16,       Void,  Void)
+
+INSTR (MULWHD,        0xe0000d80,  0xe1f0ffe0,  R0D,             R25,          R16P41,    Void,  Void)
+
+INSTR (MUSFR,         0x00005d30,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (MUSTR,         0x00005d20,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (MVCRD,         0xefa00010,  0xfff111ff,  CP13,            R16D,         CR9D,      Void,  Void)
+
+INSTR (MVCRW,         0xefa00000,  0xfff010ff,  CP13,            R16,          CR8,       Void,  Void)
+
+INSTR (MVRCD,         0xefa00030,  0xfff111ff,  CP13,            CR9D,         R16D,      Void,  Void)
+
+INSTR (MVRCW,         0xefa00020,  0xfff010ff,  CP13,            CR8,          R16,       Void,  Void)
+
+INSTR (NEG,           0x00005c30,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (NOP,           0x0000d703,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (OR,            0x00000040,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (OR,            0xe1e01000,  0xe1f0fe00,  R0,              R25,          R16L45,    Void,  Void)
+INSTR (OR,            0xe1e01200,  0xe1f0fe00,  R0,              R25,          R16R45,    Void,  Void)
+
+INSTR (OREQ,          0xe1d0e030,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORNE,          0xe1d0e130,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORCC,          0xe1d0e230,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORHS,          0xe1d0e230,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORCS,          0xe1d0e330,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORLO,          0xe1d0e330,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORGE,          0xe1d0e430,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORLT,          0xe1d0e530,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORMI,          0xe1d0e630,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORPL,          0xe1d0e730,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORLS,          0xe1d0e830,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORGT,          0xe1d0e930,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORLE,          0xe1d0ea30,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORHI,          0xe1d0eb30,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORVS,          0xe1d0ec30,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORVC,          0xe1d0ed30,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORQS,          0xe1d0ee30,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORAL,          0xe1d0ef30,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (ORH,           0xea100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+
+INSTR (ORL,           0xe8100000,  0xfff00000,  R16,             U016,         Void,      Void,  Void)
+
+INSTR (PABSSB,        0xe00023e0,  0xfff0fff0,  R0,              R16,          Void,      Void,  Void)
+
+INSTR (PABSSH,        0xe00023f0,  0xfff0fff0,  R0,              R16,          Void,      Void,  Void)
+
+INSTR (PACKSHUB,      0xe00024c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PACKSHSB,      0xe00024d0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PACKWSHS,      0xe0002470,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDB,         0xe0002500,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDH,         0xe0002000,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDHUB,       0xe0002360,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDHSH,       0xe00020c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDSUB,       0xe0002340,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDSSB,       0xe0002320,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDSUH,       0xe0002080,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDSSH,       0xe0002040,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDSUBH,      0xe0002100,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PADDSUBHSH,    0xe0002280,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PADDSUBSUH,    0xe0002200,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PADDSUBSSH,    0xe0002180,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PADDXH,        0xe0002020,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDXHSH,      0xe00020e0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDXSUH,      0xe00020a0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PADDXSSH,      0xe0002060,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PASRB,         0xe0002410,  0xe1f8fff0,  R0,              R25,          U163,      Void,  Void)
+
+INSTR (PASRH,         0xe0002440,  0xe1f0fff0,  R0,              R25,          U164,      Void,  Void)
+
+INSTR (PAVGUB,        0xe00023c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PAVGSH,        0xe00023d0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PLSLB,         0xe0002420,  0xe1f8fff0,  R0,              R25,          U163,      Void,  Void)
+
+INSTR (PLSLH,         0xe0002450,  0xe1f0fff0,  R0,              R25,          U164,      Void,  Void)
+
+INSTR (PLSRB,         0xe0002430,  0xe1f8fff0,  R0,              R25,          U163,      Void,  Void)
+
+INSTR (PLSRH,         0xe0002460,  0xe1f0fff0,  R0,              R25,          U164,      Void,  Void)
+
+INSTR (PMAXUB,        0xe0002380,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PMAXSH,        0xe0002390,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PMINUB,        0xe00023a0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PMINSH,        0xe00023b0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (POPJC,         0x0000d713,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (PREF,          0xf2100000,  0xfff00000,  P16S016,         Void,         Void,      Void,  Void)
+
+INSTR (PSAD,          0xe0002400,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBB,         0xe0002310,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBH,         0xe0002010,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBADDH,      0xe0002140,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PSUBADDHSH,    0xe00022c0,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PSUBADDSUH,    0xe0002240,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PSUBADDSSH,    0xe00021c0,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (PSUBHUB,       0xe0002370,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBHSH,       0xe00020d0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBSUB,       0xe0002350,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBSSB,       0xe0002330,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBSUH,       0xe0002090,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBSSH,       0xe0002050,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBXH,        0xe0002030,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBXHSH,      0xe00020f0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBXSUH,      0xe00020b0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PSUBXSSH,      0xe0002070,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (PUNPCKSBH,     0xe00024a0,  0xe1f0ffe0,  R0,              R25P41,       Void,      Void,  Void)
+
+INSTR (PUNPCKUBH,     0xe0002480,  0xe1f0ffe0,  R0,              R25P41,       Void,      Void,  Void)
+
+INSTR (PUSHJC,        0x0000d723,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (RCALL,         0x0000c00c,  0x0000f00c,  PPCS4802T2,      Void,         Void,      Void,  Void)
+INSTR (RCALL,         0xe0a00000,  0xe1ef0000,  PPCS01620254T2,  Void,         Void,      Void,  Void)
+
+INSTR (RETEQ,         0x00005e00,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETNE,         0x00005e10,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETCC,         0x00005e20,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETHS,         0x00005e20,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETCS,         0x00005e30,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETLO,         0x00005e30,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETGE,         0x00005e40,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETLT,         0x00005e50,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETMI,         0x00005e60,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETPL,         0x00005e70,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETLS,         0x00005e80,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETGT,         0x00005e90,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETLE,         0x00005ea0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETHI,         0x00005eb0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETVS,         0x00005ec0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETVC,         0x00005ed0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETQS,         0x00005ee0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETAL,         0x00005ef0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RETD,          0x0000d623,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (RETE,          0x0000d603,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (RETJ,          0x0000d633,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (RETS,          0x0000d613,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (RETSS,         0x0000d763,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (RJMP,          0x0000c008,  0x0000f00c,  PPCS4802T2,      Void,         Void,      Void,  Void)
+
+INSTR (ROL,           0x00005cf0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (ROR,           0x00005d00,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (RSUB,          0x00000020,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (RSUB,          0xe0001100,  0xe1f0ff00,  R16,             R25,          S08,       Void,  Void)
+
+INSTR (RSUBEQ,        0xfbb00000,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBNE,        0xfbb00100,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBCC,        0xfbb00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBHS,        0xfbb00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBCS,        0xfbb00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBLO,        0xfbb00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBGE,        0xfbb00400,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBLT,        0xfbb00500,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBMI,        0xfbb00600,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBPL,        0xfbb00700,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBLS,        0xfbb00800,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBGT,        0xfbb00900,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBLE,        0xfbb00a00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBHI,        0xfbb00b00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBVS,        0xfbb00c00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBVC,        0xfbb00d00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBQS,        0xfbb00e00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (RSUBAL,        0xfbb00f00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SATADDH,       0xe00002c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SATADDW,       0xe00000c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SATRNDS,       0xf3b00000,  0xfff0fc00,  R16R05,          U55,          Void,      Void,  Void)
+
+INSTR (SATRNDU,       0xf3b00400,  0xfff0fc00,  R16R05,          U55,          Void,      Void,  Void)
+
+INSTR (SATS,          0xf1b00000,  0xfff0fc00,  R16R05,          U55,          Void,      Void,  Void)
+
+INSTR (SATSUBH,       0xe00003c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SATSUBW,       0xe00001c0,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+INSTR (SATSUBW,       0xe0d00000,  0xe1f00000,  R16,             R25,          S016,      Void,  Void)
+
+INSTR (SATU,          0xf1b00400,  0xfff0fc00,  R16R05,          U55,          Void,      Void,  Void)
+
+INSTR (SBC,           0xe0000140,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SBR,           0x0000a1a0,  0x0000e1e0,  R0,              U4194,        Void,      Void,  Void)
+
+INSTR (SCALL,         0x0000d733,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (SCR,           0x00005c10,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SLEEP,         0xe9b00000,  0xffffff00,  U08,             Void,         Void,      Void,  Void)
+
+INSTR (SREQ,          0x00005f00,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRNE,          0x00005f10,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRCC,          0x00005f20,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRHS,          0x00005f20,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRCS,          0x00005f30,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRLO,          0x00005f30,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRGE,          0x00005f40,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRLT,          0x00005f50,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRMI,          0x00005f60,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRPL,          0x00005f70,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRLS,          0x00005f80,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRGT,          0x00005f90,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRLE,          0x00005fa0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRHI,          0x00005fb0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRVS,          0x00005fc0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRVC,          0x00005fd0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRQS,          0x00005fe0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SRAL,          0x00005ff0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SSCALL,        0x0000d753,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (SSRF,          0x0000d203,  0x0000fe0f,  U45,             Void,         Void,      Void,  Void)
+
+INSTR (STB,           0x000000c0,  0x0000e1f0,  P9I,             R0,           Void,      Void,  Void)
+INSTR (STB,           0x000000f0,  0x0000e1f0,  P9D,             R0,           Void,      Void,  Void)
+INSTR (STB,           0x0000a080,  0x0000e180,  P9U43,           R0,           Void,      Void,  Void)
+INSTR (STB,           0xe1600000,  0xe1f00000,  P25S016,         R16,          Void,      Void,  Void)
+INSTR (STB,           0xe0000b00,  0xe1f0ffc0,  P25L16S42,       R0,           Void,      Void,  Void)
+
+INSTR (STBEQ,         0xe1f00e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBNE,         0xe1f01e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBCC,         0xe1f02e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBHS,         0xe1f02e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBCS,         0xe1f03e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBLO,         0xe1f03e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBGE,         0xe1f04e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBLT,         0xe1f05e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBMI,         0xe1f06e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBPL,         0xe1f07e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBLS,         0xe1f08e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBGT,         0xe1f09e00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBLE,         0xe1f0ae00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBHI,         0xe1f0be00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBVS,         0xe1f0ce00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBVC,         0xe1f0de00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBQS,         0xe1f0ee00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STBAL,         0xe1f0ee00,  0xe1f0fe00,  P25U09,          R16,          Void,      Void,  Void)
+
+INSTR (STD,           0x0000a120,  0x0000e1f1,  P9I,             R1D,          Void,      Void,  Void)
+INSTR (STD,           0x0000a121,  0x0000e1f1,  P9D,             R1D,          Void,      Void,  Void)
+INSTR (STD,           0x0000a111,  0x0000e1f1,  R9,              R1D,          Void,      Void,  Void)
+INSTR (STD,           0xe0e10000,  0xe1f10000,  P25S016,         R16D,         Void,      Void,  Void)
+INSTR (STD,           0xe0000800,  0xe1f0ffc0,  P25L16S42,       R1D,          Void,      Void,  Void)
+
+INSTR (STH,           0x000000b0,  0x0000e1f0,  P9I,             R0,           Void,      Void,  Void)
+INSTR (STH,           0x000000e0,  0x0000e1f0,  P9D,             R0,           Void,      Void,  Void)
+INSTR (STH,           0x0000a000,  0x0000e180,  P9U43,           R0,           Void,      Void,  Void)
+INSTR (STH,           0xe1500000,  0xe1f00000,  P25S016,         R16,          Void,      Void,  Void)
+INSTR (STH,           0xe0000a00,  0xe1f0ffc0,  P25L16S42,       R0,           Void,      Void,  Void)
+
+INSTR (STHEQ,         0xe1f00c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHNE,         0xe1f01c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHCC,         0xe1f02c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHHS,         0xe1f02c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHCS,         0xe1f03c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHLO,         0xe1f03c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHGE,         0xe1f04c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHLT,         0xe1f05c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHMI,         0xe1f06c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHPL,         0xe1f07c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHLS,         0xe1f08c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHGT,         0xe1f09c00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHLE,         0xe1f0ac00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHHI,         0xe1f0bc00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHVS,         0xe1f0cc00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHVC,         0xe1f0dc00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHQS,         0xe1f0ec00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STHAL,         0xe1f0ec00,  0xe1f0fe00,  P25U09T2,        R16,          Void,      Void,  Void)
+
+INSTR (STW,           0x000000a0,  0x0000e1f0,  P9I,             R0,           Void,      Void,  Void)
+INSTR (STW,           0x000000d0,  0x0000e1f0,  P9D,             R0,           Void,      Void,  Void)
+INSTR (STW,           0x00008100,  0x0000e100,  P9U44T4,         R0,           Void,      Void,  Void)
+INSTR (STW,           0xe1400000,  0xe1f00000,  P25S016,         R16,          Void,      Void,  Void)
+INSTR (STW,           0xe0000900,  0xe1f0ffc0,  P25L16S42,       R0,           Void,      Void,  Void)
+
+INSTR (STWEQ,         0xe1f00a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWNE,         0xe1f01a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWCC,         0xe1f02a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWHS,         0xe1f02a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWCS,         0xe1f03a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWLO,         0xe1f03a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWGE,         0xe1f04a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWLT,         0xe1f05a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWMI,         0xe1f06a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWPL,         0xe1f07a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWLS,         0xe1f08a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWGT,         0xe1f09a00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWLE,         0xe1f0aa00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWHI,         0xe1f0ba00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWVS,         0xe1f0ca00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWVC,         0xe1f0da00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWQS,         0xe1f0ea00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STWAL,         0xe1f0ea00,  0xe1f0fe00,  P25U09T4,        R16,          Void,      Void,  Void)
+
+INSTR (STCD,          0xeba01000,  0xfff01100,  CP13,            P16U08T4,     CR9D,      Void,  Void)
+INSTR (STCD,          0xefa00070,  0xfff011ff,  CP13,            P16D,         CR9D,      Void,  Void)
+INSTR (STCD,          0xefa010c0,  0xfff011c0,  CP13,            P16L0S42,     CR9D,      Void,  Void)
+
+INSTR (STCW,          0xeba00000,  0xfff01000,  CP13,            P16U08T4,     CR8,       Void,  Void)
+INSTR (STCW,          0xefa00060,  0xfff010ff,  CP13,            P16D,         CR8,       Void,  Void)
+INSTR (STCW,          0xefa11000,  0xfff010c0,  CP13,            P16L0S42,     CR8,       Void,  Void)
+
+INSTR (STC0D,         0xf7a00000,  0xfff00100,  P16U08124T4,     CR9D,         Void,      Void,  Void)
+
+INSTR (STC0W,         0xf5a00000,  0xfff00000,  P16U08124T4,     CR8,          Void,      Void,  Void)
+
+INSTR (STCOND,        0xe1700000,  0xe1f00000,  P25S016,         R16,          Void,      Void,  Void)
+
+INSTR (STDSP,         0x00005000,  0x0000f800,  PSPU47T4,        R0,           Void,      Void,  Void)
+
+INSTR (STHHW,         0xe1e0c000,  0xe1f0c000,  P0U48T4,         R25P131,      R16P121,   Void,  Void)
+INSTR (STHHW,         0xe1e08000,  0xe1f0c0c0,  P0L8S42,         R25P131,      R16P121,   Void,  Void)
+
+INSTR (STSWPH,        0xe1d09000,  0xe1f0f000,  P25S012T2,       R16,          Void,      Void,  Void)
+
+INSTR (STSWPW,        0xe1d0a000,  0xe1f0f000,  P25S012T4,       R16,          Void,      Void,  Void)
+
+INSTR (SUB,           0x00000010,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+INSTR (SUB,           0xe0000100,  0xe1f0ffc0,  R0,              R25,          R16L42,    Void,  Void)
+INSTR (SUB,           0x0000200d,  0x0000f00f,  RSP,             S48T4,        Void,      Void,  Void)
+INSTR (SUB,           0x00002000,  0x0000f000,  R0,              S48,          Void,      Void,  Void)
+INSTR (SUB,           0xe0200000,  0xe1e00000,  R16,             S01620254,    Void,      Void,  Void)
+INSTR (SUB,           0xe0c00000,  0xe1f00000,  R16,             R25,          S016,      Void,  Void)
+
+INSTR (SUBEQ,         0xf5b00000,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBEQ,         0xe1d0e010,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBNE,         0xf5b00100,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBNE,         0xe1d0e110,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBCC,         0xf5b00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBCC,         0xe1d0e210,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBHS,         0xf5b00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBHS,         0xe1d0e210,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBCS,         0xf5b00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBCS,         0xe1d0e310,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBLO,         0xf5b00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBLO,         0xe1d0e310,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBGE,         0xf5b00400,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBGE,         0xe1d0e410,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBLT,         0xf5b00500,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBLT,         0xe1d0e510,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBMI,         0xf5b00600,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBMI,         0xe1d0e610,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBPL,         0xf5b00700,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBPL,         0xe1d0e710,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBLS,         0xf5b00800,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBLS,         0xe1d0e810,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBGT,         0xf5b00900,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBGT,         0xe1d0e910,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBLE,         0xf5b00a00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBLE,         0xe1d0ea10,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBHI,         0xf5b00b00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBHI,         0xe1d0eb10,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBVS,         0xf5b00c00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBVS,         0xe1d0ec10,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBVC,         0xf5b00d00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBVC,         0xe1d0ed10,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBQS,         0xf5b00e00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBQS,         0xe1d0ee10,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBAL,         0xf5b00e00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+INSTR (SUBAL,         0xe1d0ee10,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+INSTR (SUBFEQ,        0xf7b00000,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFNE,        0xf7b00100,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFCC,        0xf7b00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFHS,        0xf7b00200,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFCS,        0xf7b00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFLO,        0xf7b00300,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFGE,        0xf7b00400,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFLT,        0xf7b00500,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFMI,        0xf7b00600,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFPL,        0xf7b00700,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFLS,        0xf7b00800,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFGT,        0xf7b00900,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFLE,        0xf7b00a00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFHI,        0xf7b00b00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFVS,        0xf7b00c00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFVC,        0xf7b00d00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFQS,        0xf7b00e00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBFAL,        0xf7b00e00,  0xfff0ff00,  R16,             S08,          Void,      Void,  Void)
+
+INSTR (SUBHHW,        0xe0000f00,  0xe1f0ffc0,  R0,              R25P51,       R16P41,    Void,  Void)
+
+INSTR (SWAPB,         0x00005cb0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SWAPBH,        0x00005cc0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SWAPH,         0x00005ca0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (SYNC,          0xebb00000,  0xffffff00,  U08,             Void,         Void,      Void,  Void)
+
+INSTR (TLBR,          0x0000d643,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (TLBS,          0x0000d653,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (TLBW,          0x0000d663,  0x0000ffff,  Void,            Void,         Void,      Void,  Void)
+
+INSTR (TNBZ,          0x00005ce0,  0x0000fff0,  R0,              Void,         Void,      Void,  Void)
+
+INSTR (TST,           0x00000070,  0x0000e1f0,  R0,              R9,           Void,      Void,  Void)
+
+INSTR (XCHG,          0xe0000b40,  0xe1f0fff0,  R0,              R25,          R16,       Void,  Void)
+
+// operand types
+
+TYPE (RSP)
+TYPE (R0)
+TYPE (R0D)
+TYPE (R1D)
+TYPE (R9)
+TYPE (R16)
+TYPE (R16D)
+TYPE (R16L42)
+TYPE (R16L45)
+TYPE (R16R05)
+TYPE (R16R45)
+TYPE (R16P41)
+TYPE (R16P121)
+TYPE (R16P122)
+TYPE (R25)
+TYPE (R25P41)
+TYPE (R25P51)
+TYPE (R25P131)
+TYPE (U05)
+TYPE (U08)
+TYPE (U08T4)
+TYPE (U016)
+TYPE (U4194)
+TYPE (U45)
+TYPE (U48T4)
+TYPE (U55)
+TYPE (U115)
+TYPE (U155)
+TYPE (U163)
+TYPE (U164)
+TYPE (S08)
+TYPE (S015T4)
+TYPE (S016)
+TYPE (S01620254)
+TYPE (S01620254T2)
+TYPE (S43WZ)
+TYPE (S46)
+TYPE (S48)
+TYPE (S48T2)
+TYPE (S48T4)
+TYPE (P0U48T4)
+TYPE (P0L8S42)
+TYPE (P9I)
+TYPE (P9D)
+TYPE (P9U43)
+TYPE (P9U43T2)
+TYPE (P9U44T4)
+TYPE (P9U45T4)
+TYPE (P16D)
+TYPE (P16U08T4)
+TYPE (P16U08124T4)
+TYPE (P16S011)
+TYPE (P16S016)
+TYPE (P16S016T4)
+TYPE (P16L0S42)
+TYPE (P25U09)
+TYPE (P25U09T2)
+TYPE (P25U09T4)
+TYPE (P25S012)
+TYPE (P25S012T2)
+TYPE (P25S012T4)
+TYPE (P25S016)
+TYPE (P25L16S42)
+TYPE (PPCU47T4)
+TYPE (PPCS01620254T2)
+TYPE (PPCS4802T2)
+TYPE (PSPU47T4)
+TYPE (CP13)
+TYPE (CR0)
+TYPE (CR4)
+TYPE (CR8)
+TYPE (CR9D)
+TYPE (COP)
+TYPE (COH)
+
+#undef INSTR
+#undef MNEM
+#undef TYPE

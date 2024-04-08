@@ -1,0 +1,133 @@
+% MIPS architecture documentation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seemips}{}
+
+\startchapter{MIPS}{MIPS Hardware Architecture Support}{mips}
+{This \documentation{} describes how the \ecs{} supports the MIPS32 and MIPS64 hardware architectures.
+This includes information about the assemblers, disassemblers, and the various compilers featured by the \ecs{} as well as the interoperability between these tools.}
+
+\section{Introduction}
+
+The \ecs{} features various compilers, assemblers, and disassemblers that target the MIPS32 and MIPS64 hardware architectures by MIPS Limited.
+Figure~\ref{fig:mipsdataflow} shows the data flow in-between these tools.
+
+\begin{figure}
+\flowgraph{
+\resource{intermediate\\code} \ar[d] & & \resource{assembly\\source code} \ar[d] \\
+\converter{MIPS\\Generator} \ar[r] \ar[rd] \ar[d] & \resource{assembly\\listing} \ar[r] & \converter{MIPS\\Assembler} \ar[ld] \\
+\resource{debugging\\information} & \resource{object file} \ar[d] \\
+& \converter{MIPS\\Disassembler} \ar[d] \\
+& \resource{disassembly\\listing} \\
+}\caption{Data flow within the tools targeting the MIPS32 and MIPS64 architectures}
+\label{fig:mipsdataflow}
+\end{figure}
+
+All compilers targeting the MIPS32 and MIPS64 architectures translate their programs using an intermediate code representation.
+The MIPS generator is able to translate the intermediate code representation of a program into machine code for MIPS32 and MIPS64 processors.
+It stores the resulting binary code and data in so-called object files.
+Additionally, the generator is able to create an assembly code listing of the machine code for debugging purposes.
+This assembly code listing can also be processed by the assemblers yielding exactly the same object file.
+The disassemblers are able to open object files and print a human-readable disassembly listing of their contents.
+\seeobject\seecode
+
+\section{Instruction Set}
+
+Tools targeting the MIPS32 and MIPS64 architectures support the instruction set listed in Table~\ref{tab:mipsset} and use the same assembly syntax as predefined by MIPS~\cite{mips:volume1,mips:volume2}.
+\seeassembly
+
+\instructionset{mips}{Supported MIPS32 and MIPS64 instruction set}{5}{6}
+
+The actual architecture the compilers and assemblers generate machine code for by default, is indicated by the number in the suffix of their names.
+The assemblers allow users to temporarily switch between the supported architectures by passing 32 or 64 as operand to the bit mode directive.
+The default ordering of the binary encoding of instructions is least significant octet first but can be changed using the big-endian mode directive.
+
+\section{Calling Convention}\index{Calling convention!of MIPS}
+
+The machine code generator and runtime support for the MIPS32 and MIPS64 architectures as provided by the \ecs{} use the following calling convention in order to enable interoperability.
+
+\subsection{Stack Operations}
+
+Arguments for functions are in general passed using the stack according to the intermediate code specification.
+See \Documentation{}~\documentationref{code}{Intermediate Code Representation} for more information about the role of the stack.
+Function arguments are pushed on the stack in reverse order and cleaned by the caller.
+
+\subsection{Floating-Point Support}
+
+The MIPS32 and MIPS64 architectures optionally support floating-point operations.
+The MIPS generator is able to generate native floating-point operations for processors that do support them.
+
+\subsection{Register Mapping}
+
+The special-purpose registers defined by the intermediate code representation are mapped to their corresponding physical registers in the following way:
+
+\begin{itemize}
+
+\item Result Register\alignright\texttt{\$res}\nopagebreak
+
+The intermediate code result register \texttt{\$res} is mapped to MIPS registers \texttt{r2} and \texttt{r3} depending on the size of the actual result value.
+If supported natively, floating-point results are stored in the register \texttt{f0}.
+
+\item Stack Pointer Register\alignright\texttt{\$sp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$sp} is mapped to the MIPS register \texttt{r29}.
+
+\item Frame Pointer Register\alignright\texttt{\$fp}\nopagebreak
+
+The intermediate code frame pointer register \texttt{\$fp} is mapped to the MIPS register \texttt{r30}.
+
+\item Link Register\alignright\texttt{\$lnk}\nopagebreak
+
+The intermediate code link register \texttt{\$lnk} is supported and mapped to the MIPS register \texttt{r31}.
+
+\end{itemize}
+
+All other intermediate code registers are mapped as needed to the remaining physical registers.
+Their contents and mapping are therefore considered volatile across function calls.
+Registers holding integer and address values are mapped to the general-purpose registers,
+while registers holding floating-point values are mapped to the floating-point registers.
+
+\section{Runtime Support}\index{Runtime support!for MIPS}
+
+The \ecs{} provides runtime support for the MIPS architecture and runtime environments based on this hardware architecture in object files.
+Users targeting a specific runtime environment have to use an appropriate linker together with these object files in order create an executable program.
+This section gives information about all supported runtime environments based on the MIPS hardware architecture as well as the required combination of linker and object files.
+
+Basic architectural runtime support is provided by the object files \objfile{mips32\-run} and \objfile{mips64\-run}.
+Users should always include one of these object files during linking regardless of the actual target runtime environment.
+All other object files given to the linker should target the same hardware architecture.
+
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-mips32\-run} and \libfile{cpp\-mips64\-run} library files respectively.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-mips32\-run} and \libfile{ob\-mips64\-run} library files respectively.
+\seecpp\seeoberon
+
+\section{MIPS Tools}
+
+The \ecs{} provides the following tools that are able to process object files targeting the MIPS32 and MIPS64 hardware architectures.
+\interface
+
+\cdmipsa
+\cdmipsb
+\cppmipsa
+\cppmipsb
+\falmipsa
+\falmipsb
+\obmipsa
+\obmipsb
+\mipsaasm
+\mipsbasm
+\mipsadism
+\mipsbdism
+\linkbin
+
+\concludechapter

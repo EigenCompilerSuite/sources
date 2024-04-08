@@ -1,0 +1,1723 @@
+% Generic documentation utilities
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\providecommand{\cpp}{C\texttt{++}}
+\providecommand{\opt}{_\mathit{opt}}
+\providecommand{\tool}[1]{\texttt{#1}}
+\providecommand{\version}{Version 0.0.40}
+\providecommand{\resource}[1]{*++\txt{#1}}
+\providecommand{\ecs}{Eigen Compiler Suite}
+\providecommand{\changed}[1]{\underline{#1}}
+\providecommand{\toolbox}[1]{\converter{#1}}
+\providecommand{\file}{}\renewcommand{\file}[1]{\texttt{#1}}
+\providecommand{\alignright}{\hfill\linebreak[0]\hspace*{\fill}}
+\providecommand{\converter}[1]{*++[F][F*:white][F,:gray]\txt{#1}}
+\providecommand{\documentation}{\ifbook chapter\else document\fi}
+\providecommand{\Documentation}{\ifbook Chapter\else Document\fi}
+\providecommand{\variable}[1]{\resource{\texttt{\small#1}\\variable}}
+\providecommand{\documentationref}[2]{\ifbook\ref{#1}\else``\href{#1}{#2}''~\cite{#1}\fi}
+\providecommand{\objfile}[1]{\texttt{#1}\index[runtime]{#1 object file@\texttt{#1} object file}}
+\providecommand{\libfile}[1]{\texttt{#1}\index[runtime]{#1 library file@\texttt{#1} library file}}
+\providecommand{\epigraph}[2]{\ifbook\begin{quote}\flushright\textit{#1}\par--- #2\end{quote}\fi}
+\providecommand{\environmentvariable}[1]{\texttt{#1}\index{Environment variables!#1@\texttt{#1}}}
+\providecommand{\environment}[1]{\texttt{#1}\index[environment]{#1 environment@\texttt{#1} environment}}
+\providecommand{\toolsection}{}\renewcommand{\toolsection}[1]{\subsection{#1}\label{\prefix:#1}\tool{#1}}
+\providecommand{\instruction}{}\renewcommand{\instruction}[2]{\noindent\qquad\pdftooltip{\texttt{#1}}{#2}\refstepcounter{instruction}\par}
+\providecommand{\flowgraph}{}\renewcommand{\flowgraph}[1]{\par\sffamily\begin{displaymath}\xymatrix@=4ex{#1}\end{displaymath}\normalfont\par}
+\providecommand{\instructionset}{}\renewcommand{\instructionset}[4]{\setcounter{instruction}{0}\begin{multicols}{\ifbook#3\else#4\fi}[{\captionof{table}[#2]{#2 (\ref*{#1:instructions}~instructions)}\label{tab:#1set}\vspace{-2ex}}]\footnotesize\raggedcolumns\input{#1.set}\label{#1:instructions}\end{multicols}}
+
+\providecommand{\gpl}{GNU General Public License}
+\providecommand{\rse}{ECS Runtime Support Exception}
+\providecommand{\fdl}{\href{https://www.gnu.org/licenses/fdl.html}{GNU Free Documentation License}}
+
+\providecommand{\docbegin}{}
+\providecommand{\docend}{}
+\providecommand{\doclabel}[1]{\hypertarget{#1}}
+\providecommand{\doclink}[2]{\hyperlink{#1}{#2}}
+\providecommand{\docsection}[3]{\hypertarget{#1}{\subsection{#2}}\label{sec:#1}\index[library]{#2@#3}}
+\providecommand{\docsectionstar}[1]{}
+\providecommand{\docsubbegin}{\begin{description}}
+\providecommand{\docsubend}{\end{description}}
+\providecommand{\docsubsection}[3]{\item[\hypertarget{#1}{#2}]\index[library]{#2@#3}}
+\providecommand{\docsubsectionstar}[1]{\smallskip}
+\providecommand{\docsubsubsection}[3]{\docsubsection{#1}{#2}{#3}}
+\providecommand{\docsubsubsectionstar}[1]{}
+\providecommand{\docsubsubsubsection}[3]{}
+\providecommand{\docsubsubsubsectionstar}[1]{}
+\providecommand{\doctable}{}
+
+\providecommand{\debuggingtool}{}\renewcommand{\debuggingtool}{This tool is provided for debugging purposes.
+It allows exposing and modifying an internal data structure that is usually not accessible.
+}
+
+\providecommand{\interface}{All tools accept command-line arguments which are taken as names of plain text files containing the source code.
+If no arguments are provided, the standard input stream is used instead.
+Output files are generated in the current working directory and have the same name as the input file being processed whereas the filename extension gets replaced by an appropriate suffix.
+\seeinterface
+}
+
+\providecommand{\license}{\noindent Copyright \copyright{} Florian Negele\par\medskip\noindent
+Permission is granted to copy, distribute and/or modify this document under the terms of the
+\fdl{}, Version 1.3 or any later version published by the \href{https://fsf.org/}{Free Software Foundation}.
+}
+
+\providecommand{\ecslogosurface}{
+\fill[darkgray] (0,0,0) -- (0,0,3) -- (0,3,3) -- (0,3,1) -- (0,4,1) -- (0,4,3) -- (0,5,3) -- (0,5,0) -- (0,2,0) -- (0,2,2) -- (0,1,2) -- (0,1,0) -- cycle;
+\fill[gray] (0,5,0) -- (0,5,3) -- (1,5,3) -- (1,5,1) -- (2,5,1) -- (2,5,3) -- (3,5,3) -- (3,5,0) -- cycle;
+\fill[lightgray] (0,0,0) -- (0,1,0) -- (2,1,0) -- (2,4,0) -- (1,4,0) -- (1,3,0) -- (2,3,0) -- (2,2,0) -- (0,2,0) -- (0,5,0) -- (3,5,0) -- (3,0,0) -- cycle;
+\begin{scope}[line width=0.5]
+\begin{scope}[gray]
+\draw (0,0,0) -- (0,1,0);
+\draw (2,1,0) -- (2,2,0);
+\draw (0,1,2) -- (0,2,2);
+\draw (0,2,0) -- (0,5,0);
+\draw (2,3,0) -- (2,4,0);
+\end{scope}
+\begin{scope}[lightgray]
+\draw (0,1,0) -- (0,1,2);
+\draw (0,3,1) -- (0,3,3);
+\draw (0,5,0) -- (0,5,3);
+\draw (2,5,1) -- (2,5,3);
+\end{scope}
+\begin{scope}[white]
+\draw (0,1,0) -- (2,1,0);
+\draw (1,3,0) -- (2,3,0);
+\draw (0,5,0) -- (3,5,0);
+\end{scope}
+\end{scope}
+}
+
+\providecommand{\ecslogo}[1]{
+\begin{tikzpicture}[scale={(#1)/((sin(45)+cos(45))*3cm)},x={({-cos(45)*1cm},{sin(45)*sin(30)*1cm})},y={({0cm},{(cos(30)*1cm})},z={({sin(45)*1cm},{cos(45)*sin(30)*1cm})}]
+\begin{scope}[darkgray,line width=1]
+\draw (0,0,0) -- (0,0,3) -- (0,3,3) -- (2,3,3) -- (2,5,3) -- (3,5,3) -- (3,5,0) -- (3,0,0) -- cycle;
+\draw (0,3,1) -- (0,4,1) -- (0,4,3) -- (0,5,3) -- (1,5,3) -- (1,5,1) -- (2,5,1);
+\draw (1,3,0) -- (1,4,0) -- (2,4,0);
+\end{scope}
+\fill[darkgray] (2,0,0) -- (2,0,3) -- (2,5,3) -- (2,5,1) -- (2,4,1) -- (2,4,0) -- cycle;
+\fill[lightgray] (2,0,2) -- (0,0,2) -- (0,2,2) -- (2,2,2) -- cycle;
+\fill[gray] (0,1,0) -- (2,1,0) -- (2,1,2) -- (0,1,2) -- cycle;
+\fill[gray] (0,3,1) -- (0,3,3) -- (2,3,3) -- (2,3,0) -- (1,3,0) -- (1,3,1) -- cycle;
+\ecslogosurface
+\end{tikzpicture}
+}
+
+\providecommand{\shadowedecslogo}[3]{
+\begin{tikzpicture}[scale={(#1)/((sin(#2)+cos(#2))*3cm)},x={({-cos(#2)*1cm},{sin(#2)*sin(#3)*1cm})},y={({0cm},{(cos(#3)*1cm})},z={({sin(#2)*1cm},{cos(#2)*sin(#3)*1cm})}]
+\shade[top color=lightgray!50!white,bottom color=white,middle color=lightgray!50!white] (0,0,0) -- (3,0,0) -- (3,{-0.5-3*sin(#2)*sin(#3)/cos(#3)},0) -- (0,-0.5,0) -- cycle;
+\shade[top color=darkgray!50!gray,bottom color=white,middle color=darkgray!50!white] (0,0,0) -- (0,0,3) -- (0,{-0.5-3*cos(#2)*sin(#3)/cos(#3)},3) -- (0,-0.5,0) -- cycle;
+\begin{scope}[y={({(cos(#2)+sin(#2))*0.5cm},{(cos(#2)*sin(#3)-sin(#2)*sin(#3))*0.5cm})}]
+\useasboundingbox (3,0,0) -- (0,0,0) -- (0,0,3);
+\shade[left color=darkgray!80!black,right color=lightgray,middle color=gray] (0,0,0) -- (0,1,0) -- (0,1,0.5) -- (0,2,0) -- (0,5,0) -- (0,5,3) -- (1,5,3) -- (1,4,3) -- (1,4,2.5) -- (1,3,3) -- (2,5,3) -- (3,5,3) -- (3,0,3) -- cycle;
+\clip (0,0,0) -- (0,0,3) -- ({-3*sin(#2)/cos(#2)},0,0) -- cycle;
+\shade[left color=darkgray,right color=lightgray!50!gray] (0,0,0) -- (0,1,0) -- (0,1,0.5) -- (0,2,0) -- (0,5,0) -- (0,5,3) -- (1,5,3) -- (1,4,3) -- (1,4,2.5) -- (1,3,3) -- (2,5,3) -- (3,5,3) -- (3,0,3) -- cycle;
+\end{scope}
+\shade[left color=darkgray,right color=darkgray!80!black] (2,0,0) -- (2,0,3) -- (2,5,3) -- (2,5,1) -- (2,4,1) -- (2,4,0) -- cycle;
+\shade[left color=darkgray!90!black,right color=gray!80!darkgray] (2,0,2) -- (0,0,2) -- (0,2,2) -- (2,2,2) -- cycle;
+\shade[top color=darkgray!90!black,bottom color=gray!80!darkgray] (0,1,0) -- (2,1,0) -- (2,1,2) -- (0,1,2) -- cycle;
+\shade[top color=darkgray!90!black,bottom color=gray!80!darkgray] (0,3,1) -- (0,3,3) -- (2,3,3) -- (2,3,0) -- (1,3,0) -- (1,3,1) -- cycle;
+\fill[gray] (2,1,0) -- (1.5,1,0.5) -- (0,1,0.5) -- (0,1,0) -- cycle;
+\fill[gray] (1,3,2) -- (0.5,3,2) -- (0.5,3,3) -- (1,3,3) -- cycle;
+\fill[gray] (2,3,0) -- (1.5,3,0.5) -- (1,3,0.5) -- (1,3,0) -- cycle;
+\ecslogosurface
+\end{tikzpicture}
+}
+
+\providecommand{\cpplogo}[1]{
+\begin{tikzpicture}[scale=(#1)/512em]
+\fill[gray] (435.2794,398.7159) -- (247.1911,507.3075) .. controls (236.3563,513.5642) and (218.6240,513.5642) .. (207.7892,507.3075) -- (19.7009,398.7159) .. controls (8.8646,392.4606) and (0.0000,377.1043) .. (0.0000,364.5924) -- (0.0000,147.4076) .. controls (0.8430,132.8363) and (8.2856,120.7683) .. (19.7009,113.2842) -- (207.7892,4.6926) .. controls (218.6240,-1.5642) and (236.3564,-1.5642) .. (247.1911,4.6926) -- (435.2794,113.2842) .. controls (447.5273,121.4304) and (454.4987,133.6918) .. (454.9803,147.4076) -- (454.9803,364.5924) .. controls (454.5404,377.7571) and (446.6566,391.0351) .. (435.2794,398.7159) -- cycle(75.8301,255.9993) .. controls (74.9389,404.0881) and (273.2892,469.4783) .. (358.8263,331.8769) -- (293.1917,293.8965) .. controls (253.5702,359.4301) and (155.1909,335.9977) .. (151.6601,255.9993) .. controls (152.7204,182.2703) and (249.4137,148.0211) .. (293.1961,218.1065) -- (358.8308,180.1276) .. controls (283.4477,49.2645) and (79.6318,96.3470) .. (75.8301,255.9993) -- cycle(379.1503,247.5747) -- (362.2982,247.5747) -- (362.2982,230.7226) -- (345.4490,230.7226) -- (345.4490,247.5747) -- (328.5969,247.5747) -- (328.5969,264.4254) -- (345.4490,264.4254) -- (345.4490,281.2759) -- (362.2982,281.2759) -- (362.2982,264.4254) -- (379.1503,264.4254) -- cycle(442.3420,247.5747) -- (425.4899,247.5747) -- (425.4899,230.7226) -- (408.6408,230.7226) -- (408.6408,247.5747) -- (391.7886,247.5747) -- (391.7886,264.4254) -- (408.6408,264.4254) -- (408.6408,281.2759) -- (425.4899,281.2759) -- (425.4899,264.4254) -- (442.3420,264.4254) -- cycle;
+\end{tikzpicture}
+}
+
+\providecommand{\fallogo}[1]{
+\begin{tikzpicture}[scale=(#1)/512em]
+\fill[gray] (185.7774,0.0000) .. controls (200.4486,15.9798) and (226.8966,8.7148) .. (235.0426,31.5836) .. controls (249.5297,58.0598) and (247.9581,97.9161) .. (280.3335,110.9762) .. controls (309.1690,120.3496) and (337.8406,104.2727) .. (366.5753,103.9379) .. controls (373.4449,111.5171) and (379.2885,128.2574) .. (383.9755,108.9744) .. controls (396.6979,102.5615) and (437.2808,107.6681) .. (426.9652,124.3252) .. controls (408.9822,121.0785) and (412.4742,146.0729) .. (426.5192,131.4996) .. controls (433.8413,120.8489) and (465.1541,126.5522) .. (441.9067,135.7950) .. controls (396.1879,157.7478) and (344.1112,161.5079) .. (298.5528,183.5702) .. controls (277.7471,193.5198) and (284.6941,218.7163) .. (285.2127,236.9640) .. controls (292.3599,316.2826) and (307.3929,394.6311) .. (317.1198,473.6154) .. controls (329.0637,505.4736) and (292.1195,528.5004) .. (265.9183,511.2761) .. controls (237.9284,499.2462) and (237.3684,465.2681) .. (230.9102,439.9421) .. controls (218.6692,374.3397) and (215.6307,306.9662) .. (198.1732,242.3977) .. controls (183.1379,232.7444) and (164.4245,256.0298) .. (149.0430,261.4799) .. controls (116.9328,279.2585) and (87.1822,308.5851) .. (48.2293,307.8914) .. controls (21.3220,306.9037) and (-15.9107,281.8761) .. (7.2921,252.7908) .. controls (29.7799,220.6177) and (67.5177,204.3028) .. (100.9287,185.9449) .. controls (130.8217,170.8906) and (161.1548,156.5903) .. (191.0278,141.5847) .. controls (196.1738,120.0520) and (186.6049,95.2409) .. (186.8382,72.4353) .. controls (185.5234,48.4204) and (183.1700,23.9341) .. (185.7774,0.0000) -- cycle;
+\end{tikzpicture}
+}
+
+\providecommand{\oblogo}[1]{
+\begin{tikzpicture}[scale=(#1)/512em]
+\fill[gray] (160.3865,208.9117) .. controls (154.0879,214.6478) and (149.0735,221.2409) .. (145.4125,228.5384) .. controls (184.8790,248.4273) and (234.7122,269.8787) .. (297.5493,291.8782) .. controls (300.3943,281.4769) and (300.9552,268.7619) .. (300.4023,255.2389) .. controls (248.9909,244.7891) and (200.0310,225.9279) .. (160.3865,208.9117) -- cycle(225.7398,392.6996) .. controls (308.0209,392.1716) and (359.3326,345.9277) .. (368.7203,285.2098) .. controls (376.6742,197.1784) and (311.7194,141.3342) .. (205.4287,142.1456) .. controls (139.9485,141.4804) and (88.7155,166.1957) .. (73.5775,228.0086) .. controls (52.0297,320.3408) and (123.4078,391.0103) .. (225.7398,392.6996) -- cycle(216.0739,176.4733) .. controls (268.9183,179.2424) and (315.8292,206.5488) .. (312.7454,265.1139) .. controls (313.2769,315.6384) and (286.5993,353.4946) .. (216.6040,355.7934) .. controls (162.4657,355.7934) and (126.0914,317.5023) .. (126.0914,260.5103) .. controls (126.1733,214.2900) and (163.3363,176.2849) .. (216.0739,176.4733) -- cycle(76.4897,189.1754) .. controls (13.1586,147.5631) and (0.0000,119.4207) .. (0.0000,119.4207) -- (90.6499,170.1632) .. controls (85.3004,175.8497) and (80.5994,182.1633) .. (76.4897,189.1754) -- cycle(353.9486,119.3004) -- (402.9482,119.3004) .. controls (427.0025,137.0797) and (450.9893,162.7034) .. (474.9529,191.0213) .. controls (509.3540,228.5339) and (531.3391,294.2091) .. (487.8149,312.1206) .. controls (462.8165,324.7652) and (394.3874,316.8943) .. (373.8912,313.6651) .. controls (379.9291,297.7449) and (383.2899,278.4204) .. (381.4989,257.7214) .. controls (420.3069,248.0321) and (421.9610,218.3461) .. (407.7867,192.6417) .. controls (391.1113,162.4018) and (370.1114,132.9097) .. (353.9486,119.3004) -- cycle;
+\end{tikzpicture}
+}
+
+\providecommand{\markuptable}{
+\begin{table}
+\sffamily\centering
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\texttt{//italics//} & $\rightarrow$ & \textit{italics} \\
+\midrule
+\texttt{**bold**} & $\rightarrow$ & \textbf{bold} \\
+\midrule
+\texttt{\# ordered list} & & 1 ordered list \\
+\texttt{\# second item} & $\rightarrow$ & 2 second item \\
+\texttt{\#\# sub item} & & \hspace{1em} 1 sub item \\
+\midrule
+\texttt{* unordered list} & & $\bullet$ unordered list \\
+\texttt{* second item} & $\rightarrow$ & $\bullet$ second item \\
+\texttt{** sub item} & & \hspace{1em} $\bullet$ sub item \\
+\midrule
+\texttt{link to [[label]]} & $\rightarrow$ & link to \underline{label} \\
+\midrule
+\texttt{<{}<label>{}> definition } & $\rightarrow$ & definition \\
+\midrule
+\texttt{[[url|link name]]} & $\rightarrow$ & \underline{link name} \\
+\midrule\addlinespace
+\texttt{= large heading} & & {\Large large heading} \smallskip \\
+\texttt{== medium heading} & $\rightarrow$ & {\large medium heading} \\
+\texttt{=== small heading} & & small heading \\
+\midrule
+\texttt{no line break} & & no line break for paragraphs \\
+\texttt{for paragraphs} & $\rightarrow$ \\
+& & use empty line \\
+\texttt{use empty line} \\
+\midrule
+\texttt{force\textbackslash\textbackslash line break} & $\rightarrow$ & force \\
+& & line break \\
+\midrule
+\texttt{horizontal line} & $\rightarrow$ & horizontal line \\
+\texttt{----} & & \hrulefill \\
+\midrule
+\texttt{|=a|=table|=header} & & \underline{a \enspace table \enspace header} \\
+\texttt{|a|table|row} & $\rightarrow$ & a \enspace table \enspace row \\
+\texttt{|b|table|row} & & b \enspace table \enspace row \\
+\midrule
+\texttt{\{\{\{} \\
+\texttt{unformatted} & $\rightarrow$ & \texttt{unformatted} \\
+\texttt{code} & & \texttt{code} \\
+\texttt{\}\}\}} \\
+\midrule\addlinespace
+\texttt{@ new article} & & {\Large 1.\ new article} \smallskip \\
+\texttt{@ second article} & $\rightarrow$ & {\Large 2.\ second article} \smallskip \\
+\texttt{@@ sub article} & & {\large 2.1.\ sub article} \\
+\bottomrule
+\end{tabular}
+\normalfont\caption{Elements of the generic documentation markup language}
+\label{tab:docmarkup}
+\end{table}
+}
+
+\providecommand{\startchapter}[4]{
+\documentclass[11pt,a4paper]{article}
+\usepackage{booktabs}
+\usepackage[format=hang,labelfont=bf]{caption}
+\usepackage{changepage}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage[american]{isodate}
+\usepackage{lmodern}
+\usepackage{longtable}
+\usepackage{mathptmx}
+\usepackage{microtype}
+\usepackage[toc]{multitoc}
+\usepackage{multirow}
+\usepackage[all]{nowidow}
+\usepackage{pdfcomment}
+\usepackage{syntax}
+\usepackage{tikz}
+\usepackage[all]{xy}
+\hypersetup{pdfborder={0 0 0},bookmarksnumbered=true,pdftitle={\ecs{}: #2},pdfauthor={Florian Negele},pdfsubject={\ecs{}},pdfkeywords={#1}}
+\setlength{\grammarindent}{8em}\setlength{\grammarparsep}{0.2ex}
+\setlength{\columnsep}{2em}
+\newcommand{\prefix}{}
+\newcounter{instruction}
+\bibliographystyle{unsrt}
+\renewcommand{\index}[2][]{}
+\renewcommand{\arraystretch}{1.05}
+\renewcommand{\floatpagefraction}{0.7}
+\renewcommand{\syntleft}{\itshape}\renewcommand{\syntright}{}
+\title{\vspace{-5ex}\Huge{\ecs{}}\medskip\hrule}
+\author{\huge{#2}}
+\date{\medskip\version}
+\newif\ifbook\bookfalse
+\pagestyle{headings}
+\frenchspacing
+\begin{document}
+\maketitle\thispagestyle{empty}\noindent#4\setlength{\columnseprule}{0.4pt}\tableofcontents\setlength{\columnseprule}{0pt}\vfill\pagebreak[3]\null\vfill\bigskip\noindent
+\parbox{\textwidth-4em}{\license The contents of this \documentation{} are part of the \href{manual}{\ecs{} User Manual}~\cite{manual} and correspond to Chapter ``\href{manual\##3}{#1}''.\alignright\mbox{\today}}
+\parbox{4em}{\flushright\ecslogo{3em}}
+\clearpage
+}
+
+\providecommand{\concludechapter}{
+\vfill\pagebreak[3]\null\vfill
+\thispagestyle{myheadings}\markright{REFERENCES}
+\noindent\begin{minipage}{\textwidth}\begin{multicols}{2}[\section*{References}]
+\renewcommand{\section}[2]{}\small\bibliography{references}
+\end{multicols}\end{minipage}\end{document}
+}
+
+\providecommand{\startpresentation}[2]{
+\documentclass[14pt,aspectratio=43,usepdftitle=false]{beamer}
+\usepackage{booktabs}
+\usepackage{etex}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage[all]{xy}
+\bibliographystyle{unsrt}
+\setlength{\columnsep}{1em}
+\setlength{\leftmargini}{1em}
+\setbeamercolor{title}{fg=black}
+\setbeamercolor{structure}{fg=darkgray}
+\setbeamercolor{bibliography item}{fg=darkgray}
+\setbeamerfont{title}{series=\bfseries}
+\setbeamerfont{subtitle}{series=\normalfont}
+\setbeamerfont*{frametitle}{parent=title}
+\setbeamerfont{block title}{series=\bfseries}
+\setbeamerfont*{framesubtitle}{parent=subtitle}
+\setbeamersize{text margin left=1em,text margin right=1em}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}[circle]{}
+\setbeamertemplate{bibliography item}[triangle]{}
+\setbeamertemplate{bibliography entry author}{\usebeamercolor[fg]{bibliography item}}
+\setbeamertemplate{frametitle}{\medskip\usebeamerfont{frametitle}\color{gray}\raisebox{-2.5ex}[0ex][0ex]{\rule{0.1em}{4.5ex}}}
+\addtobeamertemplate{frametitle}{}{\hspace{0.4em}\usebeamercolor[fg]{title}\insertframetitle\par\vspace{0.2ex}\hspace{0.5em}\usebeamerfont{framesubtitle}\insertframesubtitle}
+\hypersetup{pdfborder={0 0 0},bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=0,pdftitle={\ecs{}: #1},pdfauthor={Florian Negele},pdfsubject={\ecs{}},pdfkeywords={#1}}
+\renewcommand{\flowgraph}[1]{\resizebox{\textwidth}{!}{$$\xymatrix{##1}$$}}
+\title{\ecs{}\medskip\hrule\medskip}
+\institute{\shadowedecslogo{5em}{30}{15}}
+\date{\version}
+\subtitle{#1}
+\begin{document}
+\begin{frame}[plain]\titlepage\nocite{manual}\end{frame}
+\begin{frame}{Contents}{#1}\begin{center}\tableofcontents\end{center}\end{frame}
+}
+
+\providecommand{\concludepresentation}{
+\begin{frame}{References}\begin{footnotesize}\setlength{\columnseprule}{0.4pt}\begin{multicols}{2}\bibliography{references}\end{multicols}\end{footnotesize}\end{frame}
+\end{document}
+}
+
+\providecommand{\startbook}[1]{
+\documentclass[10pt,paper=17cm:24cm,DIV=13,twoside=semi,headings=normal,numbers=noendperiod,cleardoublepage=plain]{scrbook}
+\usepackage{atveryend}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{changepage}
+\usepackage[T1]{fontenc}
+\usepackage{imakeidx}
+\usepackage{hyperref}
+\usepackage[american]{isodate}
+\usepackage{lmodern}
+\usepackage{longtable}
+\usepackage{mathptmx}
+\usepackage[final]{microtype}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage[all]{nowidow}
+\usepackage{pdfcomment}
+\usepackage{scrlayer-scrpage}
+\usepackage{setspace}
+\usepackage{syntax}
+\usepackage[eventxtindent=4pt,oddtxtexdent=4pt]{thumbs}
+\usepackage{tikz}
+\usepackage[all]{xy}
+\hyphenation{Micro-Blaze Open-Cores Open-RISC Power-PC}
+\hypersetup{pdfborder={0 0 0},bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=0,pdftitle={\ecs{}: #1},pdfauthor={Florian Negele},pdfsubject={\ecs{}},pdfkeywords={#1}}
+\setlength{\grammarindent}{8em}\setlength{\grammarparsep}{0.7ex}
+\setkomafont{captionlabel}{\usekomafont{descriptionlabel}}
+\renewcommand{\arraystretch}{1.05}\setstretch{1.1}
+\renewcommand{\chapterformat}{\thechapter\autodot\enskip\raisebox{-1ex}[0ex][0ex]{\color{gray}\rule{0.1em}{3.5ex}}\enskip}
+\renewcommand{\startchapter}[4]{\hypertarget{##3}{\chapter{##1}}\label{##3}##4\addthumb{##1}{\LARGE\sffamily\bfseries\thechapter}{white}{gray}\renewcommand{\prefix}{##3}}
+\renewcommand{\concludechapter}{\clearpage{\stopthumb\cleardoublepage}}
+\renewcommand{\syntleft}{\itshape}\renewcommand{\syntright}{}
+\renewcommand{\floatpagefraction}{0.7}
+\renewcommand{\partheademptypage}{}
+\DeclareMicrotypeAlias{lmss}{cmr}
+\newcommand{\prefix}{}
+\newcounter{instruction}
+\bibliographystyle{unsrt}
+\newif\ifbook\booktrue
+\makeindex[intoc,title=Index]
+\makeindex[intoc,name=tools,title=Index of Tools,columns=3]
+\makeindex[intoc,name=library,title=Index of Library Names]
+\makeindex[intoc,name=runtime,title=Index of Runtime Support]
+\makeindex[intoc,name=environment,title=Index of Target Environments]
+\indexsetup{toclevel=chapter,headers={\indexname}{\indexname}}
+\frenchspacing
+\begin{document}
+\pagenumbering{alph}
+\begin{titlepage}\centering
+\huge\sffamily\null\vfill\textbf{\ecs{}}\bigskip\hrule\bigskip#1
+\normalsize\normalfont\vfill\vfill\shadowedecslogo{10em}{30}{15}
+\large\vfill\vfill\version
+\end{titlepage}
+\null\vfill
+\thispagestyle{empty}
+\noindent\today\par\medskip
+\license A copy of this license is included in Appendix~\ref{fdl} on page~\pageref{fdl}.
+All product names used herein are for identification purposes only and may be trademarks of their respective companies.
+\concludechapter
+\frontmatter
+\setcounter{tocdepth}{1}
+\tableofcontents
+\setcounter{tocdepth}{2}
+\concludechapter
+\listoffigures
+\concludechapter
+\listoftables
+\concludechapter
+}
+
+\providecommand{\concludebook}{
+\backmatter
+\addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}
+\phantomsection\addcontentsline{toc}{part}{Bibliography}
+\bibliography{references}
+\concludechapter
+\phantomsection\addcontentsline{toc}{part}{Indexes}
+\printindex
+\concludechapter
+\indexprologue{\label{idx:tools}}
+\printindex[tools]
+\concludechapter
+\printindex[library]
+\concludechapter
+\indexprologue{\label{idx:runtime}}
+\printindex[runtime]
+\concludechapter
+\indexprologue{\label{idx:environment}}
+\printindex[environment]
+\concludechapter
+\pagestyle{empty}\pagenumbering{Alph}\null\clearpage
+\null\vfill\centering\ecslogo{4em}\par\medskip\license
+\end{document}
+}
+
+% chapter references
+
+\providecommand{\seedocumentationref}{}\renewcommand{\seedocumentationref}[3]{#1, see \Documentation{}~\documentationref{#2}{#3}. }
+\providecommand{\seeinterface}{}\renewcommand{\seeinterface}{\ifbook See \Documentation{}~\documentationref{interface}{User Interface} for more information about the common user interface of all of these tools. \fi}
+\providecommand{\seeguide}{}\renewcommand{\seeguide}{\seedocumentationref{For basic examples of using some of these tools in practice}{guide}{User Guide}}
+\providecommand{\seecpp}{}\renewcommand{\seecpp}{\seedocumentationref{For more information about the \cpp{} programming language and its implementation by the \ecs{}}{cpp}{User Manual for \cpp{}}}
+\providecommand{\seefalse}{}\renewcommand{\seefalse}{\seedocumentationref{For more information about the FALSE programming language and its implementation by the \ecs{}}{false}{User Manual for FALSE}}
+\providecommand{\seeoberon}{}\renewcommand{\seeoberon}{\seedocumentationref{For more information about the Oberon programming language and its implementation by the \ecs{}}{oberon}{User Manual for Oberon}}
+\providecommand{\seeassembly}{}\renewcommand{\seeassembly}{\seedocumentationref{For more information about the generic assembly language and how to use it}{assembly}{Generic Assembly Language Specification}}
+\providecommand{\seeamd}{}\renewcommand{\seeamd}{\seedocumentationref{For more information about how the \ecs{} supports the AMD64 hardware architecture}{amd64}{AMD64 Hardware Architecture Support}}
+\providecommand{\seearm}{}\renewcommand{\seearm}{\seedocumentationref{For more information about how the \ecs{} supports the ARM hardware architecture}{arm}{ARM Hardware Architecture Support}}
+\providecommand{\seeavr}{}\renewcommand{\seeavr}{\seedocumentationref{For more information about how the \ecs{} supports the AVR hardware architecture}{avr}{AVR Hardware Architecture Support}}
+\providecommand{\seeavrtt}{}\renewcommand{\seeavrtt}{\seedocumentationref{For more information about how the \ecs{} supports the AVR32 hardware architecture}{avr32}{AVR32 Hardware Architecture Support}}
+\providecommand{\seemabk}{}\renewcommand{\seemabk}{\seedocumentationref{For more information about how the \ecs{} supports the M68000 hardware architecture}{m68k}{M68000 Hardware Architecture Support}}
+\providecommand{\seemibl}{}\renewcommand{\seemibl}{\seedocumentationref{For more information about how the \ecs{} supports the MicroBlaze hardware architecture}{mibl}{MicroBlaze Hardware Architecture Support}}
+\providecommand{\seemips}{}\renewcommand{\seemips}{\seedocumentationref{For more information about how the \ecs{} supports the MIPS32 and MIPS64 hardware architectures}{mips}{MIPS Hardware Architecture Support}}
+\providecommand{\seemmix}{}\renewcommand{\seemmix}{\seedocumentationref{For more information about how the \ecs{} supports the MMIX hardware architecture}{mmix}{MMIX Hardware Architecture Support}}
+\providecommand{\seeorok}{}\renewcommand{\seeorok}{\seedocumentationref{For more information about how the \ecs{} supports the OpenRISC 1000 hardware architecture}{or1k}{OpenRISC 1000 Hardware Architecture Support}}
+\providecommand{\seeppc}{}\renewcommand{\seeppc}{\seedocumentationref{For more information about how the \ecs{} supports the PowerPC hardware architecture}{ppc}{PowerPC Hardware Architecture Support}}
+\providecommand{\seerisc}{}\renewcommand{\seerisc}{\seedocumentationref{For more information about how the \ecs{} supports the RISC hardware architecture}{risc}{RISC Hardware Architecture Support}}
+\providecommand{\seewasm}{}\renewcommand{\seewasm}{\seedocumentationref{For more information about how the \ecs{} supports the WebAssembly architecture}{wasm}{WebAssembly Architecture Support}}
+\providecommand{\seedocumentation}{}\renewcommand{\seedocumentation}{\seedocumentationref{For more information about generic documentations and their generation by the \ecs{}}{documentation}{Generic Documentation Generation}}
+\providecommand{\seedebugging}{}\renewcommand{\seedebugging}{\seedocumentationref{For more information about debugging information and its representation}{debugging}{Debugging Information Representation}}
+\providecommand{\seecode}{}\renewcommand{\seecode}{\seedocumentationref{For more information about intermediate code and its purpose}{code}{Intermediate Code Representation}}
+\providecommand{\seeobject}{}\renewcommand{\seeobject}{\seedocumentationref{For more information about object files and their purpose}{object}{Object File Representation}}
+
+% generic documentation tools
+
+\providecommand{\docprint}{
+\toolsection{docprint} is a pretty printer for generic documentations.
+It reformats generic documentations and writes it to the standard output stream.
+\debuggingtool
+\flowgraph{\resource{generic\\documentation} \ar[r] & \toolbox{docprint} \ar[r] & \resource{generic\\documentation}}
+\seedocumentation
+}
+
+\providecommand{\doccheck}{
+\toolsection{doccheck} is a syntactic and semantic checker for generic documentations.
+It just performs syntactic and semantic checks on generic documentations and writes its diagnostic messages to the standard error stream.
+\debuggingtool
+\flowgraph{\resource{generic\\documentation} \ar[r] & \toolbox{doccheck} \ar[r] & \resource{diagnostic\\messages}}
+\seedocumentation
+}
+
+\providecommand{\dochtml}{
+\toolsection{dochtml} is an HTML documentation generator for generic documentations.
+It processes several generic documentations and assembles all information therein into an HTML document.
+\debuggingtool
+\flowgraph{\resource{generic\\documentation} \ar[r] & \toolbox{dochtml} \ar[r] & \resource{HTML\\document}}
+\seedocumentation
+}
+
+\providecommand{\doclatex}{
+\toolsection{doclatex} is a Latex documentation generator for generic documentations.
+It processes several generic documentations and assembles all information therein into a Latex document.
+\debuggingtool
+\flowgraph{\resource{generic\\documentation} \ar[r] & \toolbox{doclatex} \ar[r] & \resource{Latex\\document}}
+\seedocumentation
+}
+
+% intermediate code tools
+
+\providecommand{\cdcheck}{
+\toolsection{cdcheck} is a syntactic and semantic checker for intermediate code.
+It just performs syntactic and semantic checks on programs written in intermediate code and writes its diagnostic messages to the standard error stream.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdcheck} \ar[r] & \resource{diagnostic\\messages}}
+\seeassembly\seecode
+}
+
+\providecommand{\cdopt}{
+\toolsection{cdopt} is an optimizer for intermediate code.
+It performs various optimizations on programs written in intermediate code and writes the result to the standard output stream.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdopt} \ar[r] & \resource{optimized\\code}}
+\seeassembly\seecode
+}
+
+\providecommand{\cdrun}{
+\toolsection{cdrun} is an interpreter for intermediate code.
+It processes and executes programs written in intermediate code.
+The following code sections are predefined and have the usual semantics:
+\texttt{abort}, \texttt{\_Exit}, \texttt{fflush}, \texttt{floor}, \texttt{fputc}, \texttt{free}, \texttt{getchar}, \texttt{malloc}, and \texttt{putchar}.
+Diagnostic messages about invalid operations include the name of the executed code section and the index of the erroneous instruction.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdrun} \ar@/u/[r] & \resource{input/\\output} \ar@/d/[l]}
+\seeassembly\seecode
+}
+
+\providecommand{\cdamda}{
+\toolsection{cdamd16} is a compiler for intermediate code targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in intermediate code and stores it in corresponding object files.
+The compiler generates machine code for the 16-bit operating mode defined by the AMD64 architecture.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdamd16} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeamd\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdamdb}{
+\toolsection{cdamd32} is a compiler for intermediate code targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in intermediate code and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the AMD64 architecture.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdamd32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeamd\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdamdc}{
+\toolsection{cdamd64} is a compiler for intermediate code targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in intermediate code and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the AMD64 architecture.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdamd64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeamd\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdarma}{
+\toolsection{cdarma32} is a compiler for intermediate code targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A32 instructions from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdarma32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seearm\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdarmb}{
+\toolsection{cdarma64} is a compiler for intermediate code targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A64 instructions from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdarma64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seearm\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdarmc}{
+\toolsection{cdarmt32} is a compiler for intermediate code targeting the ARM hardware architecture.
+It generates machine code for ARM processors without floating-point extension executing T32 instructions from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdarmt32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seearm\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdarmcfpe}{
+\toolsection{cdarmt32fpe} is a compiler for intermediate code targeting the ARM hardware architecture.
+It generates machine code for ARM processors with floating-point extension executing T32 instructions from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdarmt32fpe} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seearm\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdavr}{
+\toolsection{cdavr} is a compiler for intermediate code targeting the AVR hardware architecture.
+It generates machine code for AVR processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdavr} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeavr\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdavrtt}{
+\toolsection{cdavr32} is a compiler for intermediate code targeting the AVR32 hardware architecture.
+It generates machine code for AVR32 processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdavr32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeavrtt\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdmabk}{
+\toolsection{cdm68k} is a compiler for intermediate code targeting the M68000 hardware architecture.
+It generates machine code for M68000 processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdm68k} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seemabk\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdmibl}{
+\toolsection{cdmibl} is a compiler for intermediate code targeting the MicroBlaze hardware architecture.
+It generates machine code for MicroBlaze processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdmibl} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seemibl\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdmipsa}{
+\toolsection{cdmips32} is a compiler for intermediate code targeting the MIPS32 hardware architecture.
+It generates machine code for MIPS32 processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdmips32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seemips\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdmipsb}{
+\toolsection{cdmips64} is a compiler for intermediate code targeting the MIPS64 hardware architecture.
+It generates machine code for MIPS64 processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdmips64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seemips\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdmmix}{
+\toolsection{cdmmix} is a compiler for intermediate code targeting the MMIX hardware architecture.
+It generates machine code for MMIX processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdmmix} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seemmix\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdorok}{
+\toolsection{cdor1k} is a compiler for intermediate code targeting the OpenRISC 1000 hardware architecture.
+It generates machine code for OpenRISC 1000 processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdor1k} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeorok\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdppca}{
+\toolsection{cdppc32} is a compiler for intermediate code targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from programs written in intermediate code and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the PowerPC architecture.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdppc32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeppc\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdppcb}{
+\toolsection{cdppc64} is a compiler for intermediate code targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from programs written in intermediate code and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the PowerPC architecture.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdppc64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seeppc\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdrisc}{
+\toolsection{cdrisc} is a compiler for intermediate code targeting the RISC hardware architecture.
+It generates machine code for RISC processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdrisc} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seerisc\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdwasm}{
+\toolsection{cdwasm} is a compiler for intermediate code targeting the WebAssembly architecture.
+It generates machine code for WebAssembly targets from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdwasm} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seewasm\seeobject\seecode\seedebugging
+}
+
+% C++ tools
+
+\providecommand{\cppprep}{
+\toolsection{cppprep} is a preprocessor for the \cpp{} programming language.
+It preprocesses source code according to the rules of \cpp{} and writes it to the standard output stream.
+Only the macro names \texttt{\_\_DATE\_\_}, \texttt{\_\_FILE\_\_}, \texttt{\_\_LINE\_\_}, and \texttt{\_\_TIME\_\_} are predefined.
+\flowgraph{\resource{\cpp{} or other\\source code} \ar[r] & \toolbox{cppprep} \ar[r] & \resource{preprocessed\\source code} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp
+}
+
+\providecommand{\cppprint}{
+\toolsection{cppprint} is a pretty printer for the \cpp{} programming language.
+It reformats the source code of \cpp{} programs and writes it to the standard output stream.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppprint} \ar[r] & \resource{reformatted\\source code} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp
+}
+
+\providecommand{\cppcheck}{
+\toolsection{cppcheck} is a syntactic and semantic checker for the \cpp{} programming language.
+It just performs syntactic and semantic checks on \cpp{} programs and writes its diagnostic messages to the standard error stream.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppcheck} \ar[r] & \resource{diagnostic\\messages} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp
+}
+
+\providecommand{\cppdump}{
+\toolsection{cppdump} is a serializer for the \cpp{} programming language.
+It dumps the complete internal representation of programs written in \cpp{} into an XML document.
+\debuggingtool
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppdump} \ar[r] & \resource{internal\\representation} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp
+}
+
+\providecommand{\cpprun}{
+\toolsection{cpprun} is an interpreter for the \cpp{} programming language.
+It processes and executes programs written in \cpp{}.
+The macro \texttt{\_\_run\_\_} is predefined in order to enable programmers to identify this tool while interpreting.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpprun} \ar@/u/[r] & \resource{input/\\output} \ar@/d/[l] \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp
+}
+
+\providecommand{\cppdoc}{
+\toolsection{cppdoc} is a generic documentation generator for the \cpp{} programming language.
+It processes several \cpp{} source files and assembles all information therein into a generic documentation.
+\debuggingtool
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppdoc} \ar[r] & \resource{generic\\documentation} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp\seedocumentation
+}
+
+\providecommand{\cpphtml}{
+\toolsection{cpphtml} is an HTML documentation generator for the \cpp{} programming language.
+It processes several \cpp{} source files and assembles all information therein into an HTML document.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpphtml} \ar[r] & \resource{HTML\\document} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp\seedocumentation
+}
+
+\providecommand{\cpplatex}{
+\toolsection{cpplatex} is a Latex documentation generator for the \cpp{} programming language.
+It processes several \cpp{} source files and assembles all information therein into a Latex document.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpplatex} \ar[r] & \resource{Latex\\document} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp\seedocumentation
+}
+
+\providecommand{\cppcode}{
+\toolsection{cppcode} is an intermediate code generator for the \cpp{} programming language.
+It generates intermediate code from programs written in \cpp{} and stores it in corresponding assembly files.
+The macro \texttt{\_\_code\_\_} is predefined in order to enable programmers to identify this tool while generating intermediate code.
+Programs generated with this tool require additional runtime support that is stored in the \file{cpp\-code\-run} library file.
+\debuggingtool
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppcode} \ar[r] & \resource{intermediate\\code} \\ & \variable{ECSINCLUDE} \ar[u]}
+\seecpp\seeassembly\seecode
+}
+
+\providecommand{\cppamda}{
+\toolsection{cppamd16} is a compiler for the \cpp{} programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in \cpp{} and stores it in corresponding object files.
+The compiler generates machine code for the 16-bit operating mode defined by the AMD64 architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_amd16\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-amd16\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppamd16} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeamd\seeobject\seedebugging
+}
+
+\providecommand{\cppamdb}{
+\toolsection{cppamd32} is a compiler for the \cpp{} programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in \cpp{} and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the AMD64 architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_amd32\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-amd32\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppamd32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeamd\seeobject\seedebugging
+}
+
+\providecommand{\cppamdc}{
+\toolsection{cppamd64} is a compiler for the \cpp{} programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in \cpp{} and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the AMD64 architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_amd64\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-amd64\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppamd64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeamd\seeobject\seedebugging
+}
+
+\providecommand{\cpparma}{
+\toolsection{cpparma32} is a compiler for the \cpp{} programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A32 instructions from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_arma32\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-arma32\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpparma32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\cpparmb}{
+\toolsection{cpparma64} is a compiler for the \cpp{} programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A64 instructions from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_arma64\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-arma64\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpparma64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\cpparmc}{
+\toolsection{cpparmt32} is a compiler for the \cpp{} programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors without floating-point extension executing T32 instructions from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_armt32\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-armt32\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpparmt32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\cpparmcfpe}{
+\toolsection{cpparmt32fpe} is a compiler for the \cpp{} programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors with floating-point extension executing T32 instructions from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_armt32fpe\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-armt32\-fpe\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpparmt32fpe} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\cppavr}{
+\toolsection{cppavr} is a compiler for the \cpp{} programming language targeting the AVR hardware architecture.
+It generates machine code for AVR processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_avr\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-avr\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppavr} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeavr\seeobject\seedebugging
+}
+
+\providecommand{\cppavrtt}{
+\toolsection{cppavr32} is a compiler for the \cpp{} programming language targeting the AVR32 hardware architecture.
+It generates machine code for AVR32 processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_avr32\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-avr32\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppavr32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeavrtt\seeobject\seedebugging
+}
+
+\providecommand{\cppmabk}{
+\toolsection{cppm68k} is a compiler for the \cpp{} programming language targeting the M68000 hardware architecture.
+It generates machine code for M68000 processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_m68k\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-m68k\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppm68k} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seemabk\seeobject\seedebugging
+}
+
+\providecommand{\cppmibl}{
+\toolsection{cppmibl} is a compiler for the \cpp{} programming language targeting the MicroBlaze hardware architecture.
+It generates machine code for MicroBlaze processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_mibl\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-mibl\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppmibl} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seemibl\seeobject\seedebugging
+}
+
+\providecommand{\cppmipsa}{
+\toolsection{cppmips32} is a compiler for the \cpp{} programming language targeting the MIPS32 hardware architecture.
+It generates machine code for MIPS32 processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_mips32\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-mips32\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppmips32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seemips\seeobject\seedebugging
+}
+
+\providecommand{\cppmipsb}{
+\toolsection{cppmips64} is a compiler for the \cpp{} programming language targeting the MIPS64 hardware architecture.
+It generates machine code for MIPS64 processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_mips64\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-mips64\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppmips64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seemips\seeobject\seedebugging
+}
+
+\providecommand{\cppmmix}{
+\toolsection{cppmmix} is a compiler for the \cpp{} programming language targeting the MMIX hardware architecture.
+It generates machine code for MMIX processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_mmix\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-mmix\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppmmix} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seemmix\seeobject\seedebugging
+}
+
+\providecommand{\cpporok}{
+\toolsection{cppor1k} is a compiler for the \cpp{} programming language targeting the OpenRISC 1000 hardware architecture.
+It generates machine code for OpenRISC 1000 processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_or1k\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-or1k\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppor1k} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeorok\seeobject\seedebugging
+}
+
+\providecommand{\cppppca}{
+\toolsection{cppppc32} is a compiler for the \cpp{} programming language targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from programs written in \cpp{} and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the PowerPC architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_ppc32\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-ppc32\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppppc32} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeppc\seeobject\seedebugging
+}
+
+\providecommand{\cppppcb}{
+\toolsection{cppppc64} is a compiler for the \cpp{} programming language targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from programs written in \cpp{} and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the PowerPC architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_ppc64\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-ppc64\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppppc64} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seeppc\seeobject\seedebugging
+}
+
+\providecommand{\cpprisc}{
+\toolsection{cpprisc} is a compiler for the \cpp{} programming language targeting the RISC hardware architecture.
+It generates machine code for RISC processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_risc\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-risc\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cpprisc} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seerisc\seeobject\seedebugging
+}
+
+\providecommand{\cppwasm}{
+\toolsection{cppwasm} is a compiler for the \cpp{} programming language targeting the WebAssembly architecture.
+It generates machine code for WebAssembly targets from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_wasm\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-wasm\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppwasm} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seewasm\seeobject\seedebugging
+}
+
+% FALSE tools
+
+\providecommand{\falprint}{
+\toolsection{falprint} is a pretty printer for the FALSE programming language.
+It reformats the source code of FALSE programs and writes it to the standard output stream.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falprint} \ar[r] & \resource{reformatted\\source code}}
+\seefalse
+}
+
+\providecommand{\falcheck}{
+\toolsection{falcheck} is a syntactic and semantic checker for the FALSE programming language.
+It just performs syntactic and semantic checks on FALSE programs and writes its diagnostic messages to the standard error stream.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falcheck} \ar[r] & \resource{diagnostic\\messages}}
+\seefalse
+}
+
+\providecommand{\faldump}{
+\toolsection{faldump} is a serializer for the FALSE programming language.
+It dumps the complete internal representation of programs written in FALSE into an XML document.
+\debuggingtool
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{faldump} \ar[r] & \resource{internal\\representation}}
+\seefalse
+}
+
+\providecommand{\falrun}{
+\toolsection{falrun} is an interpreter for the FALSE programming language.
+It processes and executes programs written in FALSE\@.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falrun} \ar@/u/[r] & \resource{input/\\output} \ar@/d/[l]}
+\seefalse
+}
+
+\providecommand{\falcpp}{
+\toolsection{falcpp} is a transpiler for the FALSE programming language.
+It translates programs written in FALSE into \cpp{} programs and stores them in corresponding source files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falcpp} \ar[r] & \resource{\cpp{}\\source file}}
+\seefalse\seecpp
+}
+
+\providecommand{\falcode}{
+\toolsection{falcode} is an intermediate code generator for the FALSE programming language.
+It generates intermediate code from programs written in FALSE and stores it in corresponding assembly files.
+\debuggingtool
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falcode} \ar[r] & \resource{intermediate\\code}}
+\seefalse\seeassembly\seecode
+}
+
+\providecommand{\falamda}{
+\toolsection{falamd16} is a compiler for the FALSE programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in FALSE and stores it in corresponding object files.
+The compiler generates machine code for the 16-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falamd16} \ar[r] & \resource{object file}}
+\seefalse\seeamd\seeobject
+}
+
+\providecommand{\falamdb}{
+\toolsection{falamd32} is a compiler for the FALSE programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in FALSE and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falamd32} \ar[r] & \resource{object file}}
+\seefalse\seeamd\seeobject
+}
+
+\providecommand{\falamdc}{
+\toolsection{falamd64} is a compiler for the FALSE programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from programs written in FALSE and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falamd64} \ar[r] & \resource{object file}}
+\seefalse\seeamd\seeobject
+}
+
+\providecommand{\falarma}{
+\toolsection{falarma32} is a compiler for the FALSE programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A32 instructions from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falarma32} \ar[r] & \resource{object file}}
+\seefalse\seearm\seeobject
+}
+
+\providecommand{\falarmb}{
+\toolsection{falarma64} is a compiler for the FALSE programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A64 instructions from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falarma64} \ar[r] & \resource{object file}}
+\seefalse\seearm\seeobject
+}
+
+\providecommand{\falarmc}{
+\toolsection{falarmt32} is a compiler for the FALSE programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors without floating-point extension executing T32 instructions from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falarmt32} \ar[r] & \resource{object file}}
+\seefalse\seearm\seeobject
+}
+
+\providecommand{\falarmcfpe}{
+\toolsection{falarmt32fpe} is a compiler for the FALSE programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors with floating-point extension executing T32 instructions from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falarmt32fpe} \ar[r] & \resource{object file}}
+\seefalse\seearm\seeobject
+}
+
+\providecommand{\falavr}{
+\toolsection{falavr} is a compiler for the FALSE programming language targeting the AVR hardware architecture.
+It generates machine code for AVR processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falavr} \ar[r] & \resource{object file}}
+\seefalse\seeavr\seeobject
+}
+
+\providecommand{\falavrtt}{
+\toolsection{falavr32} is a compiler for the FALSE programming language targeting the AVR32 hardware architecture.
+It generates machine code for AVR32 processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falavr32} \ar[r] & \resource{object file}}
+\seefalse\seeavrtt\seeobject
+}
+
+\providecommand{\falmabk}{
+\toolsection{falm68k} is a compiler for the FALSE programming language targeting the M68000 hardware architecture.
+It generates machine code for M68000 processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falm68k} \ar[r] & \resource{object file}}
+\seefalse\seemabk\seeobject
+}
+
+\providecommand{\falmibl}{
+\toolsection{falmibl} is a compiler for the FALSE programming language targeting the MicroBlaze hardware architecture.
+It generates machine code for MicroBlaze processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falmibl} \ar[r] & \resource{object file}}
+\seefalse\seemibl\seeobject
+}
+
+\providecommand{\falmipsa}{
+\toolsection{falmips32} is a compiler for the FALSE programming language targeting the MIPS32 hardware architecture.
+It generates machine code for MIPS32 processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falmips32} \ar[r] & \resource{object file}}
+\seefalse\seemips\seeobject
+}
+
+\providecommand{\falmipsb}{
+\toolsection{falmips64} is a compiler for the FALSE programming language targeting the MIPS64 hardware architecture.
+It generates machine code for MIPS64 processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falmips64} \ar[r] & \resource{object file}}
+\seefalse\seemips\seeobject
+}
+
+\providecommand{\falmmix}{
+\toolsection{falmmix} is a compiler for the FALSE programming language targeting the MMIX hardware architecture.
+It generates machine code for MMIX processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falmmix} \ar[r] & \resource{object file}}
+\seefalse\seemmix\seeobject
+}
+
+\providecommand{\falorok}{
+\toolsection{falor1k} is a compiler for the FALSE programming language targeting the OpenRISC 1000 hardware architecture.
+It generates machine code for OpenRISC 1000 processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falor1k} \ar[r] & \resource{object file}}
+\seefalse\seeorok\seeobject
+}
+
+\providecommand{\falppca}{
+\toolsection{falppc32} is a compiler for the FALSE programming language targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from programs written in FALSE and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the PowerPC architecture.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falppc32} \ar[r] & \resource{object file}}
+\seefalse\seeppc\seeobject
+}
+
+\providecommand{\falppcb}{
+\toolsection{falppc64} is a compiler for the FALSE programming language targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from programs written in FALSE and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the PowerPC architecture.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falppc64} \ar[r] & \resource{object file}}
+\seefalse\seeppc\seeobject
+}
+
+\providecommand{\falrisc}{
+\toolsection{falrisc} is a compiler for the FALSE programming language targeting the RISC hardware architecture.
+It generates machine code for RISC processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falrisc} \ar[r] & \resource{object file}}
+\seefalse\seerisc\seeobject
+}
+
+\providecommand{\falwasm}{
+\toolsection{falwasm} is a compiler for the FALSE programming language targeting the WebAssembly architecture.
+It generates machine code for WebAssembly targets from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falwasm} \ar[r] & \resource{object file}}
+\seefalse\seewasm\seeobject
+}
+
+% Oberon tools
+
+\providecommand{\obprint}{
+\toolsection{obprint} is a pretty printer for the Oberon programming language.
+It reformats the source code of Oberon modules and writes it to the standard output stream.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obprint} \ar[r] & \resource{reformatted\\source code}}
+\seeoberon
+}
+
+\providecommand{\obcheck}{
+\toolsection{obcheck} is a syntactic and semantic checker for the Oberon programming language.
+It just performs syntactic and semantic checks on Oberon modules and writes its diagnostic messages to the standard error stream.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obcheck} \ar[r] \ar@/l/[d] & \resource{diagnostic\\messages} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u]}
+\seeoberon
+}
+
+\providecommand{\obdump}{
+\toolsection{obdump} is a serializer for the Oberon programming language.
+It dumps the complete internal representation of modules written in Oberon into an XML document.
+\debuggingtool
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obdump} \ar[r] \ar@/l/[d] & \resource{internal\\representation} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u]}
+\seeoberon
+}
+
+\providecommand{\obrun}{
+\toolsection{obrun} is an interpreter for the Oberon programming language.
+It processes and executes modules written in Oberon.
+This tool does neither generate nor process symbol files while interpreting modules.
+If a module is imported by another one, its filename has to be named before the other one in the list of command-line arguments.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obrun} \ar@/u/[r] & \resource{input/\\output} \ar@/d/[l]}
+\seeoberon
+}
+
+\providecommand{\obcpp}{
+\toolsection{obcpp} is a transpiler for the Oberon programming language.
+It translates programs written in Oberon into \cpp{} programs and stores them in corresponding source and header files.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+The same interface is provided by the generated header file which can be used in other parts of the \cpp{} program.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obcpp} \ar[r] \ar@/l/[d] \ar[rd] & \resource{\cpp{}\\source file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{\cpp{}\\header file}}
+\seeoberon\seecpp
+}
+
+\providecommand{\obdoc}{
+\toolsection{obdoc} is a generic documentation generator for the Oberon programming language.
+It processes several Oberon modules and assembles all information therein into a generic documentation.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+\debuggingtool
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obdoc} \ar[r] \ar@/l/[d] & \resource{generic\\documentation} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u]}
+\seeoberon\seedocumentation
+}
+
+\providecommand{\obhtml}{
+\toolsection{obhtml} is an HTML documentation generator for the Oberon programming language.
+It processes several Oberon modules and assembles all information therein into an HTML document.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obhtml} \ar[r] \ar@/l/[d] & \resource{HTML\\document} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u]}
+\seeoberon\seedocumentation
+}
+
+\providecommand{\oblatex}{
+\toolsection{oblatex} is a Latex documentation generator for the Oberon programming language.
+It processes several Oberon modules and assembles all information therein into a Latex document.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{oblatex} \ar[r] \ar@/l/[d] & \resource{Latex\\document} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u]}
+\seeoberon\seedocumentation
+}
+
+\providecommand{\obcode}{
+\toolsection{obcode} is an intermediate code generator for the Oberon programming language.
+It generates intermediate code from modules written in Oberon and stores it in corresponding assembly files.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this tool require additional runtime support that is stored in the \file{ob\-code\-run} library file.
+\debuggingtool
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obcode} \ar[r] \ar@/l/[d] & \resource{intermediate\\code} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u]}
+\seeoberon\seeassembly\seecode
+}
+
+\providecommand{\obamda}{
+\toolsection{obamd16} is a compiler for the Oberon programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from modules written in Oberon and stores it in corresponding object files.
+The compiler generates machine code for the 16-bit operating mode defined by the AMD64 architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-amd16\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obamd16} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeamd\seeobject\seedebugging
+}
+
+\providecommand{\obamdb}{
+\toolsection{obamd32} is a compiler for the Oberon programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from modules written in Oberon and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the AMD64 architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-amd32\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obamd32} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeamd\seeobject\seedebugging
+}
+
+\providecommand{\obamdc}{
+\toolsection{obamd64} is a compiler for the Oberon programming language targeting the AMD64 hardware architecture.
+It generates machine code for AMD64 processors from modules written in Oberon and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the AMD64 architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-amd64\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obamd64} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeamd\seeobject\seedebugging
+}
+
+\providecommand{\obarma}{
+\toolsection{obarma32} is a compiler for the Oberon programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A32 instructions from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-arma32\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obarma32} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\obarmb}{
+\toolsection{obarma64} is a compiler for the Oberon programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors executing A64 instructions from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-arma64\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obarma64} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\obarmc}{
+\toolsection{obarmt32} is a compiler for the Oberon programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors without floating-point extension executing T32 instructions from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-armt32\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obarmt32} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\obarmcfpe}{
+\toolsection{obarmt32fpe} is a compiler for the Oberon programming language targeting the ARM hardware architecture.
+It generates machine code for ARM processors with floating-point extension executing T32 instructions from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-armt32\-fpe\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obarmt32fpe} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seearm\seeobject\seedebugging
+}
+
+\providecommand{\obavr}{
+\toolsection{obavr} is a compiler for the Oberon programming language targeting the AVR hardware architecture.
+It generates machine code for AVR processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-avr\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obavr} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeavr\seeobject\seedebugging
+}
+
+\providecommand{\obavrtt}{
+\toolsection{obavr32} is a compiler for the Oberon programming language targeting the AVR32 hardware architecture.
+It generates machine code for AVR32 processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-avr32\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obavr32} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeavrtt\seeobject\seedebugging
+}
+
+\providecommand{\obmabk}{
+\toolsection{obm68k} is a compiler for the Oberon programming language targeting the M68000 hardware architecture.
+It generates machine code for M68000 processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-m68k\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obm68k} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seemabk\seeobject\seedebugging
+}
+
+\providecommand{\obmibl}{
+\toolsection{obmibl} is a compiler for the Oberon programming language targeting the MicroBlaze hardware architecture.
+It generates machine code for MicroBlaze processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-mibl\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obmibl} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seemibl\seeobject\seedebugging
+}
+
+\providecommand{\obmipsa}{
+\toolsection{obmips32} is a compiler for the Oberon programming language targeting the MIPS32 hardware architecture.
+It generates machine code for MIPS32 processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-mips32\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obmips32} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seemips\seeobject\seedebugging
+}
+
+\providecommand{\obmipsb}{
+\toolsection{obmips64} is a compiler for the Oberon programming language targeting the MIPS64 hardware architecture.
+It generates machine code for MIPS64 processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-mips64\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obmips64} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seemips\seeobject\seedebugging
+}
+
+\providecommand{\obmmix}{
+\toolsection{obmmix} is a compiler for the Oberon programming language targeting the MMIX hardware architecture.
+It generates machine code for MMIX processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-mmix\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obmmix} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seemmix\seeobject\seedebugging
+}
+
+\providecommand{\oborok}{
+\toolsection{obor1k} is a compiler for the Oberon programming language targeting the OpenRISC 1000 hardware architecture.
+It generates machine code for OpenRISC 1000 processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-or1k\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obor1k} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeorok\seeobject\seedebugging
+}
+
+\providecommand{\obppca}{
+\toolsection{obppc32} is a compiler for the Oberon programming language targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from modules written in Oberon and stores it in corresponding object files.
+The compiler generates machine code for the 32-bit operating mode defined by the PowerPC architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-ppc32\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obppc32} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeppc\seeobject\seedebugging
+}
+
+\providecommand{\obppcb}{
+\toolsection{obppc64} is a compiler for the Oberon programming language targeting the PowerPC hardware architecture.
+It generates machine code for PowerPC processors from modules written in Oberon and stores it in corresponding object files.
+The compiler generates machine code for the 64-bit operating mode defined by the PowerPC architecture.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-ppc64\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obppc64} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seeppc\seeobject\seedebugging
+}
+
+\providecommand{\obrisc}{
+\toolsection{obrisc} is a compiler for the Oberon programming language targeting the RISC hardware architecture.
+It generates machine code for RISC processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-risc\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obrisc} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seerisc\seeobject\seedebugging
+}
+
+\providecommand{\obwasm}{
+\toolsection{obwasm} is a compiler for the Oberon programming language targeting the WebAssembly architecture.
+It generates machine code for WebAssembly targets from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-wasm\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obwasm} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seewasm\seeobject\seedebugging
+}
+
+% converter tools
+
+\providecommand{\dbgdwarf}{
+\toolsection{dbgdwarf} is a DWARF debugging information converter tool.
+It converts debugging information into the DWARF debugging data format and stores it in corresponding object files~\cite{dwarffile}.
+The resulting debugging object files can be combined with runtime support that creates Executable and Linking Format (ELF) files~\cite{elffile}.
+\flowgraph{\resource{debugging\\information} \ar[r] & \toolbox{dbgdwarf} \ar[r] & \resource{debugging\\object file}}
+\seeobject\seedebugging
+}
+
+% assembler tools
+
+\providecommand{\asmprint}{
+\toolsection{asmprint} is a pretty printer for generic assembly code.
+It reformats generic assembly code and writes it to the standard output stream.
+\flowgraph{\resource{generic assembly\\source code} \ar[r] & \toolbox{asmprint} \ar[r] & \resource{reformatted\\source code}}
+\seeassembly
+}
+
+\providecommand{\amdaasm}{
+\toolsection{amd16asm} is an assembler for the AMD64 hardware architecture.
+It translates assembly code into machine code for AMD64 processors and stores it in corresponding object files.
+By default, the assembler generates machine code for the 16-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{AMD16 assembly\\source code} \ar[r] & \toolbox{amd16asm} \ar[r] & \resource{object file}}
+\seeassembly\seeamd\seeobject
+}
+
+\providecommand{\amdadism}{
+\toolsection{amd16dism} is a disassembler for the AMD64 hardware architecture.
+It translates machine code from object files targeting AMD64 processors into assembly code and writes it to the standard output stream.
+It assumes that the machine code was generated for the 16-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{amd16dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeamd\seeobject
+}
+
+\providecommand{\amdbasm}{
+\toolsection{amd32asm} is an assembler for the AMD64 hardware architecture.
+It translates assembly code into machine code for AMD64 processors and stores it in corresponding object files.
+By default, the assembler generates machine code for the 32-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{AMD32 assembly\\source code} \ar[r] & \toolbox{amd32asm} \ar[r] & \resource{object file}}
+\seeassembly\seeamd\seeobject
+}
+
+\providecommand{\amdbdism}{
+\toolsection{amd32dism} is a disassembler for the AMD64 hardware architecture.
+It translates machine code from object files targeting AMD64 processors into assembly code and writes it to the standard output stream.
+It assumes that the machine code was generated for the 32-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{amd32dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeamd\seeobject
+}
+
+\providecommand{\amdcasm}{
+\toolsection{amd64asm} is an assembler for the AMD64 hardware architecture.
+It translates assembly code into machine code for AMD64 processors and stores it in corresponding object files.
+By default, the assembler generates machine code for the 64-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{AMD64 assembly\\source code} \ar[r] & \toolbox{amd64asm} \ar[r] & \resource{object file}}
+\seeassembly\seeamd\seeobject
+}
+
+\providecommand{\amdcdism}{
+\toolsection{amd64dism} is a disassembler for the AMD64 hardware architecture.
+It translates machine code from object files targeting AMD64 processors into assembly code and writes it to the standard output stream.
+It assumes that the machine code was generated for the 64-bit operating mode defined by the AMD64 architecture.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{amd64dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeamd\seeobject
+}
+
+\providecommand{\armaasm}{
+\toolsection{arma32asm} is an assembler for the ARM hardware architecture.
+It translates assembly code into machine code for ARM processors executing A32 instructions and stores it in corresponding object files.
+\flowgraph{\resource{ARM A32 assembly\\source code} \ar[r] & \toolbox{arma32asm} \ar[r] & \resource{object file}}
+\seeassembly\seearm\seeobject
+}
+
+\providecommand{\armadism}{
+\toolsection{arma32dism} is a disassembler for the ARM hardware architecture.
+It translates machine code from object files targeting ARM processors executing A32 instructions into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{arma32dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seearm\seeobject
+}
+
+\providecommand{\armbasm}{
+\toolsection{arma64asm} is an assembler for the ARM hardware architecture.
+It translates assembly code into machine code for ARM processors executing A64 instructions and stores it in corresponding object files.
+\flowgraph{\resource{ARM A64 assembly\\source code} \ar[r] & \toolbox{arma64asm} \ar[r] & \resource{object file}}
+\seeassembly\seearm\seeobject
+}
+
+\providecommand{\armbdism}{
+\toolsection{arma64dism} is a disassembler for the ARM hardware architecture.
+It translates machine code from object files targeting ARM processors executing A64 instructions into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{arma64dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seearm\seeobject
+}
+
+\providecommand{\armcasm}{
+\toolsection{armt32asm} is an assembler for the ARM hardware architecture.
+It translates assembly code into machine code for ARM processors executing T32 instructions and stores it in corresponding object files.
+\flowgraph{\resource{ARM T32 assembly\\source code} \ar[r] & \toolbox{armt32asm} \ar[r] & \resource{object file}}
+\seeassembly\seearm\seeobject
+}
+
+\providecommand{\armcdism}{
+\toolsection{armt32dism} is a disassembler for the ARM hardware architecture.
+It translates machine code from object files targeting ARM processors executing T32 instructions into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{armt32dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seearm\seeobject
+}
+
+\providecommand{\avrasm}{
+\toolsection{avrasm} is an assembler for the AVR hardware architecture.
+It translates assembly code into machine code for AVR processors and stores it in corresponding object files.
+The identifiers \texttt{RXL}, \texttt{RXH}, \texttt{RYL}, \texttt{RYH}, \texttt{RZL}, and \texttt{RZH} are predefined and name the corresponding registers.
+The identifiers \texttt{SPL} and \texttt{SPH} are also predefined and evaluate to the address of the corresponding registers.
+\flowgraph{\resource{AVR assembly\\source code} \ar[r] & \toolbox{avrasm} \ar[r] & \resource{object file}}
+\seeassembly\seeavr\seeobject
+}
+
+\providecommand{\avrdism}{
+\toolsection{avrdism} is a disassembler for the AVR hardware architecture.
+It translates machine code from object files targeting AVR processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{avrdism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeavr\seeobject
+}
+
+\providecommand{\avrttasm}{
+\toolsection{avr32asm} is an assembler for the AVR32 hardware architecture.
+It translates assembly code into machine code for AVR32 processors and stores it in corresponding object files.
+\flowgraph{\resource{AVR32 assembly\\source code} \ar[r] & \toolbox{avr32asm} \ar[r] & \resource{object file}}
+\seeassembly\seeavrtt\seeobject
+}
+
+\providecommand{\avrttdism}{
+\toolsection{avr32dism} is a disassembler for the AVR32 hardware architecture.
+It translates machine code from object files targeting AVR32 processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{avr32dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeavrtt\seeobject
+}
+
+\providecommand{\mabkasm}{
+\toolsection{m68kasm} is an assembler for the M68000 hardware architecture.
+It translates assembly code into machine code for M68000 processors and stores it in corresponding object files.
+\flowgraph{\resource{68000 assembly\\source code} \ar[r] & \toolbox{m68kasm} \ar[r] & \resource{object file}}
+\seeassembly\seemabk\seeobject
+}
+
+\providecommand{\mabkdism}{
+\toolsection{m68kdism} is a disassembler for the M68000 hardware architecture.
+It translates machine code from object files targeting M68000 processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{m68kdism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seemabk\seeobject
+}
+
+\providecommand{\miblasm}{
+\toolsection{miblasm} is an assembler for the MicroBlaze hardware architecture.
+It translates assembly code into machine code for MicroBlaze processors and stores it in corresponding object files.
+\flowgraph{\resource{MicroBlaze assembly\\source code} \ar[r] & \toolbox{miblasm} \ar[r] & \resource{object file}}
+\seeassembly\seemibl\seeobject
+}
+
+\providecommand{\mibldism}{
+\toolsection{mibldism} is a disassembler for the MicroBlaze hardware architecture.
+It translates machine code from object files targeting MicroBlaze processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{mibldism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seemibl\seeobject
+}
+
+\providecommand{\mipsaasm}{
+\toolsection{mips32asm} is an assembler for the MIPS32 hardware architecture.
+It translates assembly code into machine code for MIPS32 processors and stores it in corresponding object files.
+\flowgraph{\resource{MIPS32 assembly\\source code} \ar[r] & \toolbox{mips32asm} \ar[r] & \resource{object file}}
+\seeassembly\seemips\seeobject
+}
+
+\providecommand{\mipsadism}{
+\toolsection{mips32dism} is a disassembler for the MIPS32 hardware architecture.
+It translates machine code from object files targeting MIPS32 processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{mips32dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seemips\seeobject
+}
+
+\providecommand{\mipsbasm}{
+\toolsection{mips64asm} is an assembler for the MIPS64 hardware architecture.
+It translates assembly code into machine code for MIPS64 processors and stores it in corresponding object files.
+\flowgraph{\resource{MIPS64 assembly\\source code} \ar[r] & \toolbox{mips64asm} \ar[r] & \resource{object file}}
+\seeassembly\seemips\seeobject
+}
+
+\providecommand{\mipsbdism}{
+\toolsection{mips64dism} is a disassembler for the MIPS64 hardware architecture.
+It translates machine code from object files targeting MIPS64 processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{mips64dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seemips\seeobject
+}
+
+\providecommand{\mmixasm}{
+\toolsection{mmixasm} is an assembler for the MMIX hardware architecture.
+It translates assembly code into machine code for MMIX processors and stores it in corresponding object files.
+The names of all special registers are predefined and evaluate to the corresponding number.
+\flowgraph{\resource{MMIX assembly\\source code} \ar[r] & \toolbox{mmixasm} \ar[r] & \resource{object file}}
+\seeassembly\seemmix\seeobject
+}
+
+\providecommand{\mmixdism}{
+\toolsection{mmixdism} is a disassembler for the MMIX hardware architecture.
+It translates machine code from object files targeting MMIX processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{mmixdism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seemmix\seeobject
+}
+
+\providecommand{\orokasm}{
+\toolsection{or1kasm} is an assembler for the OpenRISC 1000 hardware architecture.
+It translates assembly code into machine code for OpenRISC 1000 processors and stores it in corresponding object files.
+\flowgraph{\resource{OpenRISC 1000 assembly\\source code} \ar[r] & \toolbox{or1kasm} \ar[r] & \resource{object file}}
+\seeassembly\seeorok\seeobject
+}
+
+\providecommand{\orokdism}{
+\toolsection{or1kdism} is a disassembler for the OpenRISC 1000 hardware architecture.
+It translates machine code from object files targeting OpenRISC 1000 processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{or1kdism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeorok\seeobject
+}
+
+\providecommand{\ppcaasm}{
+\toolsection{ppc32asm} is an assembler for the PowerPC hardware architecture.
+It translates assembly code into machine code for PowerPC processors and stores it in corresponding object files.
+By default, the assembler generates machine code for the 32-bit operating mode defined by the PowerPC architecture.
+\flowgraph{\resource{PowerPC assembly\\source code} \ar[r] & \toolbox{ppc32asm} \ar[r] & \resource{object file}}
+\seeassembly\seeppc\seeobject
+}
+
+\providecommand{\ppcadism}{
+\toolsection{ppc32dism} is a disassembler for the PowerPC hardware architecture.
+It translates machine code from object files targeting PowerPC processors into assembly code and writes it to the standard output stream.
+It assumes that the machine code was generated for the 32-bit operating mode defined by the PowerPC architecture.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{ppc32dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeppc\seeobject
+}
+
+\providecommand{\ppcbasm}{
+\toolsection{ppc64asm} is an assembler for the PowerPC hardware architecture.
+It translates assembly code into machine code for PowerPC processors and stores it in corresponding object files.
+By default, the assembler generates machine code for the 64-bit operating mode defined by the PowerPC architecture.
+\flowgraph{\resource{PowerPC assembly\\source code} \ar[r] & \toolbox{ppc64asm} \ar[r] & \resource{object file}}
+\seeassembly\seeppc\seeobject
+}
+
+\providecommand{\ppcbdism}{
+\toolsection{ppc64dism} is a disassembler for the PowerPC hardware architecture.
+It translates machine code from object files targeting PowerPC processors into assembly code and writes it to the standard output stream.
+It assumes that the machine code was generated for the 64-bit operating mode defined by the PowerPC architecture.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{ppc64dism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seeppc\seeobject
+}
+
+\providecommand{\riscasm}{
+\toolsection{riscasm} is an assembler for the RISC hardware architecture.
+It translates assembly code into machine code for RISC processors and stores it in corresponding object files.
+The names of all special registers are predefined and evaluate to the corresponding number.
+\flowgraph{\resource{RISC assembly\\source code} \ar[r] & \toolbox{riscasm} \ar[r] & \resource{object file}}
+\seeassembly\seerisc\seeobject
+}
+
+\providecommand{\riscdism}{
+\toolsection{riscdism} is a disassembler for the RISC hardware architecture.
+It translates machine code from object files targeting RISC processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{riscdism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seerisc\seeobject
+}
+
+\providecommand{\wasmasm}{
+\toolsection{wasmasm} is an assembler for the WebAssembly architecture.
+It translates assembly code into machine code for WebAssembly targets and stores it in corresponding object files.
+The names of all special registers are predefined and evaluate to the corresponding number.
+\flowgraph{\resource{WebAssembly assembly\\source code} \ar[r] & \toolbox{wasmasm} \ar[r] & \resource{object file}}
+\seeassembly\seewasm\seeobject
+}
+
+\providecommand{\wasmdism}{
+\toolsection{wasmdism} is a disassembler for the WebAssembly architecture.
+It translates machine code from object files targeting WebAssembly targets into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{wasmdism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seewasm\seeobject
+}
+
+% linker tools
+
+\providecommand{\linklib}{
+\toolsection{linklib} is an object file combiner.
+It creates a static library file by combining all object files given to it into a single one.
+\flowgraph{\resource{object files} \ar[r] & \toolbox{linklib} \ar[r] & \resource{library file}}
+\seeobject
+}
+
+\providecommand{\linkbin}{
+\toolsection{linkbin} is a linker for plain binary files.
+It links all object files given to it into a single image and stores it in a binary file that begins with the first linked section.
+It also creates a map file that lists the address, type, name and size of all used sections.
+The filename extension of the resulting binary file can be specified by putting it into a constant data section called \texttt{\_extension}.
+\flowgraph{\resource{object files} \ar[r] & \toolbox{linkbin} \ar[r] \ar[d] & \resource{binary file} \\ & \resource{map file}}
+\seeobject
+}
+
+\providecommand{\linkmem}{
+\toolsection{linkmem} is a linker for plain binary files partitioned into random-access and read-only memory.
+It links all object files given to it into two distinct images, one for data sections and one for code and constant data sections, and stores each image in a binary file that begins with the first linked section of the corresponding type.
+It also creates a map file that lists the address, type, name and size of all used sections.
+\flowgraph{\resource{object files} \ar[r] & \toolbox{linkmem} \ar[r] \ar[d] & \resource{RAM file/\\ROM file} \\ & \resource{map file}}
+\seeobject
+}
+
+\providecommand{\linkprg}{
+\toolsection{linkprg} is a linker for GEMDOS executable files.
+It links all object files given to it into a single image and stores the image in an Atari GEMDOS executable file~\cite{gemdosfile}.
+It also creates a map file that lists the address relative to the text segment, type, name and size of all used sections.
+The filename extension of the resulting executable file can be specified by putting it into a constant data section called \texttt{\_extension}.
+The GEMDOS executable file format requires all patch patterns of absolute link patches to consist of four full bitmasks with descending offsets.
+\flowgraph{\resource{object files} \ar[r] & \toolbox{linkprg} \ar[r] \ar[d] & \resource{executable file} \\ & \resource{map file}}
+\seeobject
+}
+
+\providecommand{\linkhex}{
+\toolsection{linkhex} is a linker for Intel HEX files.
+It links all code sections of the object files given to it into single image and stores the image in an Intel HEX file~\cite{hexfile} that begins with the first linked section.
+It also creates a map file that lists the address, type, name and size of all used sections.
+\flowgraph{\resource{object files} \ar[r] & \toolbox{linkhex} \ar[r] \ar[d] & \resource{HEX file} \\ & \resource{map file}}
+\seeobject
+}
+
+\providecommand{\mapsearch}{
+\toolsection{mapsearch} is a debugging tool.
+It searches map files generated by linker tools for the name of a binary section that encompasses a memory address read from the standard input stream.
+If additionally provided with one or more object files, it also stores an excerpt thereof in a separate object file called map search result which only contains the identified binary section for disassembling purposes.
+\flowgraph{& \resource{map files/\\object files} \ar[d] \\ \resource{memory\\address} \ar[r] & \toolbox{mapsearch} \ar[r] \ar[d] & \resource{section name/\\relative offset} \\ & \resource{object file\\excerpt}}
+\seeobject
+}

@@ -1,0 +1,899 @@
+% User manual for Oberon
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seeoberon}{}
+
+\startchapter{Oberon}{User Manual for Oberon}{oberon}
+{Oberon is a general-purpose programming language based on Pascal and Modula-2.
+It supports type extension with type-bound procedures which makes it an object-oriented language.
+This \documentation{} describes Oberon and its implementation by the \ecs{}.}
+
+\epigraph{Die Kunst ist eine Tochter der Freiheit.}{Friedrich Schiller}
+
+\section{Introduction}
+
+The \ecs{} implements the Oberon programming language according to the Oberon-2 language report~\cite{moessenboeck1996}.
+The most important language features are block structure, modularity, separate compilation, static typing with strong type checking, and type extension with type-bound procedures.
+
+\begin{center}\oblogo{4em}\end{center}
+
+The \ecs{} adds some completely backwards-compatible features for portability, genericity, and interoperability which are described in the remainder of this \documentation{}.
+
+\section{Implementation-Defined Behavior}
+
+Although the semantics of the Oberon programming language is well defined, there are some issues that depend on its actual implementation and need detailed description.
+This section lists all implementation-defined behavior and language extensions along with the corresponding section numbers of the Oberon-2 language report where all changes to the syntax and the set of predeclared identifiers are \changed{underlined}.
+
+\newcommand{\obref}[1]{\alignright(#1)\nopagebreak}
+\newcommand{\obsection}[2]{\subsection[#1]{#1\alignright(#2)}}
+
+\obsection{Vocabulary and Representation}{3}
+
+\begin{itemize}
+
+\item Underscore characters in identifiers\obref{3.1}
+
+For interoperability with other languages and interfacing with external libraries the \ecs{} allows underscore characters in identifiers.
+The first character must still be a letter.
+
+\item Binary integer constants\obref{3.2}
+
+If an integer constant is specified with the suffix \texttt{B}, its digits and representation are binary.
+
+\item Digit grouping\obref{3.2}
+
+The integer part of a number may contain separating single quotes between its digits which are ignored when determining its value.
+
+\item Type of real numbers\obref{3.2}
+
+The type of a real number is the minimal type to which the constant value belongs.
+The letter contained in the scale factor has no meaning with respect to the type.
+
+\item Line breaks in strings\obref{3.4}
+
+The \ecs{} allows line breaks in strings in order to support inline assembly code with multiple lines, see Section~\ref{sec:obsystemmodule}.
+
+\end{itemize}
+
+\obsection{Declarations and Scope Rules}{4}\label{sec:obdeclarations}
+
+\begin{itemize}
+
+\item Nested qualified identifiers\obref{4}
+
+Qualified identifiers may be nested:
+
+\begin{quote}\begin{grammar}
+<Qualident> = $[$\changed{\synt{Qualident}}"."$]$<ident> \par
+\end{grammar}\end{quote}
+
+\item External declarations\obref{4}
+
+The identifier definition of a variable or procedure declared in a module block may be followed by a constant expression enclosed in brackets which marks the declaration as \emph{external}:
+
+\begin{quote}\begin{grammar}
+<IdentDef> = <ident>$[$"*"$\mid$"-"$]$ \changed{$[$"["\synt{ConstExpression}"]"$]$} \par
+\end{grammar}\end{quote}
+
+An external declaration either defines a global alias name using a string or specifies its address using an integer included by \texttt{SYSTEM.AD\-DRESS} and requires the module \texttt{SYSTEM} to be imported, see Section~\ref{sec:obsystemmodule}.
+Forward declarations marked as external do not have to be declared later in the text and refer to arbitrary entities with the respective name or address.
+
+\item Predeclared identifiers\obref{4}
+
+The \ecs{} adds the identifiers listed in Table~\ref{tab:obpredeclaredidentifiers} to the set of predeclared identifiers.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lp{0.6\textwidth}r@{}}
+\toprule Category & Identifier & Section \\
+\midrule Constants & \texttt{I}, \texttt{INF}, \texttt{NAN} & \ref{sec:obtypedeclarations} \\
+\midrule Types & \texttt{CARDINAL}, \texttt{COMPLEX}, \texttt{COMPLEX32}, \texttt{COMPLEX64}, \texttt{HUGECARD}, \texttt{HUGEINT}, \texttt{LENGTH}, \texttt{LONGCARD}, \texttt{LONGCOMPLEX}, \texttt{LONGSET}, \texttt{REAL32}, \texttt{REAL64}, \texttt{SET8}, \texttt{SET16}, \texttt{SET32}, \texttt{SET64}, \texttt{SHORTCARD}, \texttt{SHORTCOMPLEX}, \texttt{SHORTREAL}, \texttt{SIGNED8}, \texttt{SIGNED16}, \texttt{SIGNED32}, \texttt{SIGNED64}, \texttt{UNSIGNED8}, \texttt{UNSIGNED16}, \texttt{UNSIGNED32}, \texttt{UNSIGNED64} & \ref{sec:obtypedeclarations} \\
+\midrule Procedures & \texttt{DISPOSE}, \texttt{IGNORE}, \texttt{IM}, \texttt{PTR}, \texttt{RE}, \texttt{SEL}, \texttt{TRACE} & \ref{sec:obpredeclaredprocedures} \\
+\bottomrule
+\end{tabular}
+\caption{Additionally predeclared identifiers in Oberon}
+\label{tab:obpredeclaredidentifiers}
+\end{table}
+
+\end{itemize}
+
+\obsection{Type Declarations}{6}\label{sec:obtypedeclarations}
+
+\begin{itemize}
+
+\item Additional real values\obref{6.1}
+
+Real numbers also contain the predeclared values \texttt{\changed{INF}} and \texttt{\changed{NAN}} denoting positive infinity and a quiet not a number.
+
+\item Additional complex values\obref{6.1}
+
+The \ecs{} supports complex numbers which belong to the numeric types and contain two real numbers representing the real and imaginary part of the complex number.
+Complex numbers also contain the predeclared value \texttt{\changed{I}} denoting the imaginary unit \emph{i}.
+
+\item Additional numeric types\obref{6.1}
+
+The \ecs{} provides additional predeclared identifiers for numeric types with a fixed bit length.
+They consist of four signed integer types called \texttt{\changed{SIGNED8}}, \texttt{\changed{SIGNED16}}, \texttt{\changed{SIGNED32}}, and \texttt{\changed{SIGNED64}}, four unsigned integer types called \texttt{\changed{UNSIGNED8}}, \texttt{\changed{UNSIGNED16}}, \texttt{\changed{UNSIGNED32}}, and \texttt{\changed{UNSIGNED64}}, two real types called \texttt{\changed{REAL32}} and \texttt{\changed{REAL64}}, as well as two complex types called \texttt{\changed{COMPLEX32}} and \texttt{\changed{COMPLEX64}}.
+They form the following hierarchy where larger types include smaller ones:
+
+\newcommand{\includesr}{\ar@{}[r]|{\txt{$\supseteq$}}}
+\newcommand{\includesu}{\ar@{}[u]|{\txt{\rotatebox{90}{$\supseteq$}}}}
+\newcommand{\includesd}{\ar@{}[d]|{\txt{\rotatebox{270}{$\supseteq$}}}}
+
+\flowgraph{\texttt{COMPLEX32} \includesr & \texttt{REAL32} \includesr & \texttt{UNSIGNED64} \includesr \includesd & \texttt{SIGNED64} \includesd \\
+\texttt{COMPLEX64} \includesr \includesu & \texttt{REAL64} \includesu & \texttt{UNSIGNED32} \includesr \includesd & \texttt{SIGNED32} \includesd \\
+& & \texttt{UNSIGNED16} \includesr \includesd & \texttt{SIGNED16} \includesd \\
+& & \texttt{UNSIGNED8} \includesr & \texttt{SIGNED8}}
+
+The predefined set of numeric types is additionally extended by a signed integer type called \texttt{\changed{HUGEINT}}, four unsigned integer types called \texttt{\changed{SHORTCARD}}, \texttt{\changed{CARDINAL}}, \texttt{\changed{LONGCARD}}, and \texttt{\changed{HUGECARD}}, a real type called \texttt{\changed{SHORTREAL}}, as well as three complex types called \texttt{\changed{SHORTCOMPLEX}}, \texttt{\changed{COMPLEX}}, and \texttt{\changed{LONGCOMPLEX}}.
+They form the following hierarchy where the types \texttt{INTEGER}, \texttt{CARDINAL}, and \texttt{REAL} name the default integer and real types of the execution environment:
+
+\flowgraph{\texttt{SHORTCOMPLEX} \includesr & \texttt{SHORTREAL} \includesr & \texttt{HUGECARD} \includesr \includesd & \texttt{HUGEINT} \includesd \\
+\texttt{COMPLEX} \includesr \includesu & \texttt{REAL} \includesu & \texttt{LONGCARD} \includesr \includesd & \texttt{LONGINT} \includesd \\
+\texttt{LONGCOMPLEX} \includesr \includesu & \texttt{LONGREAL} \includesu & \texttt{CARDINAL} \includesr \includesd & \texttt{INTEGER} \includesd \\
+& & \texttt{SHORTCARD} \includesr & \texttt{SHORTINT}}
+
+Finally, the \ecs{} also predeclares a signed integer type called \texttt{\changed{LENGTH}} which is big enough to represent any array length of the execution environment.
+
+\item Additional set types\obref{6.1}
+
+The \ecs{} provides additional predeclared identifiers for set types with a fixed bit length.
+They consist of four set types called \texttt{\changed{SET8}}, \texttt{\changed{SET16}}, \texttt{\changed{SET32}}, and \texttt{\changed{SET64}}.
+They form the following hierarchy where larger types include smaller ones:
+
+\flowgraph{\texttt{SET64} \includesr & \texttt{SET32} \includesr & \texttt{SET16} \includesr & \texttt{SET8}}
+
+The predefined set of set types is additionally extended by three set types called \texttt{\changed{SHORTSET}}, \texttt{\changed{LONGSET}}, and \texttt{\changed{HUGESET}}.
+They form the following hierarchy where the type \texttt{SET} names the default set type of the execution environment:
+
+\flowgraph{\texttt{HUGESET} \includesr & \texttt{LONGSET} \includesr & \texttt{SET} \includesr & \texttt{SHORTSET}}
+
+\item Type values\obref{6.1}
+
+The sizes and value ranges of all basic types as defined by the \ecs{} are listed in Table~\ref{tab:obbasictypes}.
+The sizes of the types \texttt{CARDINAL}, \texttt{INTEGER}, \texttt{LENGTH}, \texttt{REAL}, \texttt{SET}, and pointer types depend on the execution environment and are listed in Table~\ref{tab:obdefaulttypes} for each Oberon compiler provided by the \ecs{}.
+The interpreter and all other tools reuse the respective type sizes of their own execution environment instead.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lllcl@{}}
+\toprule Category & Type & Alias & Size & Value Range \\
+\midrule Boolean
+& \texttt{BOOLEAN} & & 1 & \texttt{TRUE} or \texttt{FALSE} \\
+\midrule Character
+& \texttt{CHAR} & & 1 & \texttt{0X} to \texttt{0FFX} \\
+\midrule Signed
+& \texttt{SIGNED8} & & 1 & $-2^{7}$ to $+2^{7}-1$ \\
+integer
+& \texttt{SIGNED16} & \texttt{SHORTINT} & 2 & $-2^{15}$ to $+2^{15}-1$ \\
+& & \texttt{INTEGER} & 2/4 & \emph{See Table~\ref{tab:obdefaulttypes}} \\
+& \texttt{SIGNED32} & \texttt{LONGINT} & 4 & $-2^{31}$ to $+2^{31}-1$ \\
+& \texttt{SIGNED64} & \texttt{HUGEINT} & 8 & $-2^{63}$ to $+2^{63}-1$ \\
+& & \texttt{LENGTH} & 2/4/8 & \emph{See Table~\ref{tab:obdefaulttypes}} \\
+\midrule Unsigned
+& \texttt{UNSIGNED8} & & 1 & $0$ to $2^{8}-1$ \\
+integer
+& \texttt{UNSIGNED16} & \texttt{SHORTCARD} & 2 & $0$ to $2^{16}-1$ \\
+& & \texttt{CARDINAL} & 2/4 & \emph{See Table~\ref{tab:obdefaulttypes}} \\
+& \texttt{UNSIGNED32} & \texttt{LONGCARD} & 4 & $0$ to $2^{32}-1$ \\
+& \texttt{UNSIGNED64} & \texttt{HUGECARD} & 8 & $0$ to $2^{64}-1$ \\
+\midrule Real
+& \texttt{REAL32} & \texttt{SHORTREAL} & 4 & $\pm 3.4028234 \times 10^{38}$ \\
+number
+& & \texttt{REAL} & 4/8 & \emph{See Table~\ref{tab:obdefaulttypes}} \\
+& \texttt{REAL64} & \texttt{LONGREAL} & 8 & $\pm 1.7976931348623157 \times 10^{308}$ \\
+\midrule Complex
+& \texttt{COMPLEX32} & \texttt{SHORTCOMPLEX} & 8 & $\pm 3.4028234 \times 10^{38}i$ \\
+number
+& & \texttt{COMPLEX} & 8/16 & \emph{Two real numbers} \\
+& \texttt{COMPLEX64} & \texttt{LONGCOMPLEX} & 16 & $\pm 1.7976931348623157 \times 10^{308}i$ \\
+\midrule Set
+& \texttt{SET8} & & 1 & \texttt{\{\}} to \texttt{\{0..7\}} \\
+& \texttt{SET16} & \texttt{SHORTSET} & 2 & \texttt{\{\}} to \texttt{\{0..15\}} \\
+& & \texttt{SET} & 2/4 & \emph{See Table~\ref{tab:obdefaulttypes}} \\
+& \texttt{SET32} & \texttt{LONGSET} & 4 & \texttt{\{\}} to \texttt{\{0..31\}} \\
+& \texttt{SET64} & \texttt{HUGESET} & 8 & \texttt{\{\}} to \texttt{\{0..63\}} \\
+\bottomrule
+\end{tabular}
+\caption{Sizes and value ranges of basic Oberon types}
+\label{tab:obbasictypes}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lrlccc@{}}
+\toprule \multicolumn{2}{@{}l}{Hardware} & Oberon & \texttt{CARDINAL}, & & \texttt{LENGTH}, \\ \multicolumn{2}{@{}l}{Architecture} & Compiler & \texttt{INTEGER}, \texttt{SET} & \texttt{REAL} & \texttt{POINTER} \\
+\midrule AMD64 & 16-bit & \tool{obamd16} & 2 & 8 & 2 \\ & 32-bit & \tool{obamd32} & 4 & 8 & 4 \\ & 64-bit & \tool{obamd64} & 4 & 8 & 8 \\
+\midrule ARM & A32 & \tool{obarma32} & 4 & 8 & 4 \\ & A64 & \tool{obarma64} & 4 & 8 & 8 \\ & T32 & \tool{obarmt32} & 4 & 4 & 4 \\ & & \tool{obarmt32fpe} & 4 & 8 & 4 \\
+\midrule \multicolumn{2}{@{}l}{AVR} & \tool{obavr} & 2 & 4 & 2 \\
+\midrule \multicolumn{2}{@{}l}{AVR32} & \tool{obavr32} & 4 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{M68000} & \tool{obm68k} & 2 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{MicroBlaze} & \tool{obmibl} & 4 & 4 & 4 \\
+\midrule MIPS & 32-bit & \tool{obmips32} & 4 & 8 & 4 \\ & 64-bit & \tool{obmips64} & 4 & 8 & 8 \\
+\midrule \multicolumn{2}{@{}l}{MMIX} & \tool{obmmix} & 4 & 8 & 8 \\
+\midrule \multicolumn{2}{@{}l}{OpenRISC 1000} & \tool{obor1k} & 4 & 4 & 4 \\
+\midrule PowerPC & 32-bit & \tool{obppc32} & 4 & 4 & 4 \\ & 64-bit & \tool{obppc64} & 4 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{RISC} & \tool{obrisc} & 4 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{WebAssembly} & \tool{obwasm} & 4 & 8 & 4 \\
+\bottomrule
+\end{tabular}
+\caption{Sizes of hardware-dependent Oberon types}
+\label{tab:obdefaulttypes}
+\end{table}
+
+\item Abstract and final record types\obref{6.3}
+
+The \texttt{RECORD} keyword of a record type declaration may be followed by an export mark where "\texttt{*}" indicates that the record type is \emph{abstract} and "\texttt{-}" indicates that it is \emph{final}:
+
+\begin{quote}\begin{grammar}
+<RecordType> = "RECORD" \changed{$[$"*"$\mid$"-"$]$} $[$"("<BaseType>")"$]$ <FieldList> $\{$";" <FieldList>$\}$ "END" \par
+\end{grammar}\end{quote}
+
+An abstract record type must be extended before it can be assigned, allocated, or used as the type of array elements, variables, fields, value parameters, or function results.
+A final record type is not extensible.
+
+\item Initialization of pointers\obref{6.4}
+
+All pointer variables are initialized to \texttt{NIL}.
+
+\item Pointer to variables\obref{6.4}
+
+A pointer type containing the \texttt{VAR} keyword may point to any variable:
+
+\begin{quote}\begin{grammar}
+<PointerType> = "POINTER" "TO" \changed{$[$"VAR"$]$} $[$"-"$]$ <Type>.
+\end{grammar}\end{quote}
+
+A pointer to a variable can be obtained using the predeclared procedure \texttt{PTR}, see Section~\ref{sec:obpredeclaredprocedures}, and is valid as long as the variable exists.
+Pointers to variables are only expression compatible with other pointers to variables of extended or array compatible types where any type extends itself.
+
+\item Read-only pointers\obref{6.4}
+
+Pointer type declarations may be marked as read-only:
+
+\begin{quote}\begin{grammar}
+<PointerType> = "POINTER" "TO" $[$"VAR"$]$ \changed{$[$"-"$]$} <Type>.
+\end{grammar}\end{quote}
+
+Read-only pointers are only assignment compatible with read-only pointers.
+The referenced variable of a read-only pointer is also read-only.
+
+\end{itemize}
+
+\obsection{Variable Declarations}{7}
+
+\begin{itemize}
+
+\item Forward declarations\obref{7}
+
+A forward declaration allows forward references to variables whose actual declaration appears later in the text.
+The data type of the forward declaration and the actual declaration must be the same.
+
+\begin{quote}\begin{grammar}
+<VariableDeclaration> = \changed{$[$\lit*{\^}$]$} <IdentList>":" <Type> \par
+\end{grammar}\end{quote}
+
+\end{itemize}
+
+\obsection{Expressions}{8}
+
+\begin{itemize}
+
+\item Module designators\obref{8.1}
+
+The identifier of a designator may refer to an imported module.
+Selectors following a module designator are treated as qualified identifiers.
+
+\item Value conversions\obref{8.2}
+
+Any identifier denoting a basic type can also be used as the name of a function procedure that accepts a single value parameter of basic type.
+The result of calling such a procedure is the value of the parameter converted to the named type.
+
+\item Integer quotient and modulus\obref{8.2.2}
+
+The fractional part of the integer quotient is discarded such that the modulus has the same sign as the dividend.
+
+\item Typed set constructors\obref{8.2.3}
+
+A set constructor may be prefixed by an identifier which specifies the set type of the result.
+
+\begin{quote}\begin{grammar}
+<Set> = \changed{$[$\synt{Qualident}$]$} "{" $[$<Element> $\{$"," <Element>$\}]$ "}"
+\end{grammar}\end{quote}
+
+If omitted, the type of the result defaults to the minimal set type to which its constant value belongs, or \texttt{SET} if the result is not constant.
+
+\item Same type test\obref{8.2.4}
+
+Type tests are also applicable on two types and yield whether they are the same.
+
+\end{itemize}
+
+\obsection{Procedure Declarations}{10}
+
+\begin{itemize}
+
+\item Abstract and final procedures\obref{10}
+
+The \texttt{PROCEDURE} keyword of a type-bound procedure declaration may be followed by an export mark where "\texttt{*}" indicates that the procedure is \emph{abstract} and "\texttt{-}" indicates that it is \emph{final}.
+The corresponding export marks of a forward declaration and its actual declaration must be identical:
+
+\begin{quote}\begin{grammar}
+<ProcedureHeading> = "PROCEDURE" \changed{$[$"*"$\mid$"-"$]$} $[$<Receiver>$]$ <IdentDef> $[$<FormalParameters>$]$ \par
+<ForwardDeclaration> = "PROCEDURE" \changed{$[$"*"$\mid$"-"$]$} "^" $[$<Receiver>$]$ <IdentDef> $[$<FormalParameters>$]$ \par
+\end{grammar}\end{quote}
+
+An abstract procedure has no procedure body and causes all record types to which it is bound to be abstract as well.
+A final procedure is not redefinable.
+
+\item Read-only parameters\obref{10.1}
+
+Receivers and formal parameters may be marked as read-only just like variables and fields:
+
+\begin{quote}\begin{grammar}
+<FPSection> = $[$"VAR"$]$ \changed{\synt{IdentList}}":" <Type> \par
+<Receiver> = "("$[$"VAR"$]$ \changed{\synt{IdentDef}}":" <ident>")" \par
+\end{grammar}\end{quote}
+
+A type-bound procedure can be called using a read-only variable or field of record type if its receiver is read-only as well.
+
+\item Structured result types\obref{10.1}
+
+The result type of a function can be structured but neither an abstract record nor an open array.
+
+\end{itemize}
+
+\obsection{Predeclared Procedures}{10.3}\label{sec:obpredeclaredprocedures}
+
+The \ecs{} supports all function procedures predeclared in the Oberon-2 language report and adds the following extensions:
+
+\begin{itemize}
+
+\item Arithmetic shift\alignright\texttt{ASH}\nopagebreak
+
+The result type of the predeclared function procedure \texttt{ASH} is the integer type of its arguments.
+
+\item Imaginary part\alignright\changed{\texttt{IM}}\nopagebreak
+
+The predeclared function procedure \texttt{IM} accepts a complex value and returns its imaginary part.
+
+\item Array length\alignright\texttt{LEN}\nopagebreak
+
+The result type of the predeclared function procedure \texttt{LEN} is \texttt{LENGTH}, see Section~\ref{sec:obtypedeclarations}.
+
+\item Variable pointer\alignright\changed{\texttt{PTR}}\nopagebreak
+
+The predeclared function procedure \texttt{PTR} accepts a variable of any type and returns a pointer to it, see Section~\ref{sec:obtypedeclarations}.
+
+\item Real part\alignright\changed{\texttt{RE}}\nopagebreak
+
+The predeclared function procedure \texttt{RE} accepts a complex value and returns its real part.
+
+\item Binary selection\alignright\texttt{\changed{SEL}}\nopagebreak
+
+The predeclared function procedure \texttt{SEL} accepts a Boolean expression and two compatible expressions of any basic, pointer or procedure type.
+If the condition specified by the first argument is satisfied, it evaluates the second argument and otherwise the third.
+
+\end{itemize}
+
+The \ecs{} supports all proper procedures predeclared in the Oberon-2 language report and adds the following extensions:
+
+\begin{itemize}
+
+\item Assertion\alignright\texttt{ASSERT}\nopagebreak
+
+The optional second argument of the predeclared proper procedure \texttt{ASSERT} may be an integer constant between 0 and 255 that represents the exit status of the program.
+If the first argument has a constant value, the assertion is static and terminates the compilation rather than the program execution.
+
+\item Variable deallocation\alignright\texttt{\changed{DISPOSE}}\nopagebreak
+
+The predeclared proper procedure \texttt{DISPOSE} accepts a pointer variable that stores a pointer to a variable previously allocated with \texttt{NEW}.
+It deallocates the referenced variable and sets the pointer variable to \texttt{NIL}.
+
+\item Program termination\alignright\texttt{HALT}\nopagebreak
+
+The predeclared proper procedure \texttt{HALT} accepts an integer constant between 0 and 255 that represents the exit status of the program.
+
+\item Value ignoring\alignright\texttt{\changed{IGNORE}}\nopagebreak
+
+The predeclared proper procedure \texttt{IGNORE} accepts an expression of any type and ignores its value.
+
+\item Variable allocation\alignright\texttt{NEW}\nopagebreak
+
+The type of the array lengths accepted by the predeclared proper procedure \texttt{NEW} is \texttt{LENGTH}.
+If a variable allocation fails, the corresponding pointer variable assumes the value \texttt{NIL}.
+
+\item Expression evaluation\alignright\texttt{\changed{TRACE}}\nopagebreak
+
+The predeclared proper procedure \texttt{TRACE} allows printing the value of an arbitrary expression of any basic, pointer or procedure type for debugging purposes.
+
+\end{itemize}
+
+\obsection{Modules}{11}
+
+\begin{itemize}
+
+\item Generic modules\obref{11}
+
+Modules with a list of identifiers following their name are called \emph{generic} and can be parameterized using the same number of constant expressions when they are imported:
+
+\begin{quote}\begin{grammar}
+<Module> = "MODULE" <ident> \changed{$[$"("\synt{IdentList}")"$]$} $[$"IN" <Qualident>$]$";" \\ $\{$<ImportList>$\}$ <DeclarationSequence> \\ $[$"BEGIN" <StatementSequence>$]$ "END" <ident>"." \par
+<Import> = $[$<ident> ":="$]$ <ident> \changed{$[$"("\synt{ExpressionList}")"$]$} $[$"IN" <Qualident>$]$\par
+\end{grammar}\end{quote}
+
+During an import of a generic module, each identifier is declared as an optionally exported constant or type using the constant value or type identifier of the corresponding parameter.
+
+\item Module packages\obref{11}
+
+Modules can be associated with a \emph{package} which provides a separate scope for all modules contained therein.
+Module packages are named using the optional \texttt{IN} keyword:
+
+\begin{quote}\begin{grammar}
+<Module> = "MODULE" <ident> $[$"("<IdentList>")"$]$ \changed{$[$"IN" \synt{Qualident}$]$}";" \\ $\{$<ImportList>$\}$ <DeclarationSequence> \\ $[$"BEGIN" <StatementSequence>$]$ "END" <ident>"." \par
+\end{grammar}\end{quote}
+
+The package of imported modules can be specified either in front of the import list or following their name:
+
+\begin{quote}\begin{grammar}
+<ImportList> = \changed{$[$"IN" \synt{Qualident}$]$} "IMPORT" <Import> $\{$"," <Import>$\}$";" \par
+<Import> = $[$<ident> ":="$]$ <ident> $[$"("<ExpressionList>")"$]$ \changed{$[$"IN" \synt{Qualident}$]$} \par
+\end{grammar}\end{quote}
+
+\item Multiple import lists\obref{11}
+
+A module may contain multiple import lists:
+
+\begin{quote}\begin{grammar}
+<Module> = "MODULE" <ident> $[$"("<IdentList>")"$]$ $[$"IN" <Qualident>$]$";" \\ \changed{$\{$}<ImportList>\changed{$\}$} <DeclarationSequence> \\ $[$"BEGIN" <StatementSequence>$]$ "END" <ident>"." \par
+\end{grammar}\end{quote}
+
+\item Text following a module\obref{11}
+
+The remaining text of the source file after the concluding dot of a module is completely ignored.
+
+\item Module loading\obref{11}
+
+A program can consist of an arbitrary number of modules which are loaded automatically.
+At least one of them however must have a module body which serves as the entry point of the program if not provided by other compilers or assemblers.
+
+\end{itemize}
+
+\obsection{The Module SYSTEM}{C}\label{sec:obsystemmodule}
+
+The \ecs{} omits the procedure \texttt{SYSTEM.\changed{CC}} and adds the types \texttt{SYSTEM.\changed{AD\-DRESS}} and \texttt{SYSTEM.\changed{SET}}.
+These are unsigned integer and set types that have the same size as \texttt{LENGTH}, see Section~\ref{sec:obtypedeclarations}.
+All other function procedures predeclared in the Oberon-2 language report are supported with the following extensions:
+
+\begin{itemize}
+
+\item Memory address\alignright\texttt{SYSTEM.ADR}\nopagebreak
+
+The result type of the predeclared function procedure \texttt{SYSTEM.ADR} is \texttt{SYSTEM.AD\-DRESS}.
+
+\item Memory bit\alignright\texttt{SYSTEM.BIT}\nopagebreak
+
+The types of the arguments of the predeclared function procedure \texttt{SYSTEM.BIT} are \texttt{SYSTEM.AD\-DRESS} and \texttt{LENGTH} respectively.
+
+\item Type interpretation\alignright\texttt{SYSTEM.VAL}\nopagebreak
+
+If the second argument of the predeclared function procedure \texttt{SYSTEM.VAL} refers to a variable, the result is that variable interpreted as if it was declared with the specified type.
+Otherwise, the result is the value of the second argument converted to the specified basic, pointer, or procedure type.
+
+\end{itemize}
+
+The \ecs{} omits the procedures \texttt{SYSTEM.\changed{GETREG}} and \texttt{SYSTEM.\changed{PUTREG}}.
+All other proper procedures predeclared in the Oberon-2 language report are supported with the following extensions:
+
+\begin{itemize}
+
+\item Inline assembly code\alignright\texttt{SYSTEM.\changed{ASM}}\nopagebreak
+
+The predeclared proper procedure \texttt{SYSTEM.ASM} allows writing inline assembly code using one of the various compilers for the Oberon programming language.
+It accepts a string storing the actual assembly code and passes it to the assembler used to generate the machine code.
+The available instruction set therefore depends on the actual compiler used to compile the module.
+\seeassembly
+
+The names and values of all accessible constants with boolean, character, integer, or set type are predefined in the assembly code.
+Within a procedure, the names of its local variables and parameters are also predefined.
+The values of these definitions correspond to the offset of the variable or parameter relative to the frame pointer.
+For debugging purposes, all names predefined in inline assembly code and their actual values are accessible using the expression evaluation directive.
+
+\item Inline intermediate code\alignright\texttt{SYSTEM.\changed{CODE}}\nopagebreak
+
+The predeclared proper procedure \texttt{SYSTEM.CODE} allows writing inline intermediate code using one of the various compilers for the Oberon programming language.
+It accepts a string storing the actual intermediate code and predefines the same names as inline assembly code.
+\seecode
+
+\item Memory deallocation\alignright\texttt{SYSTEM.\changed{DISPOSE}}\nopagebreak
+
+The predeclared proper procedure \texttt{SYSTEM.DISPOSE} accepts any pointer variable that stores a pointer to memory previously allocated with \texttt{SYSTEM.NEW}.
+It deallocates the memory and sets the pointer variable to \texttt{NIL}.
+
+\item Memory read\alignright\texttt{SYSTEM.GET}\nopagebreak
+
+The type of first argument of the predeclared proper procedure \texttt{SYSTEM.GET} is \texttt{SYSTEM.AD\-DRESS}.
+
+\item Memory copy\alignright\texttt{SYSTEM.MOVE}\nopagebreak
+
+The type of the first two arguments of the predeclared function procedure \texttt{SYSTEM.MOVE} is \texttt{SYSTEM.AD\-DRESS} whereas the type of the third argument is \texttt{LENGTH}.
+
+\item Memory allocation\alignright\texttt{SYSTEM.NEW}\nopagebreak
+
+The type of the second argument of the predeclared proper procedure \texttt{SYSTEM.NEW} is \texttt{LENGTH}.
+
+\item Memory write\alignright\texttt{SYSTEM.PUT}\nopagebreak
+
+The type of the first argument of the predeclared proper procedure \texttt{SYSTEM.PUT} is \texttt{SYSTEM.AD\-DRESS}.
+
+\end{itemize}
+
+\obsection{The Oberon Environment}{D}
+
+\begin{itemize}
+
+\item Commands\obref{D1}
+
+The Oberon environment provided by the \ecs{} does not support a shell that allows activating commands.
+It does however make the command-line arguments passed to the program itself available, see Section~\ref{sec:OBL:Arguments}.
+
+\item Dynamic loading of modules\obref{D2}
+
+The \ecs{} does not support dynamic loading of modules.
+
+\item Garbage collection\obref{D3}
+
+The \ecs{} does not support garbage collection but provides a predeclared proper procedure called \texttt{DISPOSE} which allows deallocating variables manually, see Section~\ref{sec:obpredeclaredprocedures}.
+
+\item Browser\obref{D4}
+
+The Oberon environment does not provide a separate browser tool for extracting the human-readable interface of a compiled module since it is already available in its symbol file, see Section~\ref{sec:obtools}.
+Instead, the \ecs{} provides tools that can generate cross-referenced documents from the interfaces of modules and their user-defined annotations, see Section~\ref{sec:obgeneration}.
+
+\item Run Time Data Structures\obref{D5}
+
+The are at most eight different extension levels for record types.
+All other quantities like the number of modules, imports, declarations, fields, parameters and statements, or the length of identifiers, strings, and arrays have no intrinsic limit and are only restricted by available memory.
+The actual limit therefore depends only on the execution environment of the tool used to process the Oberon module.
+
+\item Trap Numbers
+
+Program execution is aborted when assertions like type guards are not satisified.
+The runtime environment may indicate the reason for program terminations using trap numbers whose meaning is listed in Table~\ref{tab:obtraps}.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule Trap & Meaning & Context \\
+\midrule 0 & Failed assertion & Assert procedures \obref{10.3} \\
+1 & Unmatched case label & Case statements \obref{9.5} \\
+2 & Invalid array element index & Array designators \obref{8.1} \\
+3 & Failed type guard & Type guards \obref{8.1} \\
+4 & Unsatisfied type test & With statements \obref{9.11} \\
+\bottomrule
+\end{tabular}
+\caption{Oberon trap numbers}
+\label{tab:obtraps}
+\end{table}
+
+\end{itemize}
+
+\section{The Oberon Library}
+
+The \ecs{} provides a collection of modules that comprise the \emph{Oberon Library}\index{Oberon Library}\index{Libraries!Oberon Library}.
+This library provides some useful utilities for programmers and is available by importing one or more of the modules listed in Table~\ref{tab:oboberonlibrary} from package \texttt{OBL}.
+All of these modules are governed by the \rse{} which is an additional permission to the \gpl{} that allows users of the \ecs{} to create proprietary programs.
+\ifbook Copies of these licenses are included in Appendices~\ref{gpl} and~\ref{rse} on pages~\pageref{gpl} and~\pageref{rse} respectively. \fi
+The remainder of this section lists all modules provided by the Oberon Library in alphabetical order and describes their exported interface.
+
+\newcommand{\obmoduleref}[2]{& \texttt{#1} & \ref{sec:OBL:#1} & \ifx#2\empty\else\texttt{#2} & \ref{sec:OBL:#2}\fi \\}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llrlr@{}}
+\toprule Category & \multicolumn{2}{l}{Module \alignright Section} & \multicolumn{2}{l@{}}{Module \alignright Section} \\
+\midrule Basic Types
+\obmoduleref{Booleans}{Characters}
+\midrule Containers
+\obmoduleref{DynamicArrays}{HashMaps}
+\obmoduleref{Iterators}{Lists}
+\midrule Coroutines
+\obmoduleref{Coroutines}{Functions}
+\obmoduleref{Generators}{}
+\midrule Input/
+\obmoduleref{In}{Out}
+Output
+\obmoduleref{Streams}{}
+\midrule Numerics
+\obmoduleref{Math}{Random}
+\midrule Utilities
+\obmoduleref{Arguments}{Arrays}
+\obmoduleref{BasicTypes}{Exceptions}
+\obmoduleref{Hashes}{Pairs}
+\obmoduleref{Sets}{Strings}
+\bottomrule
+\end{tabular}
+\caption{Modules of the Oberon Library}
+\label{tab:oboberonlibrary}
+\end{table}
+
+\input{oblibrary.doc}
+
+\section{The Oakwood Library}
+
+For compatibility with other implementations, the \ecs{} provides additional library modules recommended by the Oakwood guidelines for Oberon-2 compiler developers~\cite{oakwood1995}.
+This library is called the \emph{Oakwood Library}\index{Oakwood Library}\index{Libraries!Oakwood Library} and is available by importing one or more of the modules listed in Table~\ref{tab:oboakwoodlibrary}.
+All of these modules are governed by the \rse{} which is an additional permission to the \gpl{} that allows users of the \ecs{} to create proprietary programs.
+\ifbook Copies of these licenses are included in Appendices~\ref{gpl} and~\ref{rse} on pages~\pageref{gpl} and~\pageref{rse} respectively. \fi
+The remainder of this section lists all supported modules of the Oakwood Library in alphabetical order and describes their exported interface.
+
+\renewcommand{\obmoduleref}[1]{& \texttt{#1} & \ref{sec:#1} \\}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llr@{}}
+\toprule Category & \multicolumn{2}{l@{}}{Module \alignright Section} \\
+\midrule Basic Modules
+\obmoduleref{Strings}
+\obmoduleref{Math}
+\obmoduleref{MathL}
+\obmoduleref{XYplane}
+\midrule Additional Modules
+\obmoduleref{Coroutines}
+\bottomrule
+\end{tabular}
+\caption{Modules of the Oakwood Library}
+\label{tab:oboakwoodlibrary}
+\end{table}
+
+\input{oaklibrary.doc}
+
+\section{Documentation Generation}\label{sec:obgeneration}
+
+The \ecs{} provides several tools that are able to extract the structure of modules written in Oberon and generate documentations for them.
+This section describes the contents of the extracted information and explains how programmers can provide a user-defined description of it.
+An example of a completely annotated module is given in Figure~\ref{fig:obdocexample} at the end of this section.
+
+\subsection{Annotations}
+
+Programmers can annotate their program using a special notation for comments.
+Comments beginning with two asterisks are still ignored during parsing but recognized and merged into a single \emph{annotation} for the immediately following syntax element.
+Annotations can be formatted using a lightweight markup language which is an extension of the Creole markup language used for formatting wikis~\cite{sauer2007}.
+Table~\ref{tab:docmarkup} \ifbook on page~\pageref{tab:docmarkup} \fi summarizes all elements of this markup language and shows how they are formatted.
+\seedocumentation
+
+\ifbook\else\markuptable\fi
+
+In addition to annotations for syntax elements like modules and procedures, the very last annotation after the end of a module is also recognized.
+The documentation for a module begins with the user-defined content consisting of paragraphs and articles defined in this annotation.
+Afterward there is an article for the module and each of its exported declarations.
+Since all these articles are predefined, the article markup has a different meaning therein and allows tagging an element of the article with further information.
+These so-called \emph{tags} begin with one at sign for general-purpose tags and with two at signs for descriptions of nested syntax elements.
+
+The following sections define how these articles look like and what tags are available therein.
+The tag \texttt{@remarks} is always available and allows giving more detailed information at the end of an article.
+
+\subsection{Modules}
+
+A module can be annotated in front of the \texttt{MODULE} keyword.
+The generated article is labeled with the name and optional package of the module and contains its description as well as a summary of all exported declarations.
+The summary consists of a table that groups these declarations by topic which can be defined using the \texttt{@topic} tag.
+It defaults to the type of the declaration if no tag is given.
+If the module is generic, the article additionally provides a fully qualified label for each exported parameter and a nested tag for its description:
+
+\begin{quote}\begin{verbatim}
+(** description for a module *)
+(** @@Value its first parameter *)
+(** @remarks further information about the module *)
+MODULE Module (Value*);
+END Module.
+(** the documentation starts with this description *)
+(** @ and may contain user-defined articles *)
+(** as well as links to the [[Module]] *)
+\end{verbatim}\end{quote}
+
+\subsection{Constant Declarations}
+
+A constant can be annotated in front of its identifier or the preceding \texttt{CONST} keyword.
+The generated article is labeled with the fully qualified name of the constant and contains its description as well as its syntax definition:
+
+\begin{quote}\begin{verbatim}
+(** description of a constant *)
+(** @topic grouping of the constant *)
+(** @remarks further information about the constant *)
+CONST Pi* = 3.1415;
+\end{verbatim}\end{quote}
+
+\subsection{Type Declarations}
+
+A type can be annotated in front of its identifier or the preceding \texttt{TYPE} keyword.
+The generated article is labeled with the fully qualified name of the type and contains its description as well as its syntax definition.
+For record type declarations it additionally contains a summary of the record interface similar to the summary of the module.
+Fields can be annotated like variables:
+
+\begin{quote}\begin{verbatim}
+(** description of a record *)
+TYPE Record* = RECORD
+  (** description of the first field *)
+  field-: Number;
+END;
+\end{verbatim}\end{quote}
+
+\subsection{Variable Declarations}
+
+A variable can be annotated in front of its identifier or the preceding \texttt{VAR} keyword.
+The generated article is labeled with the fully qualified name of the variable and contains its description as well as its syntax definition:
+
+\begin{quote}\begin{verbatim}
+(** description of a variable *)
+VAR features*: SET;
+\end{verbatim}\end{quote}
+
+\subsection{Procedure Declarations}
+
+A procedure can be annotated in front of the \texttt{PROCEDURE} keyword.
+The generated article is labeled with the fully qualified name of the procedure and contains its description as well as its syntax definition.
+It additionally provides a fully qualified label and a nested tag for the description of each parameter and the optional receiver.
+Function procedures have an additonal tag called \texttt{@result} that allows describing the result value:
+
+\begin{quote}\begin{verbatim}
+(** description for a procedure *)
+(** @@number its first parameter *)
+(** @result and its result value *)
+PROCEDURE Increment* (VAR number: Number): Number;
+BEGIN INC (number, Value); RETURN number;
+END Increment;
+\end{verbatim}\end{quote}
+
+\begin{figure}
+\ttfamily\centering
+\begin{minipage}{26em}\begin{verbatim}
+(** description for a module *)
+(** @@Value its first parameter *)
+(** @remarks further information about the module *)
+MODULE Module (Value*);
+
+(** description of a constant *)
+(** @topic grouping of the constant *)
+(** @remarks further information about the constant *)
+CONST Pi* = 3.1415;
+
+TYPE
+  (** description of a type declaration *)
+  Number* = INTEGER;
+
+  (** description of a record *)
+  Record* = RECORD
+    (** description of the first field *)
+    field-: Number;
+  END;
+
+(** description of a variable *)
+VAR features*: SET;
+
+(** description for a procedure *)
+(** @@number its first parameter *)
+(** @result and its result value *)
+PROCEDURE Increment* (VAR number: Number): Number;
+BEGIN INC (number, Value); RETURN number;
+END Increment;
+
+END Module.
+(** the documentation starts with this description *)
+(** @ and may contain user-defined articles *)
+(** as well as links to the [[Module]] *)
+\end{verbatim}\end{minipage}
+\normalfont\caption{Example of a completely annotated Oberon module}
+\label{fig:obdocexample}
+\end{figure}
+
+\section{Runtime Support}\label{sec:obruntimesupport}\index{Runtime support!for Oberon}
+
+Some language features of Oberon such as predeclared procedures require some additional runtime support.
+This runtime support is stored in library files which are collections of object files. \seeobject
+The \ecs{} provides the required runtime support in one library file for each hardware architecture it supports.
+The name of the corresponding library file consists of a leading \file{ob}, the name of the target hardware architecture, and a trailing \file{run} as in \file{ob\-arma64\-run}.
+
+The procedures of the module \texttt{Math} described in Section~\ref{sec:OBL:Math} are wrappers for the corresponding functions of the Standard \cpp{} Library.
+Programs using these procedures therefore require additional runtime support for \cpp{}. \seecpp
+
+\section{Oberon Tools}\label{sec:obtools}
+
+The \ecs{} provides several different tools that process modules written in Oberon.
+\interface\seeguide
+
+The tools process Oberon modules in several consecutive stages.
+In each stage, the internal representation of the module is changed and transformed.
+Figure~\ref{fig:obdataflow} shows all stages and the different representations.
+Additionally, each tool except for the pretty printer and the interpreter generates a so-called \emph{symbol file} for each source file being processed.
+Symbol files contain information about the interface of a module and are needed whenever a module attempts to import another one.
+When importing a module, its symbol file is first searched in the current working directory and then in the relative directory given by the \environmentvariable{ECSIMPORT} environment variable which must include a trailing path separator.
+
+\begin{figure}
+\flowgraph{
+& \resource{Oberon\\source code} \ar[d] \\
+& \converter{Lexer} \ar[d] \\
+& \resource{tokens} \ar[d] \\
+& \converter{Parser} \ar[d] \\
+\variable{ECSIMPORT} \ar[rd] & \resource{abstract\\syntax tree} \ar[d] \ar[r] & \converter{Pretty Printer} \ar[d] \\
+\resource{symbol\\files} \ar@/u/[r] & \converter{Semantic\\Checker} \ar@/d/[l] \ar[d] & \resource{reformatted\\source code} \\
+\converter{Interpreter} \ar@/l/[d] & \resource{attributed\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Transpiler} \ar[d] \\
+\resource{input/\\output} \ar@/r/[u] & \converter{Intermediate\\Code Emitter} \ar[d] & \resource{translated\\source code} \\
+& \resource{intermediate\\code} \ar[d] \ar@/u/[r] & \converter{Optimizer} \ar@/d/[l] \\
+\resource{assembly\\listing} & \converter{Machine Code\\Generator} \ar[l] \ar[d] \ar[r] & \resource{debugging\\information} \\
+& \resource{object file} \\
+}\caption{Data flow within the tools for Oberon}
+\label{fig:obdataflow}
+\end{figure}
+
+\obprint
+\obcheck
+\obdump
+\obrun
+\obcpp
+\obdoc
+\obhtml
+\oblatex
+\obcode
+\obamda
+\obamdb
+\obamdc
+\obarma
+\obarmb
+\obarmc
+\obarmcfpe
+\obavr
+\obavrtt
+\obmabk
+\obmibl
+\obmipsa
+\obmipsb
+\obmmix
+\oborok
+\obppca
+\obppcb
+\obrisc
+\obwasm
+
+\section{Interoperability}
+
+In accordance with the goal of the \ecs{} to enable interoperability between its implemented programming languages,
+the compilers for Oberon provide different mechanisms to exchange data with programs written with other tools of the \ecs{}.
+The interoperability is enabled by a common intermediate code representation and calling convention. \seecode
+
+This section describes the naming conventions used to uniquely identify the intermediate code sections defined by the compilers for Oberon
+as well as the ways of accessing sections defined by other compilers and assemblers.
+
+\subsection{Naming Conventions}
+
+The compilers for the Oberon programming language define a code section for each body of a module and each procedure defined therein.
+Additional data sections are defined for global variables as well as record descriptors which contain the type information of records needed at runtime.
+The name of each section is the identifier of the actual declaration prefixed by the name of its containing scope and an attached period such that names resemble qualified identifiers.
+The name of module packages are followed by colons rather than periods.
+
+\subsection{Accessing Sections}\label{sec:obaccessingsections}
+
+Oberon as implemented by the \ecs{} allows two different ways of accessing sections defined by other compilers or assemblers.
+
+\begin{itemize}
+
+\item
+The predeclared procedure \texttt{SYSTEM.ASM} allows writing inline assembly code which naturally enables arbitrary access to any section, see Section~\ref{sec:obsystemmodule}.
+\seeassembly
+
+\item
+Forward declarations marked as external allow referring to data and code sections that are defined elsewhere, see Section~\ref{sec:obdeclarations}.
+
+\end{itemize}
+
+\concludechapter

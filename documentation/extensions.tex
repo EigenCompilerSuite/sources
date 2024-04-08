@@ -1,0 +1,317 @@
+% Extensions to the Eigen Compiler Suite
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startchapter{Extensions}{Extensions to the \ecs{}}{extensions}
+{The \ecs{} features a variety of tools like compilers, assemblers, and linkers.
+All of these tools implement different programming languages, target different hardware architectures, or support different runtime environments respectively.
+This \documentation{} describes the abstractions and utilities provided by the \ecs{} that facilitate the development of additional tools and runtime environments.}
+
+\epigraph{Nought may endure but mutability.}{Percy Bysshe Shelley}
+
+\section{Introduction}
+
+The \ecs{} is a complete tool chain targeting a variety of programming languages, hardware architectures, and runtime environments.
+Internally, it features several abstractions that are helpful for programmers implementing these tools.
+Figure~\ref{fig:extabstractions} shows all abstractions and visualizes possible combinations of the different tools.
+
+\begin{figure}
+\flowgraph{
+\resource{source code} \ar[d] & \resource{source code} \ar[d] & \resource{source code} \ar[d] \\
+\converter{Front-End\\for programming\\language \textit{A}} \ar[rd] & \converter{Front-End\\for programming\\language \textit{B}} \ar[d] & \converter{Front-End\\for programming\\language \textit{C}} \ar[ld] \\
+& \resource{intermediate\\code} \ar[ld] \ar[d] & \resource{assembly\\source code} \ar[d] \\
+\converter{Back-End\\for hardware\\architecture \textit{X}} \ar[d] \ar[rd] & \converter{Back-End\\for hardware\\architecture \textit{Y}} \ar[d] & \converter{Assembler\\for hardware\\architecture \textit{Z}} \ar[ld] \\
+\resource {debugging\\information} & \resource{object\\file} \ar[ld] \ar[d] \ar[rd] \\
+\converter{Linker\\for runtime\\environment \textit{1}} \ar[d] & \converter{Linker\\for runtime\\environment \textit{2}} \ar[d] & \converter{Disassembler\\for hardware\\architecture \textit{3}} \ar[d] \\
+\resource{executable\\binary image} & \resource{executable\\binary image} & \resource{disassembly\\listing} \\
+}\caption{The main abstractions of the \ecs{}}
+\label{fig:extabstractions}
+\end{figure}
+
+The goal of the abstractions is to enable and simplify all possible combinations of the different aspects of the tool chain.
+This is achieved by reducing the required programming interfaces to a minimum.
+As a result, adding support for another programming language, hardware architecture, or runtime environment is also simplified.
+The following sections describe the steps that are required to extend the \ecs{} into this direction.
+
+\section{Diagnostics}
+
+Compilers and assemblers as provided by the \ecs{} translate source code written by programmers.
+Therefore, source code may contain syntax or semantic errors which have to be diagnosed by these tools.
+The \ecs{} provides a generic diagnostics facility for programmers that enables a consistent reporting of errors, warnings, and additional information.
+Besides the actual text, diagnostic messages also include the name of the diagnosed source code and the position therein.
+Unless otherwise specified, the source code position is based on text lines.
+
+\section{Application Drivers}
+
+The \ecs{} provides a generic driver facility for programmers that allows all applications written with it to share the same user interface.
+This framework covers the overall error handling as well as the processing scheme for all kinds of input given to the applications.
+\interface
+
+\section{Programming Languages}
+
+This section describes the tools and representations typically provided by the \ecs{} for a specific programming language and how they are implemented.
+Figure~\ref{fig:extdataflow} shows the tools and representations of typical implementations of programming languages.
+
+\begin{figure}
+\flowgraph{
+& & \resource{source code} \ar[d] & & \\
+& & \converter{Lexer} \ar[d] \\
+& & \resource{tokens} \ar[d] \\
+& & \converter{Parser} \ar[d] \\
+*=<2em,0em>\txt{\rotatebox{90}{Front-End}} \ar@{-}`r[uuuu]`[rruuuu]+D \ar@{-}`r[dddd]`[rrdddd]+U & \converter{Serializer} \ar[d] & \resource{abstract\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Pretty Printer} \ar[d] \\
+& \resource{internal\\representation} & \converter{Semantic\\Checker} \ar[d] & \resource{reformatted\\source code} & *=<2em,0em>\txt{\rotatebox{270}{Compiler}} \ar@{-}`l[uuuuu]`[lluuuuu]+D \ar@{-}`l[ddddd]`[llddddd]+U \\
+& \converter{Interpreter} \ar@/l/[d] & \resource{attributed\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Transpiler} \ar[d] \\
+& \resource{input/\\output} \ar@/r/[u] & \converter{Intermediate\\Code Emitter} \ar[d] & \resource{translated\\source code} \\
+& & \resource{intermediate\\code} \ar[d] \ar@/u/[r] & \converter{Optimizer} \ar@/d/[l] \\
+*=<2em,0em>\txt{\rotatebox{90}{Back-End}} \ar@{-}`r[u]`[rru]+D \ar@{-}`r[d]`[rrd]+U & \resource{assembly\\listing} & \converter{Machine Code\\Generator} \ar[l] \ar[d] \ar[r] & \resource{debugging\\information} \\
+& & \resource{object file} & & \\
+}\caption{Data flow within a typical implementation of a programming language}
+\label{fig:extdataflow}
+\end{figure}
+
+The source code of a program written in a programming language is most often represented in an abstract syntax tree.
+This tree is created by a \emph{parser}\index{Parsers} that recognizes the syntax of the programming language.
+Parsers typically use a so-called \emph{lexer}\index{Lexers} that is able to tokenize the source code and extract symbols like keywords and operators.
+The abstract syntax tree is the base for all tools described in the following sections.
+Therefore, all of these tools contain a parser and a lexer in order to create the syntax tree.
+Although these tools use the information represented in the syntax tree for different purposes, they all traverse it in one or several consecutive stages.
+
+\subsection{Pretty Printers}
+
+Pretty printers just traverse the complete abstract syntax tree by reconverting its nodes into tokens again.
+These tokens are then printed using a consistent and well-arranged layout.
+Pretty printers usually do not alter the abstract syntax tree and are often able to reformat source code that contains semantic errors.
+
+\subsection{Semantic Checkers}
+
+Semantic checkers traverse the abstract syntax tree and attribute its nodes with semantic information.
+They are able to diagnose violations of the semantic rules of the programming language.
+For that purpose, semantic checkers sometimes use additional semantic information that is stored separately.
+The functionality provided by semantic checkers is in many cases reused by the remaining tools of this section.
+Standalone semantic checkers are useful for automated testing and verification of the implementation of a programming language.
+
+\subsection{Serializers}
+
+Serializers dump all information stored in the internal representation of a program in a human readable format for debugging purposes.
+The \ecs{} provides a generic serialization facility for representing attributed syntax trees as XML documents.
+This serialization format has the advantage of being standardized and easy to parse for other development tools potentially making use of the same internal program representation.
+
+\subsection{Interpreters}
+
+Interpreters are able to execute the program given in the syntax tree and to emulate a complete runtime environment for it.
+They do not translate the syntax tree into another form, but traverse its nodes by simulating their runtime behavior as defined by the programming language.
+Interpreters are useful for automated testing and verification of the implementation of a programming language or executing scripts inside a program.
+For this particular case the \ecs{} provides a generic framework that allows embedded interpreters to interface with their environment.
+
+\subsection{Transpilers}
+
+Transpilers translate programs written in one programming language into programs written in other programming languages.
+They therefore behave like pretty printers, except that the target programming language differs from the source programming language.
+Additionally, transpilers usually need the semantic information provided by semantic checkers in order to translate the source code correctly.
+
+\subsection{Documentation Generators}
+
+Documentation generators extract the structure of the source code and combine it with annotations provided by the programmer into generic documentations.
+This generic representation of the extracted information is used afterward to generate documents of different formats.
+\seedocumentation
+
+\subsection{Intermediate Code Emitters}
+
+The \ecs{} defines an intermediate code representation that is able to represent arbitrary programs using instructions for an abstract machine.
+This intermediate representation can be translated into actual machine code by machine code generators, see Section~\ref{sec:extgenerators}
+An intermediate code emitter traverses syntax trees and translates theirs nodes into intermediate code sections and instructions that correspond to the runtime behavior of the original programs.
+The \ecs{} provides a generic intermediate code emitter that is a base for all concrete emitters and simplifies the generation of intermediate code.
+\seecode
+
+\subsection{Front-Ends}\label{sec:extfrontends}
+
+A front-end combines all of the previous stages required to transform the original source code into an intermediate code representation thereof.
+This most often includes the parser, the semantic checker, and the intermediate code emitter.
+Since this intermediate representation can be translated later into machine code for a variety of hardware architectures,
+programmers only have to provide a single front-end instead of one for each possible combination thereof.
+In combination with the intermediate code interpreter, they are useful for automated testing and verification of the generated intermediate code.
+
+\subsection{Compilers}
+
+Compilers translate source code written in a specific programming language into machine code targeting a specific hardware architecture.
+They therefore just combine the output of one specific front-end with the input for a specific back-end, see Sections~\ref{sec:extfrontends} and~\ref{sec:extbackends}.
+In the end, compilers write the resulting machine code into object files.
+\seeobject
+If programmers add support for an additional programming language by implementing a front-end accordingly,
+or if they support a new hardware architecture by implementing an additional back-end, compilers for all new combinations just get available without further ado.
+
+\section{Hardware Architectures}
+
+This section describes the tools and components typically provided by the \ecs{} for a specific hardware architecture and how they are implemented.
+The support for a hardware architecture is generally based on a powerful representation of its processor instructions as shown in Figure~\ref{fig:extinstructions}.
+This abstraction must be able to represent any valid combination of mnemonic and operands of the instruction set of the target hardware architecture.
+In order to be most useful, this abstract representation must be able to be instantiated in the following three ways:
+
+\begin{figure}
+\flowgraph{
+\resource{Assemblers} \ar@{-}`d[]+L`[d]+L \ar@{-}`d[]+R`[d]+R & \resource{Generators} \ar@{-}`d[]+L`[d]+L \ar@{-}`d[]+R`[d]+R & \resource{Disassemblers} \ar@{-}`d[]+L`[ddd]+L \ar@{-}`d[]+R`[ddd]+R \\
+\resource{textual\\representation} \ar@{-->}[dd] \ar[rd] & \resource{program-driven\\instantiation} \ar[d] & \resource{binary\\encoding} \ar[ld] \ar@{-->}[dd] \\
+& \converter{Abstract\\Instruction} \ar[ld] \ar@{-->}`d[ld][ld] \ar[rd] \ar@{-->}`d[rd][rd] \ar[rd] \\
+\resource{binary\\encoding} & & \resource{textual\\representation} \\
+}\caption{Abstract representation of instructions}
+\label{fig:extinstructions}
+\end{figure}
+
+\begin{itemize}
+
+\item Translation from Text\nopagebreak
+
+A concrete instruction and its operands have to be recognized by their textual representation.
+Usually, the documentation of the target hardware architecture defines how its instructions are textually represented.
+This functionality is needed by assemblers, see Section~\ref{sec:extassemblers}.
+
+\item Instantiation by Code\nopagebreak
+
+A concrete instruction shall be instantiatable by providing its mnemonic and an abstract representation of its operands.
+The operands themselves are composed of immediate values, registers, or special-purpose data addressing.
+This functionality is needed for the translation from text as well as by machine code generators, see Section~\ref{sec:extgenerators}.
+
+\item Decoding from Machine Code\nopagebreak
+
+A representation of a concrete instruction with its operands must also be creatable by decoding one or more binary octets.
+The actual encoding and decoding of instructions is defined by the instruction set of the target hardware architecture.
+This functionality is needed by disassemblers, see Section~\ref{sec:extdisassemblers}.
+
+\end{itemize}
+
+Additionally, instances of the abstract instruction representation must also be able to emit themselves in the following two ways:
+
+\begin{itemize}
+
+\item Encoding into Machine Code\nopagebreak
+
+Any representation of a valid instruction shall be encoded into one or more binary octets.
+This functionality is needed by assemblers and machine code generators, see Sections~\ref{sec:extassemblers} and~\ref{sec:extgenerators}.
+
+\item Translation into Text\nopagebreak
+
+Any representation of a valid instruction and its operands shall be translated into its textual representation.
+This functionality is needed by disassemblers and machine code generators, see Sections~\ref{sec:extdisassemblers} and~\ref{sec:extgenerators}.
+
+\end{itemize}
+
+Usually, all combinations of instruction mnemonics and operand types that are valid according to the instruction set of the target hardware architecture are stored in a table.
+This table often also contains information about how a concrete instruction with its mnemonic and operands is represented using machine code.
+This information is needed for encoding and decoding instructions as discussed above.
+
+\subsection{Assemblers}\label{sec:extassemblers}
+
+All assemblers featured by the \ecs{} implement the generic assembly language.
+It provides a generic abstraction for any textual representation of processor instructions.
+It also supports common functionality like directives or the evaluation of arithmetic, bitwise, and logical operations.
+\seeassembly
+The \ecs{} provides a generic assembler that is a base for all concrete assemblers and implements the generic assembly language.
+It performs tasks like managing sections, evaluating expressions, and writing the resulting object files.
+Concrete assemblers only have to apply the translation of a simple textual representation of a single instruction into its machine code encoding.
+
+\subsection{Disassemblers}\label{sec:extdisassemblers}
+
+The \ecs{} provides a generic disassembler that is a base for all concrete disassemblers.
+It is able to process the sections stored in an object file and to print their textual representation.
+Data sections are represented using the generic data directives supported by the generic assembly language,
+while the machine code stored in code sections are passed to the concrete disassemblers.
+They only have to provide the encoding of some binary octets representing a single instruction and to print its textual representation.
+
+\subsection{Machine Code Generators}\label{sec:extgenerators}
+
+Machine code generators translate intermediate code into equivalent machine code for the target hardware architecture.
+The \ecs{} provides a generic machine code generator that is a base for all concrete generators.
+It is able to manage intermediate code sections and process the instructions that have the same binary encoding across all concrete generators.
+This includes all instructions contained in data sections or instructions that are not natively supported by the concrete machine code generator.
+The generators translate one intermediate section at a time and create a corresponding object file section and a debugging information entry.
+Additionally, generators are able to create an assembly code listing of the generated machine code for verification and debugging purposes.
+Since the resulting assembly code listing is by design based on the generic assembly language, it can also be processed by the corresponding assembler yielding an exact copy of the original machine code.
+
+\subsection{Back-Ends}\label{sec:extbackends}
+
+Back-ends combine the assembler and the machine code generator for a specific hardware architecture and provide an abstract description of some of the architectural characteristics that are necessary for the generation of intermediate code.
+This includes platform-specific information about address and default integer sizes as well as data alignment constraints for example.
+The abstract description is designed to be passed to front-ends for programming languages that need this information, see Section~\ref{sec:extfrontends}.
+
+\section{Runtime Environments}
+
+The \ecs{} supports several different runtime environments.
+A runtime environment is characterized by the actual hardware architecture it is running on, as well as the underlying operating system.
+
+\subsection{Linkers}
+
+In order to run programs created by compilers and assemblers of the \ecs{} on a specific operating system or machine,
+there must be a linker that generates the output files that are executable on the target platform.
+The \ecs{} provides a generic linker that is able to map all sections of several object files into one or two binary arrangements and do the necessary linking therein.
+Two binary arrangements are needed, when data and code have to be arranged in separate address spaces.
+A concrete linker has just to write the binary data into a file using the target file format.
+Oftentimes however, binary file formats can also be represented using only the features already provided by the generic assembly language.
+In these cases, the executable output files can also be created using the plain binary file linker provided by the \ecs{} and no specific linker is necessary.
+
+\subsection{Runtime Support}
+
+Runtime support is needed for the initialization at the beginning of the program execution as well as the implementation of some standard functions that interface the environment.
+This support depends on the actual hardware architecture, the file format of the executable file, as well as the underlying operating system.
+Additional runtime support is needed for intermediate code instructions that are not natively supported by the machine code generator for a specific hardware architecture.
+This support depends only on the actual hardware architecture and is the same across different operating systems.
+Some programming languages may also require runtime support for their language features.
+The runtime support for a language is bundled into so-called \emph{library files}\index{Library files}.
+A library file is a collection of object files targeting a single hardware architecture.
+
+\section{Development Tools}
+
+The source code of the \ecs{} is accompanied by a makefile and some utility tools for developers.
+These facilities are not required to build, execute, test, or modify the \ecs{} but are intended to simplify these activities.
+The remainder of this section describes all utilities provided by the \ecs{} and their individual command-line interfaces.
+The capabilities of the makefile on the other hand are described in a readme file also supplied with the source code.
+
+\toolsection{depwalk} is a utility tool for dependency walking.
+It accepts a list of \cpp{} source files and writes the set of all directly and indirectly included header files of each source file to the standard output stream.
+The output is designed to be included in the makefile of the \ecs{} in order to consistently track all dependencies when changing the include directives of one or more of its source files.
+
+\flowgraph{\resource{\cpp{}\\source file} \ar[r] & \converter{depwalk} \ar[r] & \resource{dependency\\list}}
+
+\toolsection{ecsd} is a driver utility tool which conveniently invokes the tools of the \ecs{} with appropriate command-line arguments and environment variables.
+Its functionality and command-line interface are described in \Documentation{}~\documentationref{interface}{User Interface}.
+
+\flowgraph{\resource{input\\files} \ar[r] & \converter{ecsd} \ar[r] & \resource{executable\\file}}
+
+For developers of the \ecs{} it additionally provides the \texttt{-m}~command-line flag which automatically builds all dependencies of a tool before invoking it.
+A special target environment called \environment{code} allows exposing and executing the intermediate code representation of a program passed between front-ends and back-ends.
+For the purpose of creating and debugging runtime environments on the other hand, the driver allows targeting freestanding environments for all supported hardware architectures using the \texttt{-t} option.
+\ifbook The available names correspond to the common architecture prefixes and suffixes of the \ref*{tools:compilers}~compiler and assembler tools listed in Table~\ref{tab:tools} on page~\pageref{tab:tools}. \fi
+
+\toolsection{hexdump} is a utility tool for viewing binary files.
+It accepts the name of a binary file and writes its contents in hexadecimal form to the standard output stream.
+If additionally provided with a corresponding map file as generated by linkers, it lists all sections contained therein and colors their contents.
+
+\flowgraph{\resource{binary file/\\map file} \ar[r] & \converter{hexdump} \ar[r] & \resource{binary contents/\\colored sections}}
+
+\toolsection{linecheck} is a utility tool for checking text lines.
+It accepts a list of plain text files and checks their contents for consistent use of white space.
+The complete source code of the \ecs{} is stored in plain text files and validated using this tool.
+
+\flowgraph{\resource{text\\files} \ar[r] & \converter{linecheck} \ar[r] & \resource{diagnostic\\messages}}
+
+\toolsection{regtest} is a utility tool for regression testing.
+It accepts a quoted command line and the name of a plain text file called a test suite that contains an arbitrary number of tests.
+It notes the result of executing the command once for each test and summarizes the differences between consecutive runs if provided with an optional result file for regression testing.
+Each test consists of a short description followed by some contrived input that gets stored in a specified temporary file and is intended to cause the command execution to either succeed or fail.
+
+\flowgraph{\resource{command/\\test suite} \ar[r] & \converter{regtest} \ar@{-->}[ld] \ar@{~}[d] \ar@/u/[r] & \resource{test\\results} \ar@/d/[l] \\ \resource{temporary\\input file} \ar[r] & \converter{command} \ar[r] & \resource{success/\\failure} \ar@{-->}[lu]}
+
+Each test is described by a single line of text beginning with the identifier \texttt{positive} or \texttt{negative} indicating the expected result of the command execution, followed by a colon and a unique name.
+The actual input of a test consists of all indented text lines following its description ignoring the first horizontal tab character of each line.
+Lines beginning with a number sign character denote comments for annotating and structuring test suites and are completely ignored.
+
+\concludechapter

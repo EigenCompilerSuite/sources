@@ -1,0 +1,134 @@
+// Generic assembly language definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef SYMBOL
+	#define SYMBOL(symbol, name)
+#endif
+
+// preprocessing directives
+
+SYMBOL (Define,  "#define")
+SYMBOL (Elif,    "#elif")
+SYMBOL (Else,    "#else")
+SYMBOL (End,     "#end")
+SYMBOL (Enddef,  "#enddef")
+SYMBOL (Endif,   "#endif")
+SYMBOL (Endrep,  "#endrep")
+SYMBOL (If,      "#if")
+SYMBOL (Line,    "#line")
+SYMBOL (Repeat,  "#repeat")
+SYMBOL (Undef,   "#undef")
+
+// directives
+
+SYMBOL (Alias,        ".alias")
+SYMBOL (Align,        ".align")
+SYMBOL (Alignment,    ".alignment")
+SYMBOL (Assembly,     ".assembly")
+SYMBOL (Assert,       ".assert")
+SYMBOL (Big,          ".big")
+SYMBOL (BitMode,      ".bitmode")
+SYMBOL (Byte,         ".byte")
+SYMBOL (Code,         ".code")
+SYMBOL (Const,        ".const")
+SYMBOL (Data,         ".data")
+SYMBOL (DByte,        ".dbyte")
+SYMBOL (Duplicable,   ".duplicable")
+SYMBOL (Embed,        ".embed")
+SYMBOL (Equals,       ".equals")
+SYMBOL (Group,        ".group")
+SYMBOL (Header,       ".header")
+SYMBOL (InitCode,     ".initcode")
+SYMBOL (InitData,     ".initdata")
+SYMBOL (Little,       ".little")
+SYMBOL (OByte,        ".obyte")
+SYMBOL (Origin,       ".origin")
+SYMBOL (Pad,          ".pad")
+SYMBOL (QByte,        ".qbyte")
+SYMBOL (Replaceable,  ".replaceable")
+SYMBOL (Require,      ".require")
+SYMBOL (Required,     ".required")
+SYMBOL (Reserve,      ".reserve")
+SYMBOL (TByte,        ".tbyte")
+SYMBOL (Trace,        ".trace")
+SYMBOL (Trailer,      ".trailer")
+SYMBOL (Type,         ".type")
+
+// functions
+
+SYMBOL (Count,     "count")
+SYMBOL (Extent,    "extent")
+SYMBOL (Index,     "index")
+SYMBOL (Offset,    "offset")
+SYMBOL (Position,  "position")
+SYMBOL (Size,      "size")
+
+// operators
+
+SYMBOL (Plus,          "+")
+SYMBOL (Minus,         "-")
+SYMBOL (Times,         "*")
+SYMBOL (Slash,         "/")
+SYMBOL (Modulo,        "%")
+SYMBOL (LeftShift,     "<<")
+SYMBOL (RightShift,    ">>")
+SYMBOL (Less,          "<")
+SYMBOL (LessEqual,     "<=")
+SYMBOL (Greater,       ">")
+SYMBOL (GreaterEqual,  ">=")
+SYMBOL (Equal,         "==")
+SYMBOL (Unequal,       "!=")
+SYMBOL (Identical,     "===")
+SYMBOL (Unidentical,   "!==")
+SYMBOL (BitwiseNot,    "~")
+SYMBOL (BitwiseOr,     "|")
+SYMBOL (BitwiseAnd,    "&")
+SYMBOL (BitwiseXor,    "^")
+SYMBOL (LogicalNot,    "!")
+SYMBOL (LogicalOr,     "||")
+SYMBOL (LogicalAnd,    "&&")
+
+// separators
+
+SYMBOL (Comma,    ",")
+SYMBOL (Colon,    ":")
+SYMBOL (Newline,  "new-line character")
+
+// parentheses
+
+SYMBOL (LeftParen,     "(")
+SYMBOL (RightParen,    ")")
+SYMBOL (LeftBracket,   "[")
+SYMBOL (RightBracket,  "]")
+SYMBOL (LeftBrace,     "{")
+SYMBOL (RightBrace,    "}")
+
+// literals
+
+SYMBOL (String,      "string")
+SYMBOL (Address,     "address")
+SYMBOL (Character,   "character")
+SYMBOL (Identifier,  "identifier")
+SYMBOL (Integer,     "integer")
+SYMBOL (BinInteger,  "binary integer")
+SYMBOL (OctInteger,  "octal integer")
+SYMBOL (DecInteger,  "decimal integer")
+SYMBOL (HexInteger,  "hexadecimal integer")
+SYMBOL (Real,        "real")
+
+#undef SYMBOL

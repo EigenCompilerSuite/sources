@@ -1,0 +1,34 @@
+(* Oberon symbol file for standard import tests
+Copyright (C) Florian Negele
+
+This file is part of the Eigen Compiler Suite.
+
+The ECS is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+The ECS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with the ECS.  If not, see <https://www.gnu.org/licenses/>. *)
+
+MODULE Import;
+
+CONST Constant = 0;
+CONST ExportedConstant* = 0;
+
+TYPE Type = RECORD field, exportedField*, readOnlyField-: INTEGER END;
+TYPE ExportedType* = Type;
+
+VAR variable, exportedVariable*, readOnlyVariable-: INTEGER;
+VAR exportedArray*, readOnlyArray-: ARRAY 10 OF CHAR;
+VAR exportedRecord*, readOnlyRecord-: Type;
+
+PROCEDURE Procedure; END Procedure;
+PROCEDURE ExportedProcedure*; END ExportedProcedure;
+
+END Import.

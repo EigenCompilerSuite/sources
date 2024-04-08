@@ -1,0 +1,1094 @@
+% Generic assembly language specification
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seeassembly}{}
+
+\startchapter{Generic Assembly Language}{Generic Assembly Language Specification}{assembly}
+{The \ecs{} provides assemblers for several different hardware architectures.
+All of these tools are based on a generic assembly language that supports all of their common features.
+This \documentation{} describes the generic assembly language and its implementation by the \ecs{}.}
+
+\epigraph{Die Wahrheit und Einfachheit der Natur \\ sind immer die letzten Grundlagen \\ einer bedeutenden Kunst.}{Paul Ernst}
+
+\section{Introduction}
+
+The most obvious task of an assembler is to translate the textual representation of some processor instructions into their binary form.
+The target hardware architecture of the assembler specifies the instruction set and the actual encoding of its instructions.
+Therefore, an assembler implementing one specific instruction set is in general not able to translate instructions of another instruction set.
+
+There is some functionality however that all assemblers do have in common.
+This includes for example the support for constant definitions, symbolic names for the target of branch instructions, or sections that group instructions together.
+The \ecs{} defines a generic assembly language that supports all of these common features.
+The generic assembly language is therefore an abstraction for all concrete assembly languages and instruction sets supported by the assemblers of the \ecs{}.
+These assemblers only have to implement the translation of those parts of a program that are actually dependent on the hardware architecture.
+
+\section{Representation}
+
+The \ecs{} provides several different assemblers.
+They target different hardware architectures and therefore implement the encoding of different instruction sets.
+However, each assembler additionally implements the generic assembly language which is able to represent all these instruction sets in an abstract way.
+This section describes how assembly programs are represented by the generic assembly language.
+
+\subsection{Programs}
+
+An assembly program expressed in generic assembly language consists of an arbitrary number of interconnected units called \emph{sections}.
+Sections are used as containers for data and machine code.
+Each section contains \emph{instructions} and \emph{directives} that textually describe the actual binary contents of the section.
+
+An instruction is a single operation of a processor implementing the target hardware architecture.
+The architecture defines the available set of instructions and their textual and binary representations.
+An assembler for that architecture uses this encoding to generate the actual machine code for each instruction in the source code.
+Directives on the other hand do usually not generate any machine code but rather influence the actual encoding and state of the assembler.
+
+\subsection{Section Types}\index{Section types}\index{Types, of sections}\label{sec:asmsectiontypes}
+
+Sections represent contiguous memory regions containing either data or executable machine code.
+The \emph{type} of a section describes the intended purpose of this memory region:
+
+\begin{itemize}
+
+\item Code Sections\index{Code sections}\nopagebreak
+
+Code sections contain the binary representation of machine code for a specific hardware architecture.
+\emph{Standard code sections}\index{Standard code sections} are typically used to represent functions which are usually called by machine code contained in other code sections.
+\emph{Initializing code sections}\index{Initializing code sections} on the other hand represent machine code that has to be executed automatically at the begin of a program.
+\emph{Data initializing code sections}\index{Data initializing code sections} are executed prior to other initializing code sections.
+Their purpose is to initialize data sections with the data needed by initializing code sections.
+
+\item Data Sections\index{Data sections}\nopagebreak
+
+Data sections are not executed but contain the binary representation of the global data of a program.
+\emph{Standard data sections}\index{Standard data sections} usually contain the modifiable global data of a program like global variables.
+Often times, standard data sections only reserve space for data because it cannot be statically initialized and has to be generated at runtime.
+\emph{Constant data sections}\index{Constant data sections} on the other hand represent global data that is not variable and remains constant throughout the execution of a program.
+Constant data sections are typically used to represent character strings.
+
+\item Metadata Sections\index{Metadata sections}\nopagebreak
+
+Metadata sections are not part of the actual program but contain metadata about it.
+\emph{Heading metadata sections}\index{Heading metadata sections} are placed in front of all other sections while \emph{trailing metadata sections}\index{Trailing metadata sections} are placed behind all other sections.
+This allows mimicking the layout of some specific binary file format when linking object files into a single binary file.
+
+\end{itemize}
+
+The type of a section influences its actual placement in memory.
+Constant data sections for example may be placed in a read-only memory area.
+Initializing code sections are placed in front of all other code sections in order to guarantee their automatic execution.
+In general, the distinction between code and data sections enables supporting separate memories as required by Harvard architectures.
+
+\subsection{Section Options}\index{Section Options}\index{Options, of sections}\label{sec:asmsectionoptions}
+
+Each section has a symbolic name that represents its actual start address in memory.
+In addition, optional aliases allow referring to specific offsets within a section by name.
+The \emph{options} of a section describe what happens if two or more sections can be referred to by the same name or are never used.
+Sections can have the following freely combinable options:
+
+\begin{itemize}
+
+\item Required Sections\index{Required sections}\nopagebreak
+
+Sections marked as \emph{required} are always part of the resulting binary program.
+All other sections are only used if actually referenced directly or indirectly by required sections.
+
+\item Duplicable Sections\index{Duplicable sections}\nopagebreak
+
+There may be two or more sections with the same name, if and only if both sections are marked as \emph{duplicable} and contain exactly the same binary data.
+All but one of the duplicated sections are discarded and references to them are redirected to the remaining one.
+Constant data sections representing character strings are typically marked as duplicable.
+
+\item Replaceable Sections\index{Replaceable sections}\nopagebreak
+
+Sections marked as \emph{replaceable} exist as long as there is no other section with the same name.
+If there is one, the replaceable section is discarded and references to it are redirected to the other one.
+
+\end{itemize}
+
+Assembly programs that begin with instructions rather than section creation directives implicitly define a standard code section called \texttt{main}.
+These sections represent entry points of programs and are therefore always implicitly required.
+They are executed automatically after initializing code sections and have to eventually return the control of execution to the host environment.
+
+\subsection{Syntax}\index{Syntax, of Generic Assembly Language}
+
+Each line of code of a program written in generic assembly language contains some combination of the following three fields:
+
+\begin{quote}\begin{grammar}
+<Line> = <Label>$\opt$ <Statement>$\opt$ <Comment>$\opt$ \par
+<Label> = <Identifier>":" \par
+<Statement> = <Instruction> $\mid$ <Directive> \par
+<Instruction> = <Mnemonic> <Expressions>$\opt$ \par
+<Directive> = "."<Mnemonic> <Expressions>$\opt$ $\mid$ "#"<Mnemonic> <Expressions>$\opt$ \par
+<Mnemonic> = <Identifier> \par
+\end{grammar}\end{quote}
+
+Each instruction and directives defining constants or binary data may be associated with a \emph{label}.
+Labels are unique identifiers that are followed by a colon.
+A label can be used to refer to the numerical offset of the labeled instruction within the current section using a unique symbolic name.
+It can also be used to refer to the expression of a \emph{constant definition} within the current section.
+
+The mnemonic is a symbolic name that identifies the actual instruction or directive.
+Mnemonics of directives are prefixed with a dot or a number sign.
+Most instructions and directives take one or more operand specifiers that are separated by commas.
+Operands are arbitrary expressions that specify numeric values, registers, labels, or memory addresses.
+Section~\ref{sec:asmexpressions} describes the capabilities and representation of expressions.
+Sections~\ref{sec:asminstructions} and~\ref{sec:asmdirectives} give more information about the valid operands of instructions and directives.
+
+Finally, the generic assembly language supports comments that are ignored during the translation and may therefore contain a human-readable description of the source code.
+Comments are introduced with a semicolon, may contain any text, and extend to the end of the line.
+
+\subsection{Translation}\label{sec:asmtranslation}
+
+The generic syntax defined by the generic assembly language allows supporting any textual representation.
+Assemblers implementing the generic assembly language translate the source code in two different stages:
+
+\begin{enumerate}
+
+\item
+The source code is decomposed into an abstract syntax tree representing each line of the source code.
+If a line contains a directive, it is executed according to Section~\ref{sec:asmdirectives} and the next line of code is translated.
+If a line contains an instruction, its operands are resolved and the whole instruction is rewritten using these results.
+Resolving in this context means evaluating subexpressions or mapping labels to offsets.
+If the operand or its subexpressions contain identifiers or operations that cannot be evaluated, they are rewritten as they are.
+This most often includes instruction mnemonics or the names of registers only the concrete assembler in use knows about.
+
+\item
+The rewritten instruction is passed to the concrete assembler in use.
+This assembler in turn assembles one instruction at a time and returns its equivalent binary encoding.
+
+\end{enumerate}
+
+Decomposing the translation into two consecutive stages offers some advantages.
+First, all of the common tasks of the assemblers can be performed in the first stage.
+Features supported by this stage are automatically available in any assembler by design.
+This includes managing sections, writing the resulting object file, or supporting forward referencing labels using a prior assembly pass that only records instruction offsets.
+Second, the actual translation of the rewritten instruction in the second stage is much easier because all symbolic names and expressions are already resolved beforehand.
+This enables a loose coupling between the generic and the concrete part of an assembler.
+These two parts only interface by exchanging a simple textual representation of an instruction by its binary equivalent as shown in Figure~\ref{fig:asmdataflow}.
+
+\section{Expressions}\label{sec:asmexpressions}
+
+The generic assembly language is able to handle arbitrarily complex expressions that can be used as operands for instructions and directives.
+Sections~\ref{sec:asminstructions} and~\ref{sec:asmdirectives} give more information about the valid operands of instructions and directives.
+This section describes how expressions are evaluated according to the generic assembly language.
+They are textually represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Expressions> = <Expression> $\mid$ <Expressions> "," <Expression> \par
+<Expression> = <Character> $\mid$ <String> $\mid$ <Number> $\mid$ <Identifier> $\mid$ \\ <Address> $\mid$ <Unary-Operation> $\mid$ <Binary-Operation> \par
+\end{grammar}\end{quote}
+
+Oftentimes, composite expressions like unary and binary operations as well as some instructions and directives need numeric operands.
+In these cases, expressions are evaluated yielding a constant signed integer number as result.
+However, there are expressions that cannot be evaluated and do therefore not yield a result.
+Such expressions are literally treated as text during the translation as described in Section~\ref{sec:asmtranslation}.
+
+\subsection{Characters}
+
+The generic assembly language treats any non-empty sequence of up to eight characters enclosed in single quotes as character literals.
+A character literal can be evaluated and yields an integer number that corresponds to the character sequence as represented in memory of the target hardware architecture.
+Special characters can be defined using the escape sequences as shown in Table~\ref{tab:asmescapesequences}.
+
+\subsection{Strings}
+
+Assemblers treat any character sequences enclosed in double quotes as string literals.
+Strings cannot be evaluated, but assemblers are able to generate the binary data representation of each character in a string literal.
+Special characters can be defined using the escape sequences as shown in Table~\ref{tab:asmescapesequences}.
+The number of octets representing a single character depends on the actual directive used to generate the binary data.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}cl@{}}
+\toprule Sequence & Description \\ \midrule
+\texttt{\textbackslash 0} & null character \\
+\texttt{\textbackslash a} & alert \\
+\texttt{\textbackslash b} & backspace \\
+\texttt{\textbackslash t} & horizontal tab \\
+\texttt{\textbackslash n} & new-line \\
+\texttt{\textbackslash v} & vertical tab \\
+\texttt{\textbackslash f} & form feed \\
+\texttt{\textbackslash r} & carriage return \\
+\texttt{\textbackslash '} & single quote \\
+\texttt{\textbackslash "} & double quote \\
+\texttt{\textbackslash \textbackslash} & backslash \\
+\texttt{\textbackslash ?} & question mark \\
+\texttt{\textbackslash x}$n$ & literal character with ordinal value \\ & expressed by hexadecimal number $n$ \\
+\bottomrule
+\end{tabular}
+\caption{Escape sequences supported by the generic assembly language}
+\label{tab:asmescapesequences}
+\end{table}
+
+\subsection{Numbers}
+
+The generic assembly language supports numeric literals for the evaluation of expressions.
+It allows specifying integer numbers using different number bases according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Number> = <Binary> $\mid$ <Octal> $\mid$ <Decimal> $\mid$ <Hexadecimal> \par
+<Binary> = "0b" <Digits> $\mid$ <Digits> "b" \par
+<Octal> = "0o" <Digits> $\mid$ <Digits> "o" $\mid$ "0" <Digits> \par
+<Decimal> = "0d" <Digits> $\mid$ <Digits> "d" $\mid$ <Integer> \par
+<Hexadecimal> = "0h" <Digits> $\mid$ <Digits> "h" $\mid$ "0x" <Digits> \par
+<Integer> = <Digits> \par
+\end{grammar}\end{quote}
+
+The digit sequence of a number may contain separating single quotes which are ignored when determining its value.
+Although assemblers do recognize the syntax of real numbers, they cannot be evaluated and are rewritten identically.
+
+\subsection{Identifiers}
+
+An identifier is any sequence of characters like letters and digits that does not begin with a digit.
+It either refers to a label, a section name, or to a predefined identifier of the actual instruction set.
+This includes mnemonics and register names defined by the instruction set for example.
+
+If the identifier names a label, its value is the offset of the label within the binary representation of the section.
+Usually, this offset is expressed in octets.
+If an instruction expects other units or a relative operand however, the offset is automatically modified accordingly.
+If the identifier names a constant definition, its value corresponds to the expression of that definition.
+The mnemonic of some directives can also be used in expressions and yield the value of their current setting, see Section~\ref{sec:asmspecialpurposeoperations}.
+In all other cases, identifiers cannot be evaluated and are simply treated as text.
+
+\subsection{Addresses}
+
+Addresses are identifiers that are prefixed with an at sign and allow referencing code or data sections by name.
+They do not yield a value, but they act as a placeholder for the future memory address of the referenced section.
+Addresses are usually absolute and expressed in octets, but if there are instructions that expect operands with other units or relative references, they are automatically modified accordingly.
+All expressions involving an address may additionally be incremented or decremented by a signed displacement and shifted to the right by a scale.
+
+If the address identifier contains question marks, the actual referenced section is named behind the last question mark.
+If none of the sections named in front of a question mark are used, the actual address evaluates either to zero or to the section named behind an optional colon.
+
+\subsection{Arithmetic Operations}
+
+The generic assembly language supports the following arithmetic operations.
+The precedence of each operation is shown in Table~\ref{tab:asmoperatorprecedence}.
+All unary operations have right-to-left associativity.
+All binary operations have left-to-right associativity:
+
+\newcommand{\asmoperatorref}[2]{& \texttt{#1} & #2 \\}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}ccl@{}}
+\toprule Precedence & Operator & Operation \\
+\midrule 1
+\asmoperatorref{( )}{Grouping or memory access}
+\asmoperatorref{[ ]}{Memory access}
+\asmoperatorref{\{ \}}{Register list}
+\midrule 2
+\asmoperatorref{+}{Identity}
+\asmoperatorref{-}{Negation}
+\asmoperatorref{\textasciitilde}{Bitwise NOT}
+\asmoperatorref{!}{Logical NOT}
+\midrule 3
+\asmoperatorref{*}{Multiplication}
+\asmoperatorref{/}{Division}
+\asmoperatorref{\%}{Modulo}
+\midrule 4
+\asmoperatorref{+}{Addition}
+\asmoperatorref{-}{Subtraction}
+\midrule 5
+\asmoperatorref{<{}<}{Bitwise left shift}
+\asmoperatorref{>{}>}{Bitwise right shift}
+\midrule 6
+\asmoperatorref{<}{Less-than comparison}
+\asmoperatorref{<=}{Less-than-or-equal-to comparison}
+\asmoperatorref{>}{Greater-than comparison}
+\asmoperatorref{>=}{Greater-than-or-equal-to comparison}
+\midrule 7
+\asmoperatorref{==}{Equal comparison}
+\asmoperatorref{!=}{Unequal comparison}
+\midrule 8
+\asmoperatorref{===}{Identical comparison}
+\asmoperatorref{!==}{Unidentical comparison}
+\midrule 9
+\asmoperatorref{\&}{Bitwise AND}
+\midrule 10
+\asmoperatorref{\^}{Bitwise exclusive OR}
+\midrule 11
+\asmoperatorref{|}{Bitwise inclusive OR}
+\midrule 12
+\asmoperatorref{\&\&}{Logical AND}
+\midrule 13
+\asmoperatorref{||}{Logical OR}
+\bottomrule
+\end{tabular}
+\caption{Operator precedence defined by the generic assembly language}
+\label{tab:asmoperatorprecedence}
+\end{table}
+
+\newcommand{\asmoperator}[1]{\item #1\alignright\nopagebreak}
+
+\begin{itemize}
+
+\asmoperator{Identity}\syntax{"+" <Expression>}
+
+The result of the identity operation is the value of its operand.
+
+\asmoperator{Negation}\syntax{"-" <Expression>}
+
+The negation operation negates the value of its operand.
+
+\asmoperator{Addition}\syntax{<Expression> "+" <Expression>}
+
+The addition operation computes the sum of the values of its operands.
+
+\asmoperator{Subtraction}\syntax{<Expression> "-" <Expression>}
+
+The subtraction operation computes the difference of the values of its operands.
+
+\asmoperator{Multiplication}\syntax{<Expression> "*" <Expression>}
+
+The multiplication operation computes the product of the values of its operands.
+
+\asmoperator{Division}\syntax{<Expression> "/" <Expression>}
+
+The division operation computes the integer quotient of the division of the value of its first operand by the value of the second value.
+
+\asmoperator{Modulo}\syntax{<Expression> "\%" <Expression>}
+
+The modulo operation computes the integer remainder of the division of the value of its first operand by the value of the second value.
+
+\end{itemize}
+
+\subsection{Bitwise Operations}
+
+The generic assembly language supports the following bitwise operations.
+The precedence of each operation is shown in Table~\ref{tab:asmoperatorprecedence}:
+
+\begin{itemize}
+
+\asmoperator{Bitwise NOT}\syntax{"~" <Expression>}
+
+The bitwise NOT operation computes the one's complement of the value of its operand.
+
+\asmoperator{Bitwise left shift}\syntax{<Expression> "<""<" <Expression>}
+
+The bitwise left shift operation computes the value of its first operand shifted left by the value of its second operand.
+
+\asmoperator{Bitwise right shift}\syntax{<Expression> ">"">" <Expression>}
+
+The bitwise right shift operation computes the value of its first operand shifted right by the value of its second operand.
+
+\asmoperator{Bitwise AND}\syntax{<Expression> "&" <Expression>}
+
+The bitwise AND operation yields the bitwise AND function of the values of its operands.
+
+\asmoperator{Bitwise inclusive OR}\syntax{<Expression> "|" <Expression>}
+
+The bitwise inclusive OR operation yields the bitwise inclusive OR function of the values of its operands.
+
+\asmoperator{Bitwise exclusive OR}\syntax{<Expression> "^" <Expression>}
+
+The bitwise exclusive OR operation yields the bitwise exclusive OR function of the values of its operands.
+
+\end{itemize}
+
+\subsection{Logical Operations}
+
+The generic assembly language supports the following logical operations.
+The precedence of each operation is shown in Table~\ref{tab:asmoperatorprecedence}.
+During all these logical operations, an evaluated value of zero denotes the Boolean value false.
+All other values represent the Boolean value true.
+Logical operations yield either the value one or the value zero representing the Boolean values true and false respectively:
+
+\begin{itemize}
+
+\asmoperator{Logical NOT}\syntax{"!" <Expression>}
+
+The logical NOT operation yields the complement of the Boolean value of its operand.
+
+\asmoperator{Logical AND}\syntax{<Expression> "&&" <Expression>}
+
+The logical AND operation performs a logical conjunction of the Boolean values of its operands.
+The second operand is not evaluated if the first operand evaluates to false.
+
+\asmoperator{Logical OR}\syntax{<Expression> "||" <Expression>}
+
+The logical OR operation performs a logical disjunction of the Boolean values of its operands.
+The second operand is not evaluated if the first operand evaluates to true.
+
+\end{itemize}
+
+\subsection{Comparison Operations}
+
+The generic assembly language supports the following comparison operations.
+The precedence of each operation is shown in Table~\ref{tab:asmoperatorprecedence}.
+Comparison operations yield either the value one or the value zero representing the Boolean values true and false respectively:
+
+\begin{itemize}
+
+\asmoperator{Equal comparison}\syntax{<Expression> "==" <Expression>}
+
+The equal comparison operation returns a Boolean value indicating whether the values of both of its operands are equal.
+
+\asmoperator{Unequal comparison}\syntax{<Expression> "!=" <Expression>}
+
+The unequal comparison operation returns a Boolean value indicating whether the values of both of its operands are unequal.
+
+\asmoperator{Less-than comparison}\syntax{<Expression> "<" <Expression>}
+
+The less-than comparison operation returns a Boolean value indicating whether the value of its first operand is less than the value of its second operand.
+
+\asmoperator{Less-than-or-equal comparison}\syntax{<Expression> "<=" <Expression>}
+
+The less-than-or-equal comparison operation returns a Boolean value indicating whether the value of its first operand is less than or equal to the value of its second operand.
+
+\asmoperator{Greater-than comparison}\syntax{<Expression> ">" <Expression>}
+
+The greater-than comparison operation returns a Boolean value indicating whether the value of its first operand is greater than the value of its second operand.
+
+\asmoperator{Greater-than-or-equal comparison}\syntax{<Expression> ">=" <Expression>}
+
+The greater-than-or-equal comparison operation returns a Boolean value indicating whether the value of its first operand is greater than or equal to the value of its second operand.
+
+\asmoperator{Identical comparison}\syntax{<Expression> "===" <Expression>}
+
+The identical comparison operation returns a Boolean value indicating whether the lexical token sequences of both of its operands are identical.
+
+\asmoperator{Unidentical comparison}\syntax{<Expression> "!==" <Expression>}
+
+The unidentical comparison operation returns a Boolean value indicating whether the lexical token sequences of both of its operands are unidentical.
+
+\end{itemize}
+
+\subsection{Special-Purpose Operations}\label{sec:asmspecialpurposeoperations}
+
+In addition to all arithmetic, bitwise, logical, and comparison operations, the generic assembly language supports the following special-purpose operations:
+
+\begin{itemize}
+
+\asmoperator{Bit Mode}\syntax{".bitmode"}
+
+The bit mode operation returns the current bit mode that is used to translate instructions into machine code.
+This operation returns the default bit mode of the target hardware architecture if available and left unchanged by the bit mode directive, see Section~\ref{sec:asmbitmode}.
+
+\asmoperator{Little-Endian Mode}\syntax{".little"}
+
+The little-endian mode operation returns a Boolean value indicating whether generated binary data is currently ordered least significant octet first.
+This operation returns the default endianness of the target hardware architecture if left unchanged by endian mode directives, see Sections~\ref{sec:asmbig} and~\ref{sec:asmlittle}.
+
+\asmoperator{Big-Endian Mode}\syntax{".big"}
+
+The big-endian mode operation returns a Boolean value indicating whether generated binary data is currently ordered most significant octet first.
+This operation returns the default endianness of the target hardware architecture if left unchanged by endian mode directives, see Sections~\ref{sec:asmbig} and~\ref{sec:asmlittle}.
+
+\asmoperator{Section Alignment}\syntax{".alignment"}
+
+The section alignment operation returns the alignment of the current section as specified by the section alignment directive, see Section~\ref{sec:asmalignment}.
+
+\asmoperator{Section Origin}\syntax{".origin"}
+
+The section origin operation returns the origin of the current section as specified by the section origin directive, see Section~\ref{sec:asmorigin}.
+
+\asmoperator{Section Group}\syntax{".group"}
+
+The section group operation returns the group name of the current section as specified by the section group directive, see Section~\ref{sec:asmgroup}.
+
+\asmoperator{Required Section}\syntax{".required"}
+
+The required section operation returns a Boolean value indicating whether the current section is required as marked by the required section directive, see Section~\ref{sec:asmrequired}.
+
+\asmoperator{Duplicable Section}\syntax{".duplicable"}
+
+The duplicable section operation returns a Boolean value indicating whether the current section is duplicable as marked by the duplicable section directive, see Section~\ref{sec:asmduplicable}.
+
+\asmoperator{Replaceable Section}\syntax{".replaceable"}
+
+The replaceable section operation returns a Boolean value indicating whether the current section is replaceable as marked by the replaceable section directive, see Section~\ref{sec:asmreplaceable}.
+
+\end{itemize}
+
+The following special-purpose operations have a functional syntax accepting a single argument and modify the result of referencing labels or sections by name:
+
+\begin{itemize}
+
+\asmoperator{Relative Offset}\syntax{"offset" "(" <Expression> ")"}
+
+The relative offset operation returns the offset of the named label or section relative to the current position expressed in octets.
+
+\asmoperator{Section Size}\syntax{"size" "(" <Expression> ")"}
+
+The section size operation returns the binary size of the named section expressed in octets.
+
+\asmoperator{Section Extent}\syntax{"extent" "(" <Expression> ")"}
+
+The section extent operation returns the address of the named section plus its binary size.
+
+\asmoperator{Member Position}\syntax{"position" "(" <Expression> ")"}
+
+The member position operation returns the position of the named section relative to the beginning of its group expressed in octets.
+See Section~\ref{sec:asmgroup} for more information about the section group directive.
+
+\asmoperator{Member Index}\syntax{"index" "(" <Expression> ")"}
+
+The member index operation returns the index of the named section within the sequence of sections of its group.
+See Section~\ref{sec:asmgroup} for more information about the section group directive.
+
+\asmoperator{Member Count}\syntax{"count" "(" <Expression> ")"}
+
+The member count operation returns the total number of sections contained in the named group.
+See Section~\ref{sec:asmgroup} for more information about the section group directive.
+
+\end{itemize}
+
+\section{Instructions}\index{Instructions}\label{sec:asminstructions}
+
+The actually available set of instructions and its textual representation are defined by the target hardware architecture.
+The generic assembly language therefore does not know anything about the syntax or semantics of the concrete instruction set in use.
+For a complete description of the concrete instruction set and its usage, users have to refer to the documentation of the corresponding target hardware architecture.
+The remainder of this section lists all instructions sets supported by \ecs{}.
+
+\renewcommand{\instruction}[2]{\pdftooltip{\texttt{#1}}{#2}\space}
+\renewcommand{\instructionset}[1]{\begin{quote}\sloppy\footnotesize\input{#1.set}\end{quote}}
+
+\subsection{AMD64 Instruction Set}
+
+The \ecs{} supports the AMD64 instruction set as listed below and uses the same assembly syntax as predefined by AMD~\cite{amd64:volume3,amd64:volume4,amd64:volume5}.
+The only exception are instructions for far procedure calls and far jumps which take the selector and offset of the immediate far pointer as two separate operands.
+The actual set of supported instructions depends on the operating mode that is used.
+If there are two or more possible encodings of an instruction, the shortest one is used by default.
+In order to specify the encoding of an instruction explicitly, the size of its operands can be overridden by prefixing them with one of the following identifiers:
+\texttt{byte} for 8-bit, \texttt{word} for 16-bit, \texttt{dword} for 32-bit, \texttt{qword} for 64-bit, \texttt{oword} for 128-bit, and \texttt{hword} for 256-bit.
+\seeamd
+
+\instructionset{amd64}
+
+\subsection{ARM Instruction Sets}
+
+The \ecs{} supports the ARM A32 instruction set as listed below and uses the same assembly syntax as predefined by the ARM architecture~\cite{arm:instructionset}.
+The only exception are immediate values which are not prefixed by a number sign.
+\seearm
+
+\instructionset{arma32}
+
+The \ecs{} supports the ARM A64 instruction set as listed below and uses the same assembly syntax as predefined by the ARM architecture~\cite{arm:instructionset}.
+The only exception are immediate values which are not prefixed by a number sign.
+
+\instructionset{arma64}
+
+The \ecs{} supports the ARM T32 instruction set as listed below and uses the same assembly syntax as predefined by the ARM architecture~\cite{arm:instructionset}.
+The only exception are immediate values which are not prefixed by a number sign.
+
+\instructionset{arm}
+
+\subsection{AVR Instruction Set}
+
+The \ecs{} supports the AVR instruction set as listed below and uses the same assembly syntax as predefined by Atmel~\cite{avr:instructionset}.
+\seeavr
+
+\instructionset{avr}
+
+\subsection{AVR32 Instruction Set}
+
+The \ecs{} supports the AVR32 instruction set as listed below and uses the same assembly syntax as predefined by Atmel~\cite{avr32:instructionset}.
+Instructions that operate on register lists are not supported.
+\seeavrtt
+
+\instructionset{avr32}
+
+\subsection{M68000 Instruction Set}
+
+The \ecs{} supports the M68000 instruction set as listed below and uses the same assembly syntax as predefined by Motorola~\cite{m68k:instructionset}.
+The only exception are immediate values which are not prefixed by a number sign.
+\seemabk
+
+\instructionset{m68k}
+
+\subsection{MicroBlaze Instruction Set}
+
+The \ecs{} supports the MicroBlaze instruction set as listed below and uses the same assembly syntax as predefined by Xilinx~\cite{mibl:instructionset}.
+\seemibl
+
+\instructionset{mibl}
+
+\subsection{MIPS Instruction Set}
+
+The \ecs{} supports the MIPS32 and MIPS64 instruction sets as listed below and uses the same assembly syntax as predefined by MIPS Technologies~\cite{mips:volume1,mips:volume2}.
+\seemips
+
+\instructionset{mips}
+
+\subsection{MMIX Instruction Set}
+
+The \ecs{} supports the MMIX instruction set as listed below and uses the same assembly syntax as predefined by Donald~E.\ Knuth~\cite{mmixware}.
+The only exception are immediate values which are not prefixed by a number sign.
+\seemmix
+
+\instructionset{mmix}
+
+\subsection{OpenRISC 1000 Instruction Set}
+
+The \ecs{} supports the OpenRISC 1000 instruction set as listed below and uses the same assembly syntax as predefined by OpenCores~\cite{or1k:instructionset}.
+\seeorok
+
+\instructionset{or1k}
+
+\subsection{PowerPC Instruction Set}
+
+The \ecs{} supports the PowerPC instruction set as listed below and uses the same assembly syntax as predefined by IBM~\cite{ppc:instructionset}.
+\seeppc
+
+\instructionset{ppc}
+
+\subsection{RISC Instruction Set}
+
+The \ecs{} supports the RISC instruction set as listed below and uses the same assembly syntax as predefined by Niklaus Wirth~\cite{risc:instructionset}.
+\seerisc
+
+\instructionset{risc}
+
+\subsection{WebAssembly Instruction Set}
+
+The \ecs{} supports the WebAssembly instruction set as listed below and uses the same assembly syntax as predefined by the World Wide Web Consortium (W3C)~\cite{wasm:instructionset}.
+The only exception are the addition of the pseudo instructions \texttt{i32}, \texttt{label}, \texttt{lane}, \texttt{s32}, \texttt{u32}, and \texttt{valtype}.
+They encode an immediate value of the respective type with a fixed size and can be used as a replacement for operands of instructions that require immediate values of that type.
+\seewasm
+
+\instructionset{wasm}
+
+\subsection{Intermediate Code Instruction Set}
+
+Intermediate code, as exposed by several tools of the \ecs{} for debugging purposes, can also be represented using the generic assembly language.
+The corresponding instruction set is listed below.
+\seecode
+
+\instructionset{code}
+
+\section{Directives}\index{Directives}\label{sec:asmdirectives}
+
+The generic assembly language defines a common set of directives for all concrete assemblers.
+In contrast to instructions, directives do not depend on the instruction set defined by the target hardware architecture.
+Tables~\ref{tab:asmdirectives} and~\ref{tab:asmpreprocessingdirectives} summarize all of these directives and the category they belong to.
+
+\newcommand{\asmdirectiveref}[2]{& \texttt{#1#2} & \ref{sec:asm#2} \\}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule Category & Mnemonic & See Section \\
+\midrule Section Creation
+\asmdirectiveref{.}{code}
+\asmdirectiveref{.}{initcode}
+\asmdirectiveref{.}{initdata}
+\asmdirectiveref{.}{data}
+\asmdirectiveref{.}{const}
+\asmdirectiveref{.}{header}
+\asmdirectiveref{.}{trailer}
+\midrule Section Options
+\asmdirectiveref{.}{required}
+\asmdirectiveref{.}{duplicable}
+\asmdirectiveref{.}{replaceable}
+\midrule Section Placement
+\asmdirectiveref{.}{alignment}
+\asmdirectiveref{.}{origin}
+\asmdirectiveref{.}{group}
+\midrule Data Definition
+\asmdirectiveref{.}{byte}
+\asmdirectiveref{.}{dbyte}
+\asmdirectiveref{.}{tbyte}
+\asmdirectiveref{.}{qbyte}
+\asmdirectiveref{.}{obyte}
+\asmdirectiveref{.}{embed}
+\midrule Memory Layout
+\asmdirectiveref{.}{pad}
+\asmdirectiveref{.}{align}
+\asmdirectiveref{.}{reserve}
+\midrule Mode Selection
+\asmdirectiveref{.}{big}
+\asmdirectiveref{.}{little}
+\asmdirectiveref{.}{bitmode}
+\midrule Special Purpose
+\asmdirectiveref{.}{alias}
+\asmdirectiveref{.}{assert}
+\asmdirectiveref{.}{equals}
+\asmdirectiveref{.}{require}
+\asmdirectiveref{.}{trace}
+\bottomrule
+\end{tabular}
+\caption{Directives of the generic assembly language}
+\label{tab:asmdirectives}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule Category & Mnemonic & See Section \\
+\midrule Code Control
+\asmdirectiveref{\#}{end}
+\asmdirectiveref{\#}{line}
+\midrule Conditional Inclusion
+\asmdirectiveref{\#}{if}
+\asmdirectiveref{\#}{elif}
+\asmdirectiveref{\#}{else}
+\asmdirectiveref{\#}{endif}
+\midrule Code Repetition
+\asmdirectiveref{\#}{repeat}
+\asmdirectiveref{\#}{endrep}
+\midrule Macro Definition
+\asmdirectiveref{\#}{define}
+\asmdirectiveref{\#}{enddef}
+\asmdirectiveref{\#}{undef}
+\bottomrule
+\end{tabular}
+\caption{Preprocessing directives of the generic assembly language}
+\label{tab:asmpreprocessingdirectives}
+\end{table}
+
+Directives usually do not generate any machine code, they rather modify the generation of binary code and data itself.
+They also allow describing characteristics of the current section or creating new sections.
+All settings and modifications performed by directives apply only to the current section and are reset afterward.
+Preprocessing directives on the other hand allow controlling the handling of the source code itself like repeating or conditionally including some portions of code.
+
+The \ecs{} features compilers for programming languages that allow users to write so-called \emph{inline assembly code}\index{Inline assembly code} within standard program code.
+Behind the scenes, compilers usually generate a code section for each functional unit of the implemented programming language.
+Inline assembly code allows users to describe a part of this code section using the generic assembly language.
+Since the placement and options of the section are still managed by the compiler however, directives for modifying these properties or creating new sections are not available in inline assembly code.
+
+\newcommand{\asmdirective}[4]{\subsection[#2]{\texttt{#1#2}\enskip\textnormal{\textit{#3}}\enskip\alignright#4}\label{sec:asm#2}}
+
+\asmdirective{.}{alias}{Identifier}{Alias Name}
+
+The alias name directive assigns an additional name for the data or code at the current position in the section.
+This data or code can be referred to by the name of the current section plus its position or simply by the new alias name.
+Alias names may not be duplicated and must differ from the name of the section.
+This directive may not be labeled.
+
+\asmdirective{.}{align}{Expression}{Data Alignment}
+
+The data alignment directive allows padding binary data space in order to accommodate alignment constraints.
+It advances the current position in the section to the next multiple of the alignment specified by the operand.
+It is expressed in octets and has to be a positive power of two.
+This directive may not be labeled.
+
+\asmdirective{.}{alignment}{Expression}{Section Alignment}
+
+The section alignment directive specifies the alignment of the section.
+The actual address of the section is a multiple of its alignment which may only be specified once and only if the section has no origin, see Section~\ref{sec:asmorigin}.
+It is expressed in multiples of octets and has to be a positive power of two.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{assert}{Expression}{Static Assertion}
+
+The static assertion directive allows asserting conditions during the translation of assembly code.
+It tests the Boolean value of its operand and aborts the translation if the condition is not satisfied.
+This directive may not be labeled.
+
+\asmdirective{.}{big}{}{Big-Endian Mode}
+
+The big-endian mode directive changes the ordering of generated binary data to most significant octet first.
+Some hardware architectures allow changing the endianness of machine code, in which case this ordering also applies to the binary encoding of instructions.
+This directive may not be labeled and must restore the original endianness mode if it was modified in inline assembly code.
+
+\asmdirective{.}{bitmode}{Expression}{Bit Mode}
+
+The bit mode directive allows changing the bit mode that is used to translate the instructions of the current section into machine code.
+The set of valid bit modes depends on the hardware architecture in use, where some architectures do not define bit modes at all.
+Users have to refer to the documentation of the respective target hardware architecture.
+This directive may not be labeled and must restore the original bit mode if it was modified in inline assembly code.
+
+\asmdirective{.}{byte}{Expressions}{Byte Data}
+
+The byte data directive allows generating the binary representation of the value of one or more operands.
+Each value is represented using a single octet.
+If an operand for this directive is a string, each character of the string is evaluated individually.
+
+\asmdirective{.}{code}{Identifier}{Standard Code Section}
+
+The standard code section directive creates a new standard code section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about standard code sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{const}{Identifier}{Constant Data Section}
+
+The constant data section directive creates a new constant data section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about constant data sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{data}{Identifier}{Standard Data Section}
+
+The standard data section directive creates a new standard data section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about standard data sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{dbyte}{Expressions}{Double Byte Data}
+
+The double byte data directive allows generating the binary representation of the value of one or more operands.
+Each value is represented using two octets, where the current endianness mode defines the ordering of the most and least significant one.
+If an operand for this directive is a string, each character of the string is evaluated individually.
+
+\asmdirective{\#}{define}{Identifier}{Begin Macro Definition}
+
+The begin macro definition preprocessing directive allows defining pseudo instructions.
+Macros have a unique name and contain any sequence of assembly code until the next end macro definition directive.
+As long as a macro is defined, its name can be used as the mnemonic of a new pseudo instruction that takes up to ten operands separated by commas.
+This process is called macro expansion and replaces the instruction by the code sequence encompassed by the corresponding macro.
+While expanding, number sign characters followed by a single decimal digit within any character or string literal, identifier, address, or label are replaced by the operand identified by that zero-based index.
+Two consecutive sign characters are replaced by the decimal line number of the macro expansion and allow defining unique labels.
+This directive may not be labeled and requires a subsequent end macro definition directive.
+
+\asmdirective{.}{duplicable}{}{Duplicable Section}
+
+The duplicable section directive marks the current section as duplicable.
+See Section~\ref{sec:asmsectionoptions} for information about duplicable sections.
+This directive may only be specified once, is not available in inline assembly code and may not be labeled.
+
+\asmdirective{\#}{elif}{Expression}{Conditional Else-If}
+
+The conditional else-if preprocessing directive allows conditional inclusions of instructions and directives during the translation of assembly code.
+It tests the Boolean value of its operand and skips subsequent code until the next conditional else or end-if directive
+if the condition is not satisfied or any preceding conditional if or else-if directives did not skip code.
+This directive may not be labeled and requires a preceding conditional if directive and a subsequent conditional end-if directive.
+
+\asmdirective{\#}{else}{}{Conditional Else}
+
+The conditional else preprocessing directive allows excluding instructions and directives during the translation of assembly code.
+It skips subsequent code until the next conditional end-if directive if any preceding conditional if or else-if directives did not skip code.
+This directive may not be labeled and requires a preceding conditional if or else-if directive and a subsequent conditional end-if directive.
+
+\asmdirective{.}{embed}{String}{Embed Binary File}
+
+The embed binary file directive allows copying the contents of a binary file named by the string operand into the current section.
+
+\asmdirective{\#}{end}{}{End Code}
+
+The end code preprocessing directive stops the translation of the assembly code.
+The remaining part of the source code is completely ignored.
+This directive may not be labeled.
+
+\asmdirective{\#}{enddef}{}{End Macro Definition}
+
+The end macro definition preprocessing directive allows specifying the end of the assembly code sequence encompassed by the current macro definition.
+This directive may not be labeled and requires a preceding begin macro definition directive.
+
+\asmdirective{\#}{endif}{}{Conditional End-If}
+
+The conditional end-if preprocessing directive allows ending the conditional inclusion of instructions and directives during the translation of assembly code.
+This directive may not be labeled and requires a preceding conditional if, else-if, or else directive.
+
+\asmdirective{\#}{endrep}{}{End Repetition}
+
+The end repetition preprocessing directive allows specifying the end of the assembly code sequence encompassed by the current code repetition.
+This directive may not be labeled and requires a preceding begin repetition directive.
+
+\asmdirective{.}{equals}{Expression}{Constant Definition}
+
+The constant definition directive allows defining symbolic constants within the current section.
+Constant definitions require a label which can be used to refer to the corresponding constant expression by name.
+Constant definitions with the same name are allowed if the lexical token sequences of their operands are also identical.
+
+\asmdirective{.}{group}{Identifier}{Section Group}
+
+The section group directive allows grouping several sections together by aligning them adjacent to each other.
+The group may only be specified once and is treated as the name of a virtual section that contains all sections in that group.
+Multiple groups of sections with the same type are placed consecutively in lexicographic order.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{header}{Identifier}{Heading Metadata Section}
+
+The heading metadata section directive creates a new heading metadata section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about heading metadata sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{\#}{if}{Expression}{Conditional If}
+
+The conditional if preprocessing directive allows conditional inclusions of instructions and directives during the translation of assembly code.
+It tests the Boolean value of its operand and skips subsequent code until the next conditional else-if, else, or end-if directive if the condition is not satisfied.
+This directive may not be labeled and requires a subsequent conditional end-if directive.
+
+\asmdirective{.}{initcode}{Identifier}{Initializing Code Section}
+
+The initializing code section directive creates a new initializing code section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about initializing code sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{initdata}{Identifier}{Data Initializing Code Section}
+
+The data initializing code section directive creates a new data initializing code section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about data initializing code sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{\#}{line}{Integer String$\opt$}{Line Control}
+
+The line control preprocessing directive allow overwriting the filename of the source code and the position therein used in diagnostic messages.
+The second operand is optional and specifies the filename of the source code.
+The remaining part of the source code is treated as if it would start in that file at the line specified by the first operand.
+
+\asmdirective{.}{little}{}{Little-Endian Mode}
+
+The little-endian mode directive changes the ordering of generated binary data to least significant octet first.
+Some hardware architectures allow changing the endianness of machine code, in which case this ordering also applies to the binary encoding of instructions.
+This directive may not be labeled and must restore the original endianness mode if it was modified in inline assembly code.
+
+\asmdirective{.}{obyte}{Expressions}{Octuple Byte Data}
+
+The octuple byte data directive allows generating the binary representation of the value of one or more operands.
+Each value is represented using eight octets, where the current endianness mode defines the ordering of the most and least significant one.
+If an operand for this directive is a string, each character of the string is evaluated individually.
+
+\asmdirective{.}{origin}{Expression}{Section Origin}
+
+The section origin directive specifies the origin of the section.
+The origin defines the actual address of a section and may only be specified once and only if the section has no alignment, see Section~\ref{sec:asmalignment}.
+It is expressed in multiples of octets and may not be less than zero.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{pad}{Expression}{Data Padding}
+
+The data padding directive allows padding binary data space in order to accommodate layout constraints.
+It advances the current position in the section to the octet specified by the operand.
+This directive may not be labeled.
+
+\asmdirective{.}{qbyte}{Expressions}{Quadruple Byte Data}
+
+The quadruple byte data directive allows generating the binary representation of the value of one or more operands.
+Each value is represented using four octets, where the current endianness mode defines the ordering of the most and least significant one.
+If an operand for this directive is a string, each character of the string is evaluated individually.
+
+\asmdirective{\#}{repeat}{Integer}{Begin Repetition}
+
+The begin repetition preprocessing directive allows translating any sequence of assembly code several times.
+Its operand specifies the number of repetitions of the assembly code encompassed by this directive and the subsequent end repetition directive.
+While repeating, two consecutive number sign characters within any character or string literal, identifier, address, or label are replaced by the decimal integer number of complete repetitions done so far.
+This directive may not be labeled and requires a subsequent end repetition directive.
+
+\asmdirective{.}{replaceable}{}{Replaceable Section}
+
+The replaceable section directive marks the current section as replaceable.
+See Section~\ref{sec:asmsectionoptions} for information about replaceable sections.
+This directive may only be specified once, is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{require}{Identifier}{Name Requirement}
+
+The name requirement directive allows specifying additional dependencies on data or code sections that are otherwise not explicitly referenced in the current section.
+This directive may not be labeled.
+
+\asmdirective{.}{required}{}{Required Section}
+
+The required section directive marks the current section as required.
+See Section~\ref{sec:asmsectionoptions} for information about required sections.
+This directive may only be specified once, is not available in inline assembly code and may not be labeled.
+
+\asmdirective{.}{reserve}{Expression}{Data Reservation}
+
+The data reservation directive allows reserving binary data without having to initialize it.
+The size of the reserved data space is expressed in multiples of octets and may not be less than zero.
+
+\asmdirective{.}{tbyte}{Expressions}{Triple Byte Data}
+
+The triple byte data directive allows generating the binary representation of the value of one or more operands.
+Each value is represented using three octets, where the current endianness mode defines the ordering of the most and least significant one.
+If an operand for this directive is a string, each character of the string is evaluated individually.
+
+\asmdirective{.}{trace}{Expressions$\opt$}{Expression Evaluation}
+
+The expression evaluation directive allows rewriting and evaluating arbitrary expressions during the translation of assembly code for debugging purposes.
+If no operands are provided, all currently defined labels and constant definitions are evaluated instead.
+This directive may not be labeled.
+
+\asmdirective{.}{trailer}{Identifier}{Trailing Metadata Section}
+
+The trailing metadata section directive creates a new trailing metadata section with the specified name.
+See Section~\ref{sec:asmsectiontypes} for information about trailing metadata sections.
+All labels as well as instructions and directives following this directive belong to the new section.
+This directive is not available in inline assembly code and may not be labeled.
+
+\asmdirective{\#}{undef}{Identifier}{Remove Macro Definition}
+
+The remove macro definition preprocessing directive causes the specified identifier no longer to be defined as a macro and thus allows redefining macros with the same name.
+This directive may not be labeled.
+
+\section{Assembler Tools}
+
+The \ecs{} provides assemblers for several different hardware architectures.
+\interface\seeguide
+
+The assemblers process assembly source code in several consecutive stages.
+In each stage, the internal representation of the module is changed and transformed.
+Figure~\ref{fig:asmdataflow} shows all stages and the different representations.
+
+\begin{figure}
+\flowgraph{
+\resource{generic assembly\\source code} \ar[d] \\
+\converter{Lexer} \ar[d] \\
+\resource{tokens} \ar[d] \\
+\converter{Parser} \ar[d] \\
+\resource{abstract\\syntax tree} \ar[d] \ar[r] & \converter{Pretty Printer} \ar[r] & \resource{reformatted\\source code} \\
+\converter{Generic\\Assembler} \ar[d] \ar@/u/[rr]^{\txt{rewritten instruction}} & \txt{\hphantom{binary encoding}} & \converter{Concrete\\Assembler} \ar@/d/[ll]^{\txt{binary encoding}} \\
+\resource{object file} \\
+}\caption{Data flow within assembler tools}
+\label{fig:asmdataflow}
+\end{figure}
+
+\asmprint
+\amdaasm
+\amdbasm
+\amdcasm
+\armaasm
+\armbasm
+\armcasm
+\avrasm
+\avrttasm
+\mabkasm
+\miblasm
+\mipsaasm
+\mipsbasm
+\mmixasm
+\orokasm
+\ppcaasm
+\ppcbasm
+\riscasm
+\wasmasm
+
+\section{Disassembler Tools}
+
+Each assembler provided by the \ecs{} is accompanied by a corresponding disassembler tool which reverses its operation.
+Disassemblers open object files and print a human-readable disassembly listing of the machine code contained therein as shown in Figure~\ref{fig:dismdataflow}.
+They accept command-line arguments which are taken as names of object files.
+If no arguments are provided, object files are read from the standard input stream.
+\seeinterface\seeguide
+
+\begin{figure}
+\flowgraph{
+\resource{object file} \ar[d] \\
+\converter{Generic\\Disassembler} \ar[d] \ar@/u/[rr]^{\txt{machine code}} & \txt{\hphantom{machine code}} & \converter{Concrete\\Disassembler} \ar@/d/[ll]^{\txt{decoded instruction}} \\
+\resource{disassembly\\listing} \\
+}\caption{Data flow within disassembler tools}
+\label{fig:dismdataflow}
+\end{figure}
+
+\amdadism
+\amdbdism
+\amdcdism
+\armadism
+\armbdism
+\armcdism
+\avrdism
+\avrttdism
+\mabkdism
+\mibldism
+\mipsadism
+\mipsbdism
+\mmixdism
+\orokdism
+\ppcadism
+\ppcbdism
+\riscdism
+\wasmdism
+
+\concludechapter

@@ -1,0 +1,267 @@
+// RISC instruction set definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef INSTR
+	#define INSTR(mnem, code, mask, type1, type2, type3)
+#endif
+
+#ifndef MNEM
+	#define MNEM(name, mnem, ...)
+#endif
+
+#ifndef TYPE
+	#define TYPE(type)
+#endif
+
+// mnemonics
+
+MNEM (adc,   ADC,   Add with Carry)
+MNEM (add,   ADD,   Add)
+MNEM (and,   AND,   Logical AND)
+MNEM (ann,   ANN,   Logical AND NOT)
+MNEM (asr,   ASR,   Arithmetic Shift Right)
+MNEM (b,     B,     Branch)
+MNEM (bcc,   BCC,   Branch if Carry Clear)
+MNEM (bcs,   BCS,   Branch if Carry Set (Lower))
+MNEM (beq,   BEQ,   Branch if Equal (Zero))
+MNEM (bge,   BGE,   Branch if Greater or Equal)
+MNEM (bgt,   BGT,   Branch if Greater Than)
+MNEM (bhi,   BHI,   Branch if Higher)
+MNEM (bl,    BL,    Branch and Link)
+MNEM (blcc,  BLCC,  Branch and Link if Carry Clear)
+MNEM (blcs,  BLCS,  Branch and Link if Carry Set (Lower))
+MNEM (ble,   BLE,   Branch if Less or Equal)
+MNEM (bleq,  BLEQ,  Branch and Link if Equal (Zero))
+MNEM (blge,  BLGE,  Branch and Link if Greater or Equal)
+MNEM (blgt,  BLGT,  Branch and Link if Greater Than)
+MNEM (blhi,  BLHI,  Branch and Link if Higher)
+MNEM (blle,  BLLE,  Branch and Link if Less or Equal)
+MNEM (blls,  BLLS,  Branch and Link if Lower or Same)
+MNEM (bllt,  BLLT,  Branch and Link if Less Than)
+MNEM (blmi,  BLMI,  Branch and Link if Negative (Minus))
+MNEM (blne,  BLNE,  Branch and Link if Not Equal)
+MNEM (blpl,  BLPL,  Branch and Link if Positive (Plus))
+MNEM (bls,   BLS,   Branch if Lower or Same)
+MNEM (blt,   BLT,   Branch if Less Than)
+MNEM (blvc,  BLVC,  Branch and Link if Overflow Clear)
+MNEM (blvs,  BLVS,  Branch and Link if Overflow Set)
+MNEM (bmi,   BMI,   Branch if Negative (Minus))
+MNEM (bne,   BNE,   Branch if Not Equal)
+MNEM (bpl,   BPL,   Branch if Positive (Plus))
+MNEM (bvc,   BVC,   Branch if Overflow Clear)
+MNEM (bvs,   BVS,   Branch if Overflow Set)
+MNEM (cli,   CLI,   Clear interrupt)
+MNEM (div,   DIV,   Divide)
+MNEM (fad,   FAD,   Floating-Point Add)
+MNEM (fdv,   FDV,   Floating-Point Divide)
+MNEM (fml,   FML,   Floating-Point Multiply)
+MNEM (fsb,   FSB,   Floating-Point Subtract)
+MNEM (ior,   IOR,   Logical Inclusive OR)
+MNEM (ld,    LD,    Load Word)
+MNEM (ldb,   LDB,   Load Byte)
+MNEM (lsl,   LSL,   Logical Shift Left)
+MNEM (mlu,   MLU,   Multiply Unsigned)
+MNEM (mov,   MOV,   Move)
+MNEM (mul,   MUL,   Multiply)
+MNEM (mvf,   MVF,   Move Flags)
+MNEM (mvh,   MVH,   Move H Register)
+MNEM (mvs,   MVS,   Move Shifted)
+MNEM (nop,   NOP,   No Operation)
+MNEM (ror,   ROR,   Rotate Right)
+MNEM (rti,   RTI,   Return from interrupt)
+MNEM (sbc,   SBC,   Subtract with Carry)
+MNEM (st,    ST,    Store Word)
+MNEM (stb,   STB,   Store Byte)
+MNEM (sti,   STI,   Set interrupt)
+MNEM (sub,   SUB,   Subtract)
+MNEM (xor,   XOR,   Logical Exclusive OR)
+
+// special features
+
+INSTR (NOP,   0xef000000,  0xffffffff,  Void,  Void,  Void)
+
+INSTR (ADC,   0x20080000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (ADC,   0x60080000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (SBC,   0x20090000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (SBC,   0x60090000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (MLU,   0x200a0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (MLU,   0x600a0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (MVH,   0x30000000,  0xf00f000f,  Ra,    Void,  Void)
+
+INSTR (MVF,   0x20000001,  0xf00f000f,  Ra,    Void,  Void)
+
+INSTR (MVS,   0x60000000,  0xe00f0000,  Ra,    Imm,   Void)
+
+// interrupts
+
+INSTR (RTI,   0xc7000010,  0xff0000f0,  Rc,    Void,  Void)
+
+INSTR (STI,   0xcf000021,  0xff0000ff,  Void,  Void,  Void)
+
+INSTR (CLI,   0xcf000020,  0xff0000ff,  Void,  Void,  Void)
+
+// register instructions
+
+INSTR (MOV,   0x00000000,  0xf00f0000,  Ra,    Rc,    Void)
+INSTR (MOV,   0x40000000,  0xe00f0000,  Ra,    Imm,   Void)
+
+INSTR (LSL,   0x00010000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (LSL,   0x40010000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (ASR,   0x00020000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (ASR,   0x40020000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (ROR,   0x00030000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (ROR,   0x40030000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (AND,   0x00040000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (AND,   0x40040000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (ANN,   0x00050000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (ANN,   0x40050000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (IOR,   0x00060000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (IOR,   0x40060000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (XOR,   0x00070000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (XOR,   0x40070000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (ADD,   0x00080000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (ADD,   0x40080000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (SUB,   0x00090000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (SUB,   0x40090000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (MUL,   0x000a0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (MUL,   0x400a0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (DIV,   0x000b0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (DIV,   0x400b0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (FAD,   0x000c0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (FAD,   0x400c0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (FSB,   0x000d0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (FSB,   0x400d0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (FML,   0x000e0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (FML,   0x400e0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+INSTR (FDV,   0x000f0000,  0xf00f0000,  Ra,    Rb,    Rc)
+INSTR (FDV,   0x400f0000,  0xe00f0000,  Ra,    Rb,    Imm)
+
+// memory instructions
+
+INSTR (LD,    0x80000000,  0xf0000000,  Ra,    Rb,    Dsp)
+INSTR (LDB,   0x90000000,  0xf0000000,  Ra,    Rb,    Dsp)
+
+INSTR (ST,    0xa0000000,  0xf0000000,  Ra,    Rb,    Dsp)
+INSTR (STB,   0xb0000000,  0xf0000000,  Ra,    Rb,    Dsp)
+
+// branch instructions
+
+INSTR (BMI,   0xc0000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BMI,   0xe0000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLMI,  0xd0000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLMI,  0xf0000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BEQ,   0xc1000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BEQ,   0xe1000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLEQ,  0xd1000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLEQ,  0xf1000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BCS,   0xc2000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BCS,   0xe2000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLCS,  0xd2000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLCS,  0xf2000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BVS,   0xc3000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BVS,   0xe3000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLVS,  0xd3000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLVS,  0xf3000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BLS,   0xc4000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLS,   0xe4000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLLS,  0xd4000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLLS,  0xf4000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BLT,   0xc5000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLT,   0xe5000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLLT,  0xd5000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLLT,  0xf5000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BLE,   0xc6000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLE,   0xe6000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLLE,  0xd6000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLLE,  0xf6000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (B,     0xc7000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (B,     0xe7000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BL,    0xd7000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BL,    0xf7000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BPL,   0xc8000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BPL,   0xe8000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLPL,  0xd8000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLPL,  0xf8000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BNE,   0xc9000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BNE,   0xe9000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLNE,  0xd9000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLNE,  0xf9000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BCC,   0xca000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BCC,   0xea000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLCC,  0xda000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLCC,  0xfa000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BVC,   0xcb000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BVC,   0xeb000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLVC,  0xdb000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLVC,  0xfb000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BHI,   0xcc000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BHI,   0xec000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLHI,  0xdc000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLHI,  0xfc000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BGE,   0xcd000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BGE,   0xed000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLGE,  0xdd000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLGE,  0xfd000000,  0xff000000,  Off,   Void,  Void)
+
+INSTR (BGT,   0xce000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BGT,   0xee000000,  0xff000000,  Off,   Void,  Void)
+INSTR (BLGT,  0xde000000,  0xff000000,  Rc,    Void,  Void)
+INSTR (BLGT,  0xfe000000,  0xff000000,  Off,   Void,  Void)
+
+// operand types
+
+TYPE (Ra)
+TYPE (Rb)
+TYPE (Rc)
+TYPE (Imm)
+TYPE (Dsp)
+TYPE (Off)
+
+#undef INSTR
+#undef MNEM
+#undef TYPE

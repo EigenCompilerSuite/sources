@@ -1,0 +1,614 @@
+% User manual for C++
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seecpp}{}
+
+\startchapter{\cpp{}}{User Manual for \cpp{}}{cpp}
+{\cpp{} is a general-purpose programming language with a bias toward systems programming.
+It is based on the programming language C and enhances it by supporting data abstraction, object-oriented programming, and generic programming.
+This \documentation{} describes the implementation of \cpp{} by the \ecs{}.}
+
+\epigraph{Greatness lies not in being strong, \\ but in the using of strength.}{Henry Ward Beecher}
+
+\section{Introduction}
+
+The \ecs{} implements the \cpp{} programming language according to the ISO \cpp{} Standard ISO/IEC 14882:2023~\cite{iso2023}.
+\cpp{} is a general-purpose programming language based on the C programming language as described in the C Standard ISO/IEC 9899:2018~\cite{iso2018}.
+
+\begin{center}\cpplogo{2em}\end{center}
+
+The remainder of this \documentation{} describes the implementation-defined behavior of the implementation by the \ecs{} as required by both of these international standards.
+
+\section{Implementation-Defined Behavior}
+
+The \cpp{} Standard requires all conforming implementations to include documentation describing its characteristics and behavior in areas designated as implementation-defined.
+This section lists all implementation-defined behavior including conditionally-supported constructs and locale-specific characteristics along with the corresponding section and paragraph numbers of the \cpp{} Standard.
+
+\newcommand{\cppref}[3]{\alignright#1~[#2]~#3\nopagebreak}
+\newcommand{\cppsection}[3]{\subsection[#1]{#1\alignright#2~[#3]}}
+
+\cppsection{Terms and Definitions}{3}{intro.defs}
+
+\begin{itemize}
+
+\item Diagnostic messages \cppref{3.8}{defns.diagnostic}{1}
+
+The set of diagnostic messages consist of all output messages issued by the tools of the \ecs{}.
+Diagnostic messages are either errors, warnings, or notes and are meant to be self-explanatory in the context they occur:
+Errors indicate a violation of a diagnosable rule or an occurrence of a unsupported construct described in the \cpp{} Standard as conditionally-supported.
+Fatal errors flag internal program errors or environmental problems like failures to open source files or critical system conditions like out of memory.
+Warning messages identify issues that may lead to unexpected behavior, whereas notes diagnose violations of common coding conventions.
+
+\end{itemize}
+
+\cppsection{General Principles}{4}{intro}
+
+\begin{itemize}
+
+\item Number of contiguous bits in a byte \cppref{4.4}{intro.memory}{1}
+
+The \ecs{} uniformly uses octets as representation for bytes.
+
+\item Interactive devices \cppref{4.6}{intro.execution}{7}
+
+A device is considered to be interactive when it has to wait for input from the user or some other entity in order to proceed the execution of a program.
+
+\item Multiple threads of execution \cppref{4.7}{intro.multithread}{1}
+
+A program can have more than one thread of execution in a freestanding environment.
+
+\end{itemize}
+
+\cppsection{Lexical Conventions}{5}{lex}
+
+\begin{itemize}
+
+\item Mapping of source file characters to the basic source character set \cppref{5.2}{lex.phases}{1}
+
+The \ecs{} assumes source files to be written using the ASCII character set.
+This set allows mapping most of the characters to the basic source character set.
+Any other character not in the basic source character set is replaced by the universal character name that designates that character.
+
+\item Nonempty sequences of white-space characters \cppref{5.2}{lex.phases}{1}
+
+Nonempty sequences of white-space characters are replaced by one space character.
+
+\item Conversion of source characters to execution characters \cppref{5.2}{lex.phases}{1}
+
+All members of the source character set have a corresponding member in the execution character set.
+
+\item Source of template definitions \cppref{5.2}{lex.phases}{1}
+
+Instantiations of templates require the source of the translation units containing their definitions.
+
+\item Appearance of special characters in header names \cppref{5.8}{lex.header}{2}
+
+Quotation marks, backslashes, and the character sequences~\texttt{/*} or~\texttt{//} may appear in header names but bear no special meaning and are therefore treated like any other character.
+
+\item Character literals containing multiple characters \cppref{5.13.3}{lex.ccon}{2/6}
+
+Ordinary and wide character literals may contain more than one character.
+However, all but the first character are ignored when determining the value of these literals.
+
+\item Additional escape sequences \cppref{5.13.3}{lex.ccon}{7}
+
+The \ecs{} does only support the standard escape sequences.
+
+\item Character values outside valid range \cppref{5.13.3}{lex.ccon}{8/9}
+
+The value of an escape sequence or a universal character name in a character literal must be representable using the underlying type of the literal.
+
+\item String literal concatenations \cppref{5.13.5}{lex.string}{13}
+
+Concatenations of adjacent string literals with different encoding prefixes are not supported.
+
+\end{itemize}
+
+\cppsection{Basic Concepts}{6}{basic}
+
+\begin{itemize}
+
+\item Definition of functions or variables with origin \cppref {6.2}{basic.def.odr}{4}
+
+A non-inline function or variable does not require a definition if it is declared using the origin attribute, see Section~\ref{sec:cppdeclarations}.
+
+\item Definition of \texttt{main} in freestanding environments \cppref{6.6.1}{basic.start.main}{1}
+
+A program in a freestanding environment is required to define a \texttt{main} function.
+
+\item Linkage of \texttt{main} \cppref{6.6.1}{basic.start.main}{3}
+
+The \texttt{main} function has external linkage.
+
+\item Use of invalid pointer values \cppref{6.7}{basic.stc}{4}
+
+There are no restrictions for using an invalid pointer value except for passing it to a deallocation function and accessing the referenced region of storage.
+
+\item Pointer safety \cppref{6.7.4.3}{basic.stc.dynamic.safety}{4}
+
+The \ecs{} has relaxed pointer safety.
+A pointer value is valid regardless of whether it is safely derived or not.
+
+\item Extended integer types \cppref{6.9.1}{basic.fundamental}{2}
+
+The \ecs{} does not provide any extended integer types.
+
+\item Fundamental alignments \cppref{6.11}{basic.align}{2}
+
+The alignment of a fundamental type depends on the size of the type as well as the execution environment.
+Table~\ref{tab:cppfundamentalalignments} lists the alignment of fundamental types for each \cpp{} compiler and type size supported by the \ecs{}.
+The sizes of fundamental types are shown in Table~\ref{tab:cppfundamentaltypes} and Table~\ref{tab:cppdependenttypes}.
+The interpreter and all other tools reuse the respective fundamental alignments of their own execution environment instead.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lrlc@{\qquad}c@{\qquad}c@{\qquad}c@{}}
+\toprule \multicolumn{2}{@{}l}{Hardware} & \cpp{} & \multicolumn{4}{c@{}}{Type Size} \\ \multicolumn{2}{@{}l}{Architecture} & Compiler & 1 & 2 & 4 & 8 \\
+\midrule AMD64 & 16-bit & \tool{cppamd16} & 1 & 2 & 4 & 4 \\ & 32-bit & \tool{cppamd32} & 1 & 2 & 4 & 4 \\ & 64-bit & \tool{cppamd64} & 1 & 2 & 4 & 8 \\
+\midrule ARM & A32 & \tool{cpparma32} & 1 & 2 & 4 & 8 \\ & A64 & \tool{cpparma64} & 1 & 2 & 4 & 8 \\ & T32 & \tool{cpparmt32} & 1 & 2 & 4 & 8 \\ & & \tool{cpparmt32fpe} & 1 & 2 & 4 & 8 \\
+\midrule \multicolumn{2}{@{}l}{AVR} & \tool{cppavr} & 1 & 1 & 1 & 1 \\
+\midrule \multicolumn{2}{@{}l}{AVR32} & \tool{cppavr32} & 1 & 2 & 4 & 8 \\
+\midrule \multicolumn{2}{@{}l}{M68000} & \tool{cppm68k} & 1 & 2 & 2 & 2 \\
+\midrule \multicolumn{2}{@{}l}{MicroBlaze} & \tool{cppmibl} & 1 & 2 & 4 & 8 \\
+\midrule MIPS & 32-bit & \tool{cppmips32} & 1 & 2 & 4 & 8 \\ & 64-bit & \tool{cppmips64} & 1 & 2 & 4 & 8 \\
+\midrule \multicolumn{2}{@{}l}{MMIX} & \tool{cppmmix} & 1 & 2 & 4 & 8 \\
+\midrule \multicolumn{2}{@{}l}{OpenRISC 1000} & \tool{cppor1k} & 1 & 2 & 4 & 4 \\
+\midrule PowerPC & 32-bit & \tool{cppppc32} & 1 & 2 & 4 & 8 \\ & 64-bit & \tool{cppppc64} & 1 & 2 & 4 & 8 \\
+\midrule \multicolumn{2}{@{}l}{RISC} & \tool{cpprisc} & 1 & 2 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{WebAssembly} & \tool{cppwasm} & 1 & 2 & 4 & 8 \\
+\bottomrule
+\end{tabular}
+\caption{Alignments of fundamental \cpp{} types}
+\label{tab:cppfundamentalalignments}
+\end{table}
+
+\item Extended alignments \cppref{6.11}{basic.align}{3}
+
+The \ecs{} supports extended alignments for variables with static storage duration.
+The set of valid alignments consists of all non-negative integral powers of two representable in the type \texttt{std::size\_t}.
+
+\end{itemize}
+
+\cppsection{Standard Conversions}{7}{conv}
+
+\begin{itemize}
+
+\item Value of integral conversions \cppref{7.8}{conv.integral}{3}
+
+If the destination type is signed, the resulting value of an integral conversion is the least signed integer congruent to the source integer modulo $2^n$ where $n$ is the number of bits used to represent the signed type.
+
+\item Ranks of extended signed integer types \cppref{7.15}{conv.rank}{1}
+
+The \ecs{} does not provide any extended integer types.
+
+\end{itemize}
+
+\cppsection{Expressions}{8}{expr}
+
+\begin{itemize}
+
+\item Sizes of fundamental types \cppref{8.3.3}{expr.sizeof}{1}
+
+Table~\ref{tab:cppfundamentaltypes} lists the size and value range of each fundamental type as defined by the \ecs{}.
+The sizes of the types \texttt{int}, \texttt{unsigned int}, and \texttt{double} depend on the execution environment and are listed in Table~\ref{tab:cppdependenttypes} for each \cpp{} compiler provided by the \ecs{}.
+The interpreter and all other tools reuse the respective type sizes of their own execution environment instead.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llcl@{}}
+\toprule Category & Type & Size & Value Range \\
+\midrule Boolean
+& \texttt{bool} & 1 & \texttt{false} or \texttt{true} \\
+\midrule Character
+& \texttt{char} & 1 & $0$ to $255$ \\
+& \texttt{signed char} & 1 & $-128$ to $+127$ \\
+& \texttt{unsigned char} & 1 & $0$ to $255$ \\
+& \texttt{char16_t} & 2 & $0$ to $65\,535$ \\
+& \texttt{char32_t} & 4 & $0$ to $4\,294\,967\,295$ \\
+& \texttt{wchar_t} & 4 & $0$ to $4\,294\,967\,295$ \\
+\midrule Integer
+& \texttt{short int} & 2 & $-2^{15}$ to $+2^{15}-1$ \\
+& \texttt{unsigned short int} & 2 & $0$ to $2^{16}-1$ \\
+& \texttt{int} & $2/4$ & \emph{See Table~\ref{tab:cppdependenttypes}} \\
+& \texttt{unsigned int} & $2/4$ & \emph{See Table~\ref{tab:cppdependenttypes}} \\
+& \texttt{long int} & 4 & $-2^{31}$ to $+2^{31}-1$ \\
+& \texttt{unsigned long int} & 4 & $0$ to $2^{32}-1$ \\
+& \texttt{long long int} & 8 & $-2^{63}$ to $+2^{63}-1$ \\
+& \texttt{unsigned long long int} & 8 & $0$ to $2^{64}-1$ \\
+\midrule Floating-Point
+& \texttt{float} & 4 & $\pm 3.4028234 \times 10^{38}$ \\
+& \texttt{double} & $4/8$ & \emph{See Table~\ref{tab:cppdependenttypes}} \\
+& \texttt{long double} & 8 & $\pm 1.7976931348623157 \times 10^{308}$ \\
+\bottomrule
+\end{tabular}
+\caption{Sizes and value ranges of fundamental \cpp{} types}
+\label{tab:cppfundamentaltypes}
+\end{table}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lrlccc@{}}
+\toprule \multicolumn{2}{@{}l}{Hardware} & \cpp{} & \texttt{int} & & pointer types \\ \multicolumn{2}{@{}l}{Architecture} & Compiler & \texttt{unsigned int} & \texttt{double} & \texttt{std::size\_t} \\
+\midrule AMD64 & 16-bit & \tool{cppamd16} & 2 & 8 & 2 \\ & 32-bit & \tool{cppamd32} & 4 & 8 & 4 \\ & 64-bit & \tool{cppamd64} & 4 & 8 & 8 \\
+\midrule ARM & A32 & \tool{cpparma32} & 4 & 8 & 4 \\ & A64 & \tool{cpparma64} & 4 & 8 & 8 \\ & T32 & \tool{cpparmt32} & 4 & 4 & 4 \\ & & \tool{cpparmt32fpe} & 4 & 8 & 4 \\
+\midrule \multicolumn{2}{@{}l}{AVR} & \tool{cppavr} & 2 & 4 & 2 \\
+\midrule \multicolumn{2}{@{}l}{AVR32} & \tool{cppavr32} & 4 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{M68000} & \tool{cppm68k} & 2 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{MicroBlaze} & \tool{cppmibl} & 4 & 4 & 4 \\
+\midrule MIPS & 32-bit & \tool{cppmips32} & 4 & 8 & 4 \\ & 64-bit & \tool{cppmips64} & 4 & 8 & 8 \\
+\midrule \multicolumn{2}{@{}l}{MMIX} & \tool{cppmmix} & 4 & 8 & 8 \\
+\midrule \multicolumn{2}{@{}l}{OpenRISC 1000} & \tool{cppor1k} & 4 & 4 & 4 \\
+\midrule PowerPC & 32-bit & \tool{cppppc32} & 4 & 4 & 4 \\ & 64-bit & \tool{cppppc64} & 4 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{RISC} & \tool{cpprisc} & 4 & 4 & 4 \\
+\midrule \multicolumn{2}{@{}l}{WebAssembly} & \tool{cppwasm} & 4 & 8 & 4 \\
+\bottomrule
+\end{tabular}
+\caption{Sizes of hardware-dependent \cpp{} types}
+\label{tab:cppdependenttypes}
+\end{table}
+
+\item Resulting type of pointer subtractions \cppref{8.7}{expr.add}{5}
+
+The type of the result of subtracting two pointer values is the signed counterpart of \texttt{std::size_t}.
+
+\item Result of right-shifting negative values \cppref{8.8}{expr.shift}{3}
+
+Shift operations on signed types are arithmetic.
+Shifting a negative value to the right extends its sign.
+
+\end{itemize}
+
+\cppsection{Declarations}{10}{dcl.dcl}\label{sec:cppdeclarations}
+
+\begin{itemize}
+
+\item Meaning of attribute declarations \cppref{10}{dcl.dcl}{3}
+
+Attribute declarations appertain to the current translation unit and may contain the standard \texttt{deprecated} attribute which applies to included headers and source files.
+
+\item The \texttt{asm} declaration \cppref{10.4}{dcl.asm}{1}
+
+The \texttt{asm} declaration is supported and allows writing inline assembly code using one of the various compilers for the \cpp{} programming language.
+All of them pass the string literal of the \texttt{asm} declaration to the assembler used to generate the machine code.
+The available instruction set therefore depends on the actual compiler used to compile the source code.
+\seeassembly
+The interpreter does not support executing \texttt{asm} declarations.
+
+The assembly code of an \texttt{asm} declaration appearing at namespace scope has unrestricted access to all features of the assembler.
+It must therefore first create a code or data section before any other directive or instruction can be used.
+At block scope, the inline assembly code is part of a code section predefined by the compiler which also provides constant definitions for all labels, variables, parameters, enumerations and their enumerators that are accessible from that scope.
+The name of a label is predefined as the address of the corresponding labeled statement and can therefore be used as the target of branch instructions.
+The names of all parameters and variables with automatic storage duration evaluate to the offset of the corresponding entity relative to the frame pointer.
+The name of a variable with static storage duration evaluates to its address.
+If a variable or parameter is declared using the register attribute, its name is an alias for the corresponding processor register.
+The name of an enumerator or a non-volatile constant variable initialized with a constant expression of fundamental or pointer type is predefined to its value.
+For debugging purposes, all names predefined in inline assembly code and their actual values are accessible using the expression evaluation directive.
+
+\item Language linkages \cppref{10.5}{dcl.link}{2}
+
+Besides the two language linkages \texttt{"C"} and \texttt{"C++"} required by the \cpp{} Standard, the \ecs{} also supports the \texttt{"Oberon"} language linkage.
+It allows accessing global procedures and variables defined in Oberon modules.
+In order to identify the containing module, the corresponding functions and objects declared with this language linkage must be members of a named namespace.
+\seeoberon
+
+\item Non-standard attributes \cppref{10.6.1}{dcl.attr.grammar}{6}
+
+Besides the attributes specified in the \cpp{} Standard, the \ecs{} also recognizes the following non-standard attributes.
+All of them may only appear once in an attribute list and cannot be used as pack expansions.
+Except where otherwise noted, they apply only to functions and variables with static storage duration and do not accept arguments:
+
+\begin{itemize}
+
+\item Alias attribute\alignright\syntax{"ecs::alias" "(" <string-literal> ")"}\nopagebreak
+
+The alias attribute specifies that the corresponding entity may also be accessible in assembly code or other programming languages using the name given in the non-empty string literal.
+
+\item Code attribute\alignright\syntax{"ecs::code"}\nopagebreak
+
+The code attribute applies to \texttt{asm} declarations and causes their string literal to be interpreted as intermediate code.
+\seecode
+
+\item Duplicable attribute\alignright\syntax{"ecs::duplicable"}\nopagebreak
+
+The duplicable attribute specifies that linkers merge the definition of the corresponding entity with other entities that have the same definition.
+
+\item Group attribute\alignright\syntax{"ecs::group" "(" <string-literal> ")"}\nopagebreak
+
+The group attribute specifies that linkers place the corresponding entity adjacent to other entities that also belong to the group named in the non-empty string literal.
+
+\item Origin attribute\alignright\syntax{"ecs::origin" "(" <constant-expression> ")"}\nopagebreak
+
+The origin attribute specifies the desired address of the variable or function.
+It requires an integral constant expression as argument that is convertible to \texttt{std::size\_t}.
+This attribute may not be combined with alignment specifiers.
+
+\item Register attribute\alignright\syntax{"ecs::register"}\nopagebreak
+
+The register attribute applies to up to four non-volatile parameters and variables with automatic storage duration of fundamental or pointer type and specifies that compilers store the corresponding variable or parameter in a register.
+
+\item Replaceable attribute\alignright\syntax{"ecs::replaceable"}\nopagebreak
+
+The replaceable attribute specifies that linkers discard the definition of the corresponding entity if another entity with the same name exists.
+
+\item Required attribute\alignright\syntax{"ecs::required"}\nopagebreak
+
+The required attribute specifies that linkers do not omit the definition of the corresponding entity even if it is never actually used in a program.
+
+\end{itemize}
+
+Any entity declared with one of these attributes can later be redeclared without that attribute and vice versa.
+However, redeclarations and declarations in other translation units using different forms of the same attribute are not allowed.
+
+\item Noreturn \texttt{asm} declarations \cppref{9.12.10}{dcl.attr.noreturn}{1}
+
+The noreturn attribute may be applied to \texttt{asm} declarations at block scope and specifies that the corresponding assembly code does not return.
+
+\end{itemize}
+
+\cppsection{Declarators}{11}{dcl.decl}
+
+\begin{itemize}
+
+\item String value of \texttt{\_\_func\_\_} \cppref{11.4.1}{dcl.fct.def.general}{8}
+
+The string resulting from the function-local predefined variable \texttt{\_\_func\_\_} matches the fully qualified section name of the function as described in Section~\ref{sec:cppnamingconventions}.
+
+\end{itemize}
+
+\cppsection{Classes}{12}{class}
+
+\begin{itemize}
+
+\item Allocation and alignment of bit-fields \cppref{12.2.4}{class.bit}{1}
+
+Bit-fields are allocated consecutively and packed adjacent to each other, as long as they do not straddle allocation units and the alignment of their respective types does not require padding bits.
+
+\end{itemize}
+
+\cppsection{Preprocessing Directives}{19}{cpp}
+
+\begin{itemize}
+
+\item Additional preprocessing directives \cppref{19}{cpp}{2}
+
+The \ecs{} does not support additional preprocessing directives.
+
+\item Interpretation of character literals \cppref{19.1}{cpp.cond}{10}
+
+The numeric value for character literals within a \texttt{\#if} or \texttt{\#elif} directive is non-negative and matches the value obtained when an identical character literal occurs in an expression.
+
+\item Source file inclusion \cppref{19.2}{cpp.include}{2/3}
+
+Source files identified between a pair of~\texttt{"} delimiters in \texttt{\#include} directives are searched relative to the directory of the current source file.
+Headers identified between the~\texttt{<} and~\texttt{>} delimiters are searched in the relative directory given by the \environmentvariable{ECSINCLUDE} environment variable.
+Two or more directories can be separated by semicolons and are searched in order.
+Each directory must include a trailing path separator.
+
+\item Combination of preprocessing tokens into one header name token \cppref{19.2}{cpp.include}{4}
+
+A pair of~\texttt{"} delimiters is treated as a string literal token.
+All preprocessing tokens between~\texttt{<} and~\texttt{>} delimiters are concatenated to form a single header name token.
+Identifiers therein are subject to macro replacement.
+
+\item Pragma directive \cppref{19.6}{cpp.pragma}{1}
+
+The \ecs{} recognizes the \texttt{\#pragma end} pragma directive which simulates the end of a source file.
+The remaining part of the source file following this pragma directive is completely ignored.
+All other pragma directives are ignored.
+
+\item Predefined macro names \cppref{19.8}{cpp.predefined}{1}
+
+If the date of translation is not available, the macros \texttt{\_\_DATE\_\_} and \texttt{\_\_TIME\_\_} are predefined as \texttt{"May 10 2023"} and \texttt{"00:00:00"} respectively.
+The macro \texttt{\_\_STD\_HOSTED\_\_} is defined as~\texttt{1} since the \cpp{} implementation of the \ecs{} is hosted.
+
+\item Conditionally-defined macro names \cppref{16.8}{cpp.predefined}{2}
+
+The macros \texttt{\_\_STDC\_\_} and \texttt{\_\_STDC\_VERSION\_\_} are not predefined.
+
+\item Implementation-defined macro names \cppref{16.8}{cpp.predefined}{4}
+
+The macro \texttt{\_\_ecs\_\_} is predefined in order to enable programmers to detect the \ecs{} while processing compiler-specific source code.
+The value of the predefined macro \texttt{\_\_sizeof\_}\textit{type}\texttt{\_\_} where \textit{type} is either \texttt{double}, \texttt{float}, \texttt{int}, \texttt{long}, \texttt{long_double}, \texttt{pointer}, or \texttt{short} is the size of the corresponding type.
+The interpreter and all compilers predefine an additional macro name of the form \texttt{\_\_}\textit{target}\texttt{\_\_} for identifying the target environment where \textit{target} is either \texttt{amd16}, \texttt{amd32}, \texttt{amd64}, \texttt{arma32}, \texttt{arma64}, \texttt{armt32}, \texttt{armt32fpe}, \texttt{avr}, \texttt{avr32}, \texttt{code}, \texttt{m68k}, \texttt{mibl}, \texttt{mips32}, \texttt{mips64}, \texttt{mmix}, \texttt{or1k}, \texttt{ppc32}, \texttt{ppc64}, \texttt{risc}, \texttt{run}, or \texttt{wasm}.
+
+\end{itemize}
+
+\cppsection{Library Introduction}{20}{library}
+
+\begin{itemize}
+
+\item Declaration of additional functions from the standard C library \cppref{20.5.1.2}{headers}{9}
+
+The functions described in Annex K of the C standard are not declared when including \cpp{} headers.
+
+\item Freestanding implementations \cppref{20.5.1.3}{compliance}{2}
+
+The \ecs{} provides an implementation of \cpp{} that can be used in hosted as well as freestanding environments.
+In both cases, the complete set of headers described by the \cpp{} Standard is available.
+
+\item Linkage of names from the standard C library \cppref{20.5.2.3}{using.linkage}{2}
+
+Names from the C standard library declared with external linkage have \texttt{extern "C"} linkage.
+
+\end{itemize}
+
+\cppsection{Language Support Library}{21}{language.support}
+
+\begin{itemize}
+
+\item Definition of macro \texttt{NULL} \cppref{21.2.3}{support.types.nullptr}{2}
+
+The macro \texttt{NULL} is defined as \texttt{nullptr}.
+
+\end{itemize}
+
+\cppsection{Implementation Quantities}{B}{implimits}
+
+According the \cpp{} Standard, each implementation shall document the limitations of the programs they can successfully process.
+This section lists all known limitations of the \ecs{}:
+
+\begin{itemize}
+
+\item Size of an object \cppref{6.9.2}{basic.compound}{2}
+
+The size of an object is limited by the maximal value representable in the type \texttt{std::size\_t}.
+
+\item Nesting levels for \texttt{\#include} files \cppref{19.2}{cpp.include}{6}
+
+The nesting level of \texttt{\#include} directives has a limit of 256 in order to detect potentially infinite recursions.
+
+\item Functions registered by \texttt{atexit()} \cppref{21.5}{support.start.term}{6}
+
+The \ecs{} supports the registration of at most 32 functions.
+
+\item Functions registered by \texttt{at_quick_exit()} \cppref{21.5}{support.start.term}{10}
+
+The \ecs{} supports the registration of at most 32 functions.
+
+\item Recursive \texttt{constexpr} function invocations \cppref{8.20}{expr.const}{2}
+
+The total number of nested calls of \texttt{constexpr} functions is limited to 512.
+
+\item Recursively nested template instantiations \cppref{17.7.1}{temp.inst}{15}
+
+The total depth of recursive template instantiations, including substitution during template argument deduction, has a limit of 1024 in order to detect potentially infinite recursions.
+
+\item Number of placeholders \cppref{23.14.11.4}{func.bind.place}{1}
+
+The implementation-defined number of placeholders $M$ is 10.
+
+\end{itemize}
+
+All other quantities listed in Annex~B of the \cpp{} Standard that are not mentioned above have no intrinsic limit and are only restricted by available memory.
+The actual limit depends therefore only on the execution environment of the tool used to process the \cpp{} source file.
+
+\section{The Standard \cpp{} Library}
+
+The \ecs{} provides its own implementation of the \cpp{} standard library called the \emph{Standard \cpp{} Library}\index{Standard C++ Library@Standard \cpp{} Library}\index{Libraries!Standard C++ Library@Standard \cpp{} Library}.
+Its facilities are made available by including one or more of its headers and providing the necessary runtime support as described in Section~\ref{sec:cppruntimesupport}.
+All of these headers are governed by the \rse{} which is an additional permission to the \gpl{} that allows users of the \ecs{} to create proprietary programs.
+\ifbook Copies of these licenses are included in Appendices~\ref{gpl} and~\ref{rse} on pages~\pageref{gpl} and~\pageref{rse} respectively. \fi
+
+\input{cpplibrary.doc}
+
+\section{Documentation Generation}
+
+The \ecs{} provides several tools that are able to extract the structure of programs written in \cpp{} and generate documentations for them.
+This section describes the contents of the extracted information and explains how programmers can provide a user-defined description of it.
+
+\ifbook\else\markuptable\fi
+
+\section{Runtime Support}\label{sec:cppruntimesupport}\index{Runtime support!for C++@for \cpp{}}
+
+Some language features of \cpp{} such as exceptions require some additional runtime support.
+This runtime support is stored in library files which are collections of object files. \seeobject
+The \ecs{} provides the required runtime support in one library file for each hardware architecture it supports.
+The name of the corresponding library file consists of a leading \file{cpp}, the name of the target hardware architecture, and a trailing \file{run} as in \file{cpp\-amd64\-run}.
+
+\section{\cpp{} Tools}
+
+The \ecs{} provides several different tools that process source files written in \cpp{}.
+\interface
+
+The tools process \cpp{} translation units in several consecutive stages.
+In each stage, the internal representation of the translation unit is changed and transformed.
+Figure~\ref{fig:cppdataflow} shows all stages and the different representations.
+
+\begin{figure}
+\flowgraph{
+& \resource{\cpp{}\\source code} \ar[d] \\
+\variable{ECSINCLUDE} \ar[r] & \converter{Preprocessor} \ar[d] \ar[r] & \resource{preprocessed\\source code} \\
+& \resource{tokens} \ar[d] \\
+& \converter{Parser} \ar[d] \\
+\converter{Serializer} \ar[d] & \resource{abstract\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Pretty Printer} \ar[d] \\
+\resource{internal\\representation} & \converter{Semantic\\Checker} \ar[d] & \resource{reformatted\\source code} \\
+\converter{Interpreter} \ar@/l/[d] & \resource{attributed\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Documentation\\Extractor} \ar[d] \\
+\resource{input/\\output} \ar@/r/[u] & \converter{Intermediate\\Code Emitter} \ar[d] & \resource{generic\\documentation} \\
+& \resource{intermediate\\code} \ar[d] \ar@/u/[r] & \converter{Optimizer} \ar@/d/[l] \\
+\resource{assembly\\listing} & \converter{Machine Code\\Generator} \ar[l] \ar[d] \ar[r] & \resource{debugging\\information} \\
+& \resource{object file} \\
+}\caption{Data flow within the tools for \cpp{}}
+\label{fig:cppdataflow}
+\end{figure}
+
+\cppprep
+\cppprint
+\cppcheck
+\cppdump
+\cpprun
+\cppdoc
+\cpphtml
+\cpplatex
+\cppcode
+\cppamda
+\cppamdb
+\cppamdc
+\cpparma
+\cpparmb
+\cpparmc
+\cpparmcfpe
+\cppavr
+\cppavrtt
+\cppmabk
+\cppmibl
+\cppmipsa
+\cppmipsb
+\cppmmix
+\cpporok
+\cppppca
+\cppppcb
+\cpprisc
+\cppwasm
+
+\section{Interoperability}
+
+In accordance with the goal of the \ecs{} to enable interoperability between its implemented programming languages,
+the compilers for \cpp{} provide different mechanisms to exchange data with programs written with other tools of the \ecs{}.
+The interoperability is enabled by a common intermediate code representation and calling convention. \seecode
+
+This section describes the naming conventions used to uniquely identify the intermediate code sections defined by the compilers for \cpp{}
+as well as the ways of accessing sections defined by other compilers and assemblers.
+
+\subsection{Naming Conventions}\label{sec:cppnamingconventions}
+
+The compilers for the \cpp{} programming language emit a code section for each function definition, function bodies of lambda expressions, and non-local variable with dynamic initialization.
+Additional data sections are defined for non-local variables and type informations required at runtime.
+
+The name of each section equals to the name of the corresponding entity and is prefixed by the name of its containing scope in case the entity does not have C language linkage.
+The names of entities and their scope are delimited by scope operators such that names resemble qualified identifiers and no name mangling is necessary.
+
+\subsection{Accessing Sections}
+
+\cpp{} as implemented by the \ecs{} allows two different ways of accessing sections defined by other compilers or assemblers.
+
+\begin{itemize}
+
+\item
+The \texttt{asm} declaration allows writing inline assembly code which naturally enables arbitrary access to any section, see Section~\ref{sec:cppdeclarations}.
+\seeassembly
+
+\item
+The \texttt{extern} specifier allows referring to data and code sections that are defined elsewhere.
+In cases where the different language linkages supported by the \ecs{} do not automatically yield the required section name for a suitably declared function or variable,
+the alias attribute can be used to provide an arbitrary section name by hand, see Section~\ref{sec:cppdeclarations}.
+
+\end{itemize}
+
+\subsection{Program Execution}
+
+The entry point of a program is represented by the \texttt{main} function.
+Unless provided by any other programming language, it must be defined in one of the linked \cpp{} translation units.
+Any dynamic initialization of global variables with static storage duration is executed before the \texttt{main} function.
+The destruction of variables with static storage duration on the other hand requires an explicit or implicit call of the standard \texttt{exit} function.
+
+\concludechapter

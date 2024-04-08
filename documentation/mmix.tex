@@ -1,0 +1,120 @@
+% MMIX architecture documentation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seemmix}{}
+
+\startchapter{MMIX}{MMIX Hardware Architecture Support}{mmix}
+{This \documentation{} describes how the \ecs{} supports the MMIX hardware architecture.
+This includes information about the assembler, disassembler, and the various compilers featured by the \ecs{} as well as the interoperability between these tools.}
+
+\section{Introduction}
+
+The \ecs{} features various compilers, an assembler, and a disassembler that target the MMIX hardware architecture.
+Figure~\ref{fig:mmixdataflow} shows the data flow in-between these tools.
+
+\begin{figure}
+\flowgraph{
+\resource{intermediate\\code} \ar[d] & & \resource{assembly\\source code} \ar[d] \\
+\converter{MMIX\\Generator} \ar[r] \ar[rd] \ar[d] & \resource{assembly\\listing} \ar[r] & \converter{MMIX\\Assembler} \ar[ld] \\
+\resource{debugging\\information} & \resource{object file} \ar[d] \\
+& \converter{MMIX\\Disassembler} \ar[d] \\
+& \resource{disassembly\\listing} \\
+}\caption{Data flow within the tools targeting the MMIX architecture}
+\label{fig:mmixdataflow}
+\end{figure}
+
+All compilers targeting the MMIX architecture translate their programs using an intermediate code representation.
+The MMIX generator is able to translate the intermediate code representation of a program into machine code for MMIX processors.
+It stores the resulting binary code and data in so-called object files.
+Additionally, the generator is able to create an assembly code listing of the machine code for debugging purposes.
+This assembly code listing can also be processed by the assembler yielding exactly the same object file.
+The disassembler is able to open object files and print a human-readable disassembly listing of their contents.
+\seeobject\seecode
+
+\section{Instruction Set}
+
+Tools targeting the MMIX architecture support the instruction set listed in Table~\ref{tab:mmixset} and use the same assembly syntax as predefined by Donald~E.\ Knuth~\cite{mmixware}.
+The only exception are immediate values which are not prefixed by a number sign.
+\seeassembly
+
+\instructionset{mmix}{Supported MMIX instruction set}{5}{6}
+
+\section{Calling Convention}\index{Calling convention!of MMIX}
+
+The machine code generator and runtime support for the MMIX architecture as provided by the \ecs{} use the following calling convention in order to enable interoperability.
+
+\subsection{Stack Operations}
+
+Arguments for functions as well as the return address are in general passed using the stack according to the intermediate code specification.
+See \Documentation{}~\documentationref{code}{Intermediate Code Representation} for more information about the role of the stack.
+Function arguments are pushed on the stack in reverse order and cleaned by the caller.
+
+\subsection{Register Mapping}
+
+The special-purpose registers defined by the intermediate code representation are mapped to their corresponding physical registers in the following way:
+
+\begin{itemize}
+
+\item Result Register\alignright\texttt{\$res}\nopagebreak
+
+The intermediate code result register \texttt{\$res} is mapped to MMIX register \texttt{\$0}.
+
+\item Stack Pointer Register\alignright\texttt{\$sp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$sp} is mapped to MMIX register \texttt{\$1}.
+
+\item Frame Pointer Register\alignright\texttt{\$fp}\nopagebreak
+
+The intermediate code frame pointer register \texttt{\$fp} is mapped to MMIX register \texttt{\$2}.
+
+\item Link Register\alignright\texttt{\$lnk}\nopagebreak
+
+The intermediate code link register \texttt{\$lnk} is not supported.
+
+\end{itemize}
+
+All other intermediate code registers are mapped as needed to the remaining physical registers.
+Their contents and mapping are therefore considered volatile across function calls.
+
+\section{Runtime Support}\index{Runtime support!for MMIX}
+
+The \ecs{} provides runtime support for the MMIX architecture and runtime environments based on this hardware architecture in object files.
+Users targeting a specific runtime environment have to use an appropriate linker together with these object files in order create an executable program.
+This section gives information about all supported runtime environments based on the MMIX hardware architecture as well as the required combination of linker and object files.
+
+Basic architectural runtime support is provided by the object file \objfile{mmix\-run}.
+Users should always include this object file during linking regardless of the actual target runtime environment.
+All other object files given to the linker should target the same hardware architecture.
+
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-mmix\-run} library file.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-mmix\-run} library file.
+\seecpp\seeoberon
+
+Programs targeting the MMIX simulator are created using the \tool{link\-bin} linker tool.
+It creates a MMIX object file~\cite{mmixware} if provided with the runtime support stored in the \objfile{mmix\-sim\-run} object file.
+Calling the \tool{ecsd} utility tool using the \environment{mmix\-sim} target environment achieves the same result.
+
+\section{MMIX Tools}
+
+The \ecs{} provides the following tools that are able to process object files targeting the MMIX hardware architecture.
+\interface
+
+\cdmmix
+\cppmmix
+\falmmix
+\obmmix
+\mmixasm
+\mmixdism
+\linkbin
+
+\concludechapter

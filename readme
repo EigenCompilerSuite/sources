@@ -1,0 +1,121 @@
+        *
+       / \
+      /   *                   Eigen Compiler Suite
+     /   /|      ______________________________________________
+    /   / | *
+   /   /  |/ \                       Readme
+  *   *   /   *
+  |\   \ /   /|
+  | \   *   / |  The Eigen Compiler Suite is a collection of
+  |  \     /  *  free software development tools targeting a
+  |   \   /  /   variety of programming languages and runtime
+  | *  \ /  /\   environments. This software and all of its
+  | |\  *  /  *  documentation can be built in environments
+  | |/* | *  /|  like Windows, OS X, or Linux-based operating
+  | * | | | / |  systems using the provided GNU makefile. Its
+  |  \| | |/  |  source code however is completely written in
+  |   * | *   |  standard C++. A compiler conforming to C++17
+  | *   |   * |  is necessary but sufficient to compile the
+  | |\  |  /| |  entire Eigen Compiler Suite.
+  | |/\ | /\| |
+  | *  \|/  * |  In order to get started, use: make hosttarget.
+  *  \  *  /  *  This command builds everything that is needed
+   \  \   /  /   to create programs for your current runtime
+    \  \ /  /    environment. This includes the Eigen Compiler
+     \  *  /     Suite Driver which conveniently builds whole
+      \ | /      programs if provided with one or more source
+       \|/       code files. It is called ecsd and is available
+        *        from the subdirectory called utilities.
+
+All of the prerequisites listed and required by the User Guide
+and Chapter "Getting Started" of the User Manual respectively
+for processing and building exemplary programs can be created
+using: make obtools win64target osx64target amd64linuxtarget.
+The resulting tools and runtime support are all available from
+the tools and runtime subdirectories as well as by using ecsd.
+
+The following list describes the most important capabilities of
+the makefile and names the required software for each command.
+The locations of the required programs given in parentheses must
+be available via the PATH environment variable.
+
+- make all
+
+  Builds the entire Eigen Compiler Suite including all runtime
+  support and utility tools. This command is the default and is
+  equivalent to: make tools runtime utilities.
+
+- make tools
+
+  Compiles all tools of the Eigen Compiler Suite. It requires a
+  recent version of the Microsoft Visual C++ Compiler (cl, link)
+  under Windows, GCC (g++) under Linux-based operating systems,
+  or Clang (clang++) under OS X. Assigning one of the following
+  values to the toolchain variable however allows overriding the
+  respective default compiler: ecs, gcc, clang, or msvc.
+
+- make runtime
+
+  Once the corresponding assembler and compiler tools are built,
+  this command creates all object files and runtime libraries
+  that are required by programs created using the Eigen Compiler
+  Suite.
+
+- make utilities
+
+  Compiles useful but otherwise optional utility tools provided
+  for users and developers of the Eigen Compiler Suite.
+
+- make documentation
+
+  Creates a complete user manual describing all features of the
+  Eigen Compiler Suite. In addition, some specific topics are
+  filed in separate documents which correspond to single
+  chapters of the manual. This command creates PDF documents
+  and requires a TeX distribution (pdflatex, bibtex, makeindex).
+
+- make tests
+
+  Tests several tools of the Eigen Compiler Suite and stores the
+  result for regression testing.
+
+- make clean
+
+  Completely removes all files created by the previous commands.
+
+- make checks
+
+  Checks whether the source code uses white space consistently
+  and whether header files are self-contained.
+
+- make install
+
+  Copies all built tools and libraries to suitable locations in
+  environments like OS X and Linux-based operating systems. This
+  command may require special privileges and can be completely
+  reverted using: make uninstall.
+
+- make ...tools
+
+  Builds all hardware-independent tools like pretty printers for
+  a particular programming language, for example: make cpptools.
+  This always includes the Eigen Compiler Suite Driver and is
+  useful for providing all tools of a language when installing.
+
+- make ...target
+
+  Builds all tools and runtime libraries required to target the
+  specified runtime environment, for example: make win32target.
+  This always includes the Eigen Compiler Suite Driver and is
+  most useful for selecting individual targets when installing.
+
+Copies of the GNU General Public License, the ECS Runtime
+Support Exception, and the GNU Free Documentation License are
+located in the subdirectory called licenses.
+
+Version 0.0.40 Copyright (C) Florian Negele
+
+Copying and distribution of this file, with or without
+modification, are permitted in any medium without royalty
+provided the copyright notice and this notice are preserved.
+This file is offered as-is, without any warranty.

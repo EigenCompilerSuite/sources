@@ -1,0 +1,417 @@
+// C++ language definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ALTERNATIVE
+	#define ALTERNATIVE(alternative, name, primary) SYMBOL (alternative, name)
+#endif
+
+#ifndef ATTRIBUTE
+	#define ATTRIBUTE(attribute, name)
+#endif
+
+#ifndef DIRECTIVE
+	#define DIRECTIVE(directive, name)
+#endif
+
+#ifndef EXTATTRIBUTE
+	#define EXTATTRIBUTE(namespace, attribute, name, value) ATTRIBUTE (attribute, name)
+#endif
+
+#ifndef FEATURETESTMACRO
+	#define FEATURETESTMACRO(name, value)
+#endif
+
+#ifndef NAMESPACE
+	#define NAMESPACE(namespace, name)
+#endif
+
+#ifndef SIZEOFMACRO
+	#define SIZEOFMACRO(type, name)
+#endif
+
+#ifndef STDATTRIBUTE
+	#define STDATTRIBUTE(attribute, name, value) ATTRIBUTE (attribute, name)
+#endif
+
+#ifndef SYMBOL
+	#define SYMBOL(symbol, name)
+#endif
+
+#ifndef TYPEMODEL
+	#define TYPEMODEL(model, type, size)
+#endif
+
+#ifndef TYPETRAIT
+	#define TYPETRAIT(predicate, name)
+#endif
+
+// white space
+
+SYMBOL (Newline,       "new-line character")
+SYMBOL (WhiteSpace,    "white space")
+SYMBOL (Comment,       "comment")
+SYMBOL (Annotation,    "annotation")
+SYMBOL (Placemarker,   "placemarker")
+SYMBOL (Concatenator,  "concatenator")
+
+// keywords
+
+SYMBOL (Alignas,          "alignas")
+SYMBOL (Alignof,          "alignof")
+SYMBOL (Asm,              "asm")
+SYMBOL (Auto,             "auto")
+SYMBOL (Bool,             "bool")
+SYMBOL (Break,            "break")
+SYMBOL (Case,             "case")
+SYMBOL (Catch,            "catch")
+SYMBOL (Char,             "char")
+SYMBOL (Char16T,          "char16_t")
+SYMBOL (Char32T,          "char32_t")
+SYMBOL (Char8T,           "char8_t")
+SYMBOL (Class,            "class")
+SYMBOL (CoAwait,          "co_await")
+SYMBOL (CoReturn,         "co_return")
+SYMBOL (CoYield,          "co_yield")
+SYMBOL (Concept,          "concept")
+SYMBOL (Const,            "const")
+SYMBOL (ConstCast,        "const_cast")
+SYMBOL (Consteval,        "consteval")
+SYMBOL (Constexpr,        "constexpr")
+SYMBOL (Constinit,        "constinit")
+SYMBOL (Continue,         "continue")
+SYMBOL (Decltype,         "decltype")
+SYMBOL (Default,          "default")
+SYMBOL (Delete,           "delete")
+SYMBOL (Do,               "do")
+SYMBOL (Double,           "double")
+SYMBOL (DynamicCast,      "dynamic_cast")
+SYMBOL (Else,             "else")
+SYMBOL (Enum,             "enum")
+SYMBOL (Explicit,         "explicit")
+SYMBOL (Export,           "export")
+SYMBOL (Extern,           "extern")
+SYMBOL (False,            "false")
+SYMBOL (Float,            "float")
+SYMBOL (For,              "for")
+SYMBOL (Friend,           "friend")
+SYMBOL (Goto,             "goto")
+SYMBOL (If,               "if")
+SYMBOL (Inline,           "inline")
+SYMBOL (Int,              "int")
+SYMBOL (Long,             "long")
+SYMBOL (Mutable,          "mutable")
+SYMBOL (Namespace,        "namespace")
+SYMBOL (New,              "new")
+SYMBOL (Noexcept,         "noexcept")
+SYMBOL (Nullptr,          "nullptr")
+SYMBOL (Operator,         "operator")
+SYMBOL (Private,          "private")
+SYMBOL (Protected,        "protected")
+SYMBOL (Public,           "public")
+SYMBOL (Register,         "register")
+SYMBOL (ReinterpretCast,  "reinterpret_cast")
+SYMBOL (Requires,         "requires")
+SYMBOL (Return,           "return")
+SYMBOL (Short,            "short")
+SYMBOL (Signed,           "signed")
+SYMBOL (Sizeof,           "sizeof")
+SYMBOL (Static,           "static")
+SYMBOL (StaticAssert,     "static_assert")
+SYMBOL (StaticCast,       "static_cast")
+SYMBOL (Struct,           "struct")
+SYMBOL (Switch,           "switch")
+SYMBOL (Template,         "template")
+SYMBOL (This,             "this")
+SYMBOL (ThreadLocal,      "thread_local")
+SYMBOL (Throw,            "throw")
+SYMBOL (True,             "true")
+SYMBOL (Try,              "try")
+SYMBOL (Typedef,          "typedef")
+SYMBOL (Typeid,           "typeid")
+SYMBOL (Typename,         "typename")
+SYMBOL (Union,            "union")
+SYMBOL (Unsigned,         "unsigned")
+SYMBOL (Using,            "using")
+SYMBOL (Virtual,          "virtual")
+SYMBOL (Void,             "void")
+SYMBOL (Volatile,         "volatile")
+SYMBOL (WCharT,           "wchar_t")
+SYMBOL (While,            "while")
+
+// reserved words
+
+SYMBOL (HasAttribute,  "__has_cpp_attribute")
+SYMBOL (HasInclude,    "__has_include")
+SYMBOL (Typetrait,     "__typetrait")
+
+// operators
+
+SYMBOL (Pound,                 "#")
+SYMBOL (DoublePound,           "##")
+SYMBOL (Ellipsis,              "...")
+SYMBOL (Dot,                   ".")
+SYMBOL (DotAsterisk,           ".*")
+SYMBOL (DoubleColon,           "::")
+SYMBOL (QuestionMark,          "?")
+SYMBOL (ExclamationMark,       "!")
+SYMBOL (ExclamationMarkEqual,  "!=")
+SYMBOL (Percent,               "%")
+SYMBOL (PercentEqual,          "%=")
+SYMBOL (Ampersand,             "&")
+SYMBOL (AmpersandEqual,        "&=")
+SYMBOL (DoubleAmpersand,       "&&")
+SYMBOL (Asterisk,              "*")
+SYMBOL (AsteriskEqual,         "*=")
+SYMBOL (Plus,                  "+")
+SYMBOL (PlusEqual,             "+=")
+SYMBOL (DoublePlus,            "++")
+SYMBOL (Minus,                 "-")
+SYMBOL (MinusEqual,            "-=")
+SYMBOL (DoubleMinus,           "--")
+SYMBOL (Arrow,                 "->")
+SYMBOL (ArrowAsterisk,         "->*")
+SYMBOL (Slash,                 "/")
+SYMBOL (SlashEqual,            "/=")
+SYMBOL (Less,                  "<")
+SYMBOL (LessEqual,             "<=")
+SYMBOL (DoubleLess,            "<<")
+SYMBOL (DoubleLessEqual,       "<<=")
+SYMBOL (Equal,                 "=")
+SYMBOL (DoubleEqual,           "==")
+SYMBOL (Greater,               ">")
+SYMBOL (GreaterEqual,          ">=")
+SYMBOL (DoubleGreater,         ">>")
+SYMBOL (DoubleGreaterEqual,    ">>=")
+SYMBOL (Caret,                 "^")
+SYMBOL (CaretEqual,            "^=")
+SYMBOL (Bar,                   "|")
+SYMBOL (BarEqual,              "|=")
+SYMBOL (DoubleBar,             "||")
+SYMBOL (Tilde,                 "~")
+SYMBOL (Comma,                 ",")
+
+// alternative tokens
+
+ALTERNATIVE (And,                 "and",     DoubleAmpersand)
+ALTERNATIVE (AndEq,               "and_eq",  AmpersandEqual)
+ALTERNATIVE (Bitand,              "bitand",  Ampersand)
+ALTERNATIVE (Bitor,               "bitor",   Bar)
+ALTERNATIVE (Compl,               "compl",   Tilde)
+ALTERNATIVE (Not,                 "not",     ExclamationMark)
+ALTERNATIVE (NotEq,               "not_eq",  ExclamationMarkEqual)
+ALTERNATIVE (Or,                  "or",      DoubleBar)
+ALTERNATIVE (OrEq,                "or_eq",   BarEqual)
+ALTERNATIVE (Xor,                 "xor",     Caret)
+ALTERNATIVE (XorEq,               "xor_eq",  CaretEqual)
+ALTERNATIVE (PercentColon,        "%:",      Pound)
+ALTERNATIVE (DoublePercentColon,  "%:%:",    DoublePound)
+ALTERNATIVE (LessPercent,         "<%",      LeftBrace)
+ALTERNATIVE (PercentGreater,      "%>",      RightBrace)
+ALTERNATIVE (LessColon,           "<:",      LeftBracket)
+ALTERNATIVE (ColonGreater,        ":>",      RightBracket)
+
+// punctuators
+
+SYMBOL (LeftParen,          "(")
+SYMBOL (RightParen,         ")")
+SYMBOL (Colon,              ":")
+SYMBOL (Semicolon,          ";")
+SYMBOL (LeftBracket,        "[")
+SYMBOL (DoubleLeftBracket,  "[[")
+SYMBOL (RightBracket,       "]")
+SYMBOL (LeftBrace,          "{")
+SYMBOL (RightBrace,         "}")
+
+// literals
+
+SYMBOL (Identifier,           "identifier")
+SYMBOL (BinaryInteger,        "binary integer")
+SYMBOL (OctalInteger,         "octal integer")
+SYMBOL (DecimalInteger,       "decimal integer")
+SYMBOL (HexadecimalInteger,   "hexadecimal integer")
+SYMBOL (DecimalFloating,      "decimal floating")
+SYMBOL (HexadecimalFloating,  "hexadecimal floating")
+SYMBOL (NarrowCharacter,      "character")
+SYMBOL (Char8TCharacter,      "char8_t character")
+SYMBOL (Char16TCharacter,     "char16_t character")
+SYMBOL (Char32TCharacter,     "char32_t character")
+SYMBOL (WideCharacter,        "wide character")
+SYMBOL (NarrowString,         "string")
+SYMBOL (Char8TString,         "char8_t string")
+SYMBOL (Char16TString,        "char16_t string")
+SYMBOL (Char32TString,        "char32_t string")
+SYMBOL (WideString,           "wide string")
+SYMBOL (RawNarrowString,      "raw string")
+SYMBOL (RawChar8TString,      "raw char8_t string")
+SYMBOL (RawChar16TString,     "raw char16_t string")
+SYMBOL (RawChar32TString,     "raw char32_t string")
+SYMBOL (RawWideString,        "raw wide string")
+SYMBOL (UnknownCharacter,     "unknown character")
+SYMBOL (SourceFile,           "source file")
+SYMBOL (Header,               "header")
+
+// preprocessing directives
+
+DIRECTIVE (Define,   "define")
+DIRECTIVE (Elif,     "elif")
+DIRECTIVE (Else,     "else")
+DIRECTIVE (Endif,    "endif")
+DIRECTIVE (Error,    "error")
+DIRECTIVE (Ifdef,    "ifdef")
+DIRECTIVE (If,       "if")
+DIRECTIVE (Ifndef,   "ifndef")
+DIRECTIVE (Include,  "include")
+DIRECTIVE (Line,     "line")
+DIRECTIVE (Pragma,   "pragma")
+DIRECTIVE (Undef,    "undef")
+DIRECTIVE (Warning,  "warning")
+
+// type models
+
+TYPEMODEL (Boolean,          integer,   1)
+TYPEMODEL (Character,        integer,   1)
+TYPEMODEL (Short,            integer,   2)
+TYPEMODEL (Integer,          integer,   layout.integer.size)
+TYPEMODEL (Long,             integer,   4)
+TYPEMODEL (LongLong,         integer,   8)
+TYPEMODEL (Float,            float_,    4)
+TYPEMODEL (Double,           float_,    layout.float_.size)
+TYPEMODEL (LongDouble,       float_,    8)
+TYPEMODEL (Pointer,          pointer,   layout.pointer.size)
+TYPEMODEL (FunctionPointer,  function,  layout.function.size)
+
+// type traits
+
+TYPETRAIT (IsClass,              "is_class")
+TYPETRAIT (IsEnumeration,        "is_enum")
+TYPETRAIT (IsScopedEnumeration,  "is_scoped_enum")
+TYPETRAIT (IsUnion,              "is_union")
+
+// attributes
+
+NAMESPACE (ECS,  "ecs")
+
+STDATTRIBUTE (CarriesDependency,  "carries_dependency",  200809)
+STDATTRIBUTE (Deprecated,         "deprecated",          201309)
+STDATTRIBUTE (Fallthrough,        "fallthrough",         201603)
+STDATTRIBUTE (Likely,             "likely",              201803)
+STDATTRIBUTE (MaybeUnused,        "maybe_unused",        201603)
+STDATTRIBUTE (Nodiscard,          "nodiscard",           201907)
+STDATTRIBUTE (Noreturn,           "noreturn",            200809)
+STDATTRIBUTE (NoUniqueAddress,    "no_unique_address",   201803)
+STDATTRIBUTE (Unlikely,           "unlikely",            201803)
+
+EXTATTRIBUTE (ECS,  Alias,        "alias",        202302)
+EXTATTRIBUTE (ECS,  Code,         "code",         202302)
+EXTATTRIBUTE (ECS,  Duplicable,   "duplicable",   202302)
+EXTATTRIBUTE (ECS,  Group,        "group",        202302)
+EXTATTRIBUTE (ECS,  Origin,       "origin",       202302)
+EXTATTRIBUTE (ECS,  Register,     "register",     202302)
+EXTATTRIBUTE (ECS,  Replaceable,  "replaceable",  202302)
+EXTATTRIBUTE (ECS,  Required,     "required",     202302)
+
+// feature test macros
+
+FEATURETESTMACRO ("__cpp_aggregate_bases",                  201603)
+FEATURETESTMACRO ("__cpp_aggregate_nsdmi",                  201304)
+FEATURETESTMACRO ("__cpp_aggregate_paren_init",             201902)
+FEATURETESTMACRO ("__cpp_alias_templates",                  200704)
+FEATURETESTMACRO ("__cpp_aligned_new",                      201606)
+FEATURETESTMACRO ("__cpp_attributes",                       200809)
+FEATURETESTMACRO ("__cpp_auto_cast",                        202110)
+FEATURETESTMACRO ("__cpp_binary_literals",                  201304)
+FEATURETESTMACRO ("__cpp_capture_star_this",                201603)
+FEATURETESTMACRO ("__cpp_char8_t",                          202207)
+FEATURETESTMACRO ("__cpp_concepts",                         202002)
+FEATURETESTMACRO ("__cpp_conditional_explicit",             201806)
+FEATURETESTMACRO ("__cpp_consteval",                        202211)
+FEATURETESTMACRO ("__cpp_constexpr",                        202211)
+FEATURETESTMACRO ("__cpp_constexpr_dynamic_alloc",          201907)
+FEATURETESTMACRO ("__cpp_constexpr_in_decltype",            201711)
+FEATURETESTMACRO ("__cpp_constinit",                        201907)
+FEATURETESTMACRO ("__cpp_decltype",                         200707)
+FEATURETESTMACRO ("__cpp_decltype_auto",                    201304)
+FEATURETESTMACRO ("__cpp_deduction_guides",                 201907)
+FEATURETESTMACRO ("__cpp_delegating_constructors",          200604)
+FEATURETESTMACRO ("__cpp_designated_initializers",          201707)
+FEATURETESTMACRO ("__cpp_enumerator_attributes",            201411)
+FEATURETESTMACRO ("__cpp_explicit_this_parameter",          202110)
+FEATURETESTMACRO ("__cpp_fold_expressions",                 201603)
+FEATURETESTMACRO ("__cpp_generic_lambdas",                  201707)
+FEATURETESTMACRO ("__cpp_guaranteed_copy_elision",          201606)
+FEATURETESTMACRO ("__cpp_hex_float",                        201603)
+FEATURETESTMACRO ("__cpp_if_consteval",                     202106)
+FEATURETESTMACRO ("__cpp_if_constexpr",                     201606)
+FEATURETESTMACRO ("__cpp_impl_coroutine",                   201902)
+FEATURETESTMACRO ("__cpp_impl_destroying_delete",           201806)
+FEATURETESTMACRO ("__cpp_impl_three_way_comparison",        201907)
+FEATURETESTMACRO ("__cpp_implicit_move",                    202207)
+FEATURETESTMACRO ("__cpp_inheriting_constructors",          201511)
+FEATURETESTMACRO ("__cpp_init_captures",                    201803)
+FEATURETESTMACRO ("__cpp_initializer_lists",                200806)
+FEATURETESTMACRO ("__cpp_inline_variables",                 201606)
+FEATURETESTMACRO ("__cpp_lambdas",                          200907)
+FEATURETESTMACRO ("__cpp_modules",                          201907)
+FEATURETESTMACRO ("__cpp_multidimensional_subscript",       202211)
+FEATURETESTMACRO ("__cpp_named_character_escapes",          202207)
+FEATURETESTMACRO ("__cpp_namespace_attributes",             201411)
+FEATURETESTMACRO ("__cpp_noexcept_function_type",           201510)
+FEATURETESTMACRO ("__cpp_nontype_template_args",            201911)
+FEATURETESTMACRO ("__cpp_nontype_template_parameter_auto",  201606)
+FEATURETESTMACRO ("__cpp_nsdmi",                            200809)
+FEATURETESTMACRO ("__cpp_range_based_for",                  202211)
+FEATURETESTMACRO ("__cpp_raw_strings",                      200710)
+FEATURETESTMACRO ("__cpp_ref_qualifiers",                   200710)
+FEATURETESTMACRO ("__cpp_return_type_deduction",            201304)
+FEATURETESTMACRO ("__cpp_rvalue_references",                200610)
+FEATURETESTMACRO ("__cpp_size_t_suffix",                    202011)
+FEATURETESTMACRO ("__cpp_sized_deallocation",               201309)
+FEATURETESTMACRO ("__cpp_static_assert",                    201411)
+FEATURETESTMACRO ("__cpp_static_call_operator",             202207)
+FEATURETESTMACRO ("__cpp_structured_bindings",              201606)
+FEATURETESTMACRO ("__cpp_template_template_args",           201611)
+FEATURETESTMACRO ("__cpp_threadsafe_static_init",           200806)
+FEATURETESTMACRO ("__cpp_unicode_characters",               200704)
+FEATURETESTMACRO ("__cpp_unicode_literals",                 200710)
+FEATURETESTMACRO ("__cpp_user_defined_literals",            200809)
+FEATURETESTMACRO ("__cpp_using_enum",                       201907)
+FEATURETESTMACRO ("__cpp_variable_templates",               201304)
+FEATURETESTMACRO ("__cpp_variadic_templates",               200704)
+FEATURETESTMACRO ("__cpp_variadic_using",                   201611)
+
+// sizeof macros
+
+SIZEOFMACRO (Double,        "double")
+SIZEOFMACRO (Float,         "float")
+SIZEOFMACRO (Integer,       "int")
+SIZEOFMACRO (LongDouble,    "long_double")
+SIZEOFMACRO (LongInteger,   "long")
+SIZEOFMACRO (NullPointer,   "pointer")
+SIZEOFMACRO (ShortInteger,  "short")
+
+#undef ALTERNATIVE
+#undef ATTRIBUTE
+#undef DIRECTIVE
+#undef EXTATTRIBUTE
+#undef FEATURETESTMACRO
+#undef NAMESPACE
+#undef SIZEOFMACRO
+#undef STDATTRIBUTE
+#undef SYMBOL
+#undef TYPEMODEL
+#undef TYPETRAIT

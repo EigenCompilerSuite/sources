@@ -1,0 +1,233 @@
+% Presentation material for the Eigen Compiler Suite
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startchapter{Presentation Material}{Presentation Material}{material}
+{This \documentation{} is a compilation of presentation material that can be used for presenting the design, functionality, and various implementation details of the \ecs{}.
+Each presentation consists of a set of slides and a detailed explanation of their contents.}
+
+\ifbook
+\newcommand{\thepresentation}{}\setlength{\marginparwidth}{15em}\setlength{\marginparsep}{-\marginparwidth}
+\newcommand{\slide}[1]{\marginpar{\framebox{\pgfimage[width=\dimexpr\marginparwidth-2\fboxrule-2\fboxsep,page=#1]{\thepresentation}}}}
+\newenvironment{presentation}[2]{\section{#1}\marginpar{}\renewcommand{\thepresentation}{#2}\begin{adjustwidth}{}{\marginparwidth+1em}}{\end{adjustwidth}}
+\else
+\newcommand{\thepresentation}{}
+\newcommand{\slide}[1]{\begin{center}\framebox{\pgfimage[height=25ex,page=#1]{\thepresentation}}\end{center}}
+\newenvironment{presentation}[2]{\bigskip\begin{multicols}{2}[\section{#1}]\renewcommand{\thepresentation}{#2}}{\end{multicols}}
+\fi
+
+\begin{presentation}{Overview}{overview}
+
+\emph{\ecs{}} is the name of a free software collection of development tools.
+This presentation gives a general overview over the \ecs{} by describing its features, design, functionality and status, and comparing it to related free software.
+
+\slide{2}
+
+\subsection{Features}
+
+The \ecs{} is a toolchain for developing software that contains various tools like compilers, interpreters, assemblers, and linkers targeting a variety of programming languages and hardware architectures.
+It implements each of its supported programming languages by providing tools like pretty printers, semantic checkers, interpreters, and front-ends for compilers.
+Depending on the programming language, other tools like preprocessors, transpilers, and documentation generators are provided as well.
+The \ecs{} additionally defines the generic assembly language that provides a common programming framework for all supported assemblers.
+\ifbook\else\nocite{cpp}\nocite{false}\nocite{oberon}\nocite{assembly}\fi
+
+\slide{3}
+
+The \ecs{} supports various hardware architectures by providing tools like assemblers, disassemblers, and machine code generators for compilers.
+Some of these architectures like MIPS, AMD64, and PowerPC define different operating modes or bit sizes in which case the \ecs{} provides a set of tools for each variant.
+Some of the supported architectures like RISC, MMIX, MicroBlaze, and OpenRISC 1000 may only be available on simulators or FPGA implementations.
+
+\slide{4}
+
+Concerning its supported runtime environments, the \ecs{} provides several different linker tools that generate files like executables, bootloaders, or disk images for simulators.
+
+\slide{5}
+
+\subsection{Design}
+
+The \ecs{} was primarily designed to be a simple but complete and self-contained toolchain.
+In particular, all tools featured by the \ecs{} share the same easy-to-use command-line user interface and do not require complex installations or other prerequisites.
+Another objective is to produce correct results as well as comprehensive diagnostic messages.
+Optimizations and performance are explicitly secondary, as the implementation of the \ecs{} is mainly driven by correctness, reliability, and simplicity.
+The \ecs{} is completely written using standard and portable programming language features in order to guarantee the portability of its source code.
+Therefore, all compilers featured by the \ecs{} are cross compilers by design.
+Furthermore, tools like compilers and assemblers shall enable interoperability in-between all programming languages supported by the \ecs{}.
+Since all intermediate data is represented using a human-readable and machine-independent text format, programmers and maintainers are able to view, modify and even manually create all kinds of intermediate data.
+Finally, the implementation of the \ecs{} shall provide generic abstractions in order to reuse code wherever possible while implementing these objectives.
+
+\slide{6}
+
+In order to ensure that all programming tools of the \ecs{} are reliable and produce correct results, several test and validation suites are provided which enable automatic regression testing.
+Test Suites for programming languages are separated into compilation and execution tests in order to check for code that should or should not compile, as well as complete and valid programs that either generate a runtime error or run successfully to completion.
+Regarding the generic assembly language, there exists a test suite for each supported hardware architecture that features at least one compilation test for each element of the corresponding instruction set.
+
+\slide{7}
+
+Each test suite tests one particular tool and is represented using a single text file that contains an arbitrary number of tests.
+Each test is identified using a unique description for regression testing and is followed by the corresponding input for the tool under test.
+A positive test requires the tool to succeed when given the corresponding input while a negative test expects a failure.
+This textual representation is very compact and has proven itself to be very versatile because it allows testing any command-line tool.
+
+\slide{8}
+
+One goal of the \ecs{} is to provide compilers, assemblers, and linkers for all possible combinations of programming languages and target architectures.
+For this reason, the \ecs{} uses an intermediate code representation that acts as a generic abstraction in-between \emph{front-ends} implementing programming languages and \emph{back-ends} targeting hardware architectures.
+A single data flow of the shown diagram depicts a single compiler for a particular programming language targeting a particular hardware architecture.
+\seecode
+
+\slide{9}
+
+Object files on the other hand are the key abstraction that enables interoperability between all compilers and assemblers of the \ecs{}.
+All these tools generate the same kind of output called object files which can be processed by all linkers and disassemblers of the \ecs{}.
+In addition, the use of object files enables separate compilation which allows compiling only those parts of a program that have actually changed.
+\seeobject
+
+\slide{10}
+
+\subsection{Functionality}
+
+Each tool of the \ecs{} provides the same command-line user interface which treats each command-line argument as the name of a textual input file.
+Command-line options are not supported in order to make the contents of output files independent from the actual tool invocation.
+For compiling programs for example, the compiler as to be invoked using the corresponding name of the source code file.
+This results in a new object file for the provided source code which can be used to link the executable program.
+Depending on the used compiler, the hardware architecture it targets, as well as the desired runtime environment, the corresponding runtime support files have to be linked as well.
+The same result can also be achieved using a utility tool called \tool{ecsd} which automatically infers the required tools from the source file and the specified target environment and conveniently invokes them with the necessary runtime support.
+
+\slide{11}
+
+\subsection{Status}
+
+Except for \cpp{} all programming language implementations provided by the \ecs{} are completed.
+The \cpp{} implementation features a preprocessor, parser, and pretty printer but currently lacks proper support for the semantic checker, interpreter, documentation generator, and intermediate code emitter.
+Once, \cpp{} is supported sufficiently, its test suite intended to cover all of the ISO \cpp{} Standard ISO/IEC 14882:2023~\cite{iso2023} can be completed as well.
+The same holds for the currently still missing software-based floating-point support for all hardware architectures that do not have a native floating-point instruction set.
+Some architectures like MIPS or MicroBlaze have not yet been tested on simulators or actual hardware.
+
+\slide{12}
+
+\subsection{Comparison}
+
+In contrast to comparable proprietary compilers, the \ecs{} is free software which allows it to be studied, modified, and used for any purpose.
+In comparison to other free software compiler suites like GCC or Clang however, the code base of the \ecs{} is much smaller and allows it to be maintained by a single person.
+In addition, the \ecs{} is completely self-contained and requires no other software in order to build programs.
+Furthermore, all of its tools are completely portable and therefore executable in any runtime environment.
+In order to target different systems, it therefore often suffices to exchange the runtime support for the corresponding runtime environment.
+
+\slide{13}
+
+On the other hand however, the \ecs{} is not highly optimized and does not provide a debugger.
+Since it defines its own object file format, the produced object files and binaries are not ABI compatible with existing formats.
+
+\end{presentation}
+
+\begin{presentation}{Implementation Details}{implementation}
+
+The \ecs{} is a completely free and self-contained toolchain written in \cpp{}.
+This presentation gives some background information about its implementation and is mainly intended for developers and maintainers of the \ecs{}.
+
+\slide{2}
+
+The \ecs{} provides a makefile which allows building all of its tools in environments like Windows, OS~X, and Linux-based operating systems.
+Its source code however is does not depend on any particular operating system, underlying hardware architecture, or any tools other than a conforming \cpp{} compiler.
+
+\subsection{Overall Design}
+
+The tools of the \ecs{} are completely written in standard \cpp{}.
+The only issue where its implementation currently depends on the execution environment is the handling of directory path delimiting characters.
+Apart from that, the source code of the \ecs{} is completely portable and designed to be maintainable and self-documenting.
+By convention, it uniformly uses a consistent naming convention and self-explanatory function predicates which purposely render a lot of comments unnecessary.
+
+\slide{3}
+
+The project itself has a simple structure with meaningful filenames that directly follows its logical layout.
+From the beginning, all of the files contained therein have been plain text files and under revision control.
+Quality assurance is achieved using an issue tracking system and build automation utilities.
+
+\subsection{Code Structure}
+
+The implementation of each major component of the \ecs{} is physically stored in one source and one header file.
+Components of a typical programming language implementation are its syntax representation, the lexer, the parser, the semantic checker, and the intermediate code emitter.
+The implementation of a hardware architecture on the other hand is composed of a representation of its instruction set, an assembler, a disassembler, and a machine code generator.
+Other examples of major abstractions are the representations of intermediate code, object files, and debugging information.
+
+\slide{4}
+
+Each tool of the \ecs{} combines one or more of these components into an executable file.
+For each tool there is a corresponding source file that contains the \texttt{main} function and is called a driver.
+Examples of drivers are pretty printers, semantic checkers, interpreters, and compilers for various programming languages.
+Furthermore there are one or more assemblers and disassemblers for each hardware architecture, as well as linkers and debugging tools.
+
+\slide{5}
+
+Finally there are common utilities that are used throughout the whole implementation of the \ecs{}.
+These utilities are provided by header files and provide frameworks for writing drivers, or generic abstractions like character sets and diagnostic interfaces.
+
+Logically, each programming language, hardware architecture, and major abstraction provides its components as classes in a distinct namespace.
+These namespaces and all common utilities reside in a global namespace called \texttt{ECS}.
+This allows any component of the \ecs{} to be used as a library in other projects without provoking name clashes.
+Drivers are examples of how that library interface is used to combine various components of the \ecs{} into executable files.
+
+\slide{6}
+
+\subsection{Macro Definition Files}
+
+In addition to source and header files, the implementations of almost all major components make use of so-called \emph{macro definition files}.
+These are essentially header files that contain only sequential invocations of preprocessor macros typically known as X~macros.
+This allows including the same macro definition file in various places using different macro definitions.
+The idea is to repeat the sequence of macro invocations in various different contexts while maintaining the actual macro arguments in a single place.
+
+\slide{7}
+
+A typical use case of macro definition files is the definition of enumerations in header files where the macro is defined to provide the name of an enumerator.
+The same macro definition file is then typically also included in the corresponding source file where the macro may for example be defined to provide the textual representation of each enumerator in an array of constant strings.
+This is useful for maintaining a sorted list of the keywords of a programming language for example.
+Since its lexer can compare scanned identifiers with elements of the constant string array, modifying the macro definition file is usually sufficient to add or remove keywords.
+
+\slide{8}
+
+Other components that profit from the same technique are instruction set implementations which can represent complete instruction set tables in a single macro definition file.
+Using an appropriate macro definition, the corresponding set of instruction mnemonics can even be included in the documentation of the \ecs{}.
+\Documentation{}~\documentationref{assembly}{Generic Assembly Language Specification} for example uses this technique to list all instruction sets supported by the \ecs{}.
+
+\subsection{Context Classes}
+
+Each major component described above is represented using a distinct class that provides an interface for processing or transforming some kind of intermediate representation.
+A parser for example is a class that provides a function which takes a character stream as input and transforms it into an abstract syntax tree.
+The implementation of that interface however is typically not provided by the component class itself but by a private and nested class.
+These classes are conventionally called context classes and have several advantages over more traditional designs which implement the interface directly in the component class.
+
+\slide{9}
+
+Since the implementation of an interface is just forwarded to the context class, the latter can be defined and implemented exclusively in the source file.
+All of the processing state that is necessary during an invocation of the interface can therefore be stored by the temporary instance of the context class rather than the component.
+As a consequence, the only information that remains necessary to represent directly in the component class is some optional constant configuration.
+This renders the actual definition of the component class in the header file light-weight, stable, and by design thread-safe.
+
+\slide{10}
+
+\subsection{Error Handling}
+
+The \ecs{} provides a generic interface for reporting different kinds of diagnostic messages like errors, warnings, and notes.
+For drivers, it provides an implementation thereof which prints consistent diagnostic messages to standard output streams.
+In contrast to warnings and notes however which have merely informational purposes, errors additionally indicate failures to proceed.
+After emitting an arbitrarily detailed diagnostic message, an error is therefore also reported by throwing an exception.
+This technique conveniently allows programmers to prematurely abort any processing that results in an error without having to provide any information about the error in the exception itself.
+The resulting code can therefore treat error conditions like assertions and does not actually need to handle errors after they have been reported.
+As a consequence, most components of the \ecs{} typically abort after the first encounter of an error and do not recover without further precaution.
+Usually however, subsequent errors are aftereffects anyway whereas independent exceptions can easily be batched together if necessary.
+
+\slide{11}
+
+\end{presentation}
+
+\concludechapter

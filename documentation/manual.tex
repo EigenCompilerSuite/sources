@@ -1,0 +1,74 @@
+% User manual for the Eigen Compiler Suite
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startbook{User Manual}
+
+\chapter*{Preface}\markboth{Preface}{Preface}
+
+This user manual describes all components of a free and self-hosted software development toolchain called the \emph{\ecs{}} and explains how to use them.
+It is partitioned into four parts.
+The first part describes the overall mission, design, and the common user interface of the \ecs{}.
+The second part specifies the programming languages supported by the \ecs{}, while the third part summarizes the hardware architectures and how they are supported.
+The last part of this manual finally describes some internal functionality and explains how the \ecs{} can be extended in order to support additional programming languages, hardware architectures, and runtime environments.
+The addendum elaborates on the implementation of the \ecs{} and includes its licenses.
+
+\epigraph{Il semble que la perfection soit atteinte \\ non quand il n'y a plus rien \`a ajouter, \\ mais quand il n'y a plus rien \`a retrancher.}{Antoine de Saint-Exup\'ery}
+
+\concludechapter
+\mainmatter
+
+\part{Using the \ecs{}}
+\input{introduction}
+\input{interface}
+\input{guide}
+\input{tools}
+
+\part{Supported Programming Languages}
+\input{cpp}
+\input{false}
+\input{oberon}
+\input{assembly}
+
+\part{Supported Hardware Architectures}
+\input{amd64}
+\input{arm}
+\input{avr}
+\input{avr32}
+\input{m68k}
+\input{mibl}
+\input{mips}
+\input{mmix}
+\input{or1k}
+\input{ppc}
+\input{risc}
+\input{wasm}
+
+\part{\ecs{} Internals}
+\input{object}
+\input{code}
+\input{debugging}
+\input{documentation}
+\input{extensions}
+
+\appendix
+\phantomsection\addcontentsline{toc}{part}{Addendum}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\part*{Addendum}
+\input{material}
+\input{faq}
+\input{gpl}
+\input{rse}
+\input{fdl}
+
+\concludebook

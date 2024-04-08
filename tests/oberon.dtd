@@ -1,0 +1,169 @@
+<!--
+  Oberon serializer definition
+  Copyright (C) Florian Negele
+
+  This file is part of the Eigen Compiler Suite.
+
+  The ECS is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  The ECS is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!-- common elements -->
+
+<!ENTITY % expression "(set | call | index | super | unary | binary | literal | selector | promotion | type-guard | conversion | identifier | dereference | parenthesized)">
+<!ENTITY % declaration "(import | constant | type | variable | procedure)">
+<!ENTITY % statement "(if | for | case | exit | loop | with | while | repeat | return | assignment | procedure-call)">
+<!ENTITY % type "(array | record | pointer | procedure-type)?">
+
+<!-- common attributes -->
+
+<!ENTITY % basic-declaration "name NMTOKEN #REQUIRED line CDATA #REQUIRED column CDATA #REQUIRED">
+<!ENTITY % basic-expression "type CDATA #REQUIRED value CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED">
+<!ENTITY % basic-statement "line CDATA #REQUIRED column CDATA #REQUIRED">
+
+<!-- declarations -->
+
+<!ELEMENT module (annotation*, (%declaration;)*, body?)>
+<!ATTLIST module name NMTOKEN #REQUIRED line CDATA #REQUIRED column CDATA #REQUIRED package NMTOKEN #IMPLIED source CDATA #REQUIRED>
+
+<!ELEMENT annotation (#PCDATA)>
+<!ATTLIST annotation line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT import ((%expression;)*, module?)>
+<!ATTLIST import %basic-declaration; alias NMTOKEN #IMPLIED package NMTOKEN #IMPLIED>
+
+<!ELEMENT constant (annotation?, %expression;)>
+<!ATTLIST constant %basic-declaration; exported (true|false) #REQUIRED>
+
+<!ELEMENT type (annotation?, %type;)>
+<!ATTLIST type %basic-declaration; exported (true|false) #REQUIRED type CDATA #REQUIRED>
+
+<!ELEMENT variable (annotation?, (%expression;)?, %type;)>
+<!ATTLIST variable %basic-declaration; exported (true|false) #REQUIRED read-only (true|false) #REQUIRED forward (true|false) #IMPLIED external CDATA #IMPLIED type CDATA #REQUIRED>
+
+<!ELEMENT procedure (annotation?, (%expression;)?, parameter*, (%type;)?, (%declaration;)*, body?)>
+<!ATTLIST procedure %basic-declaration; exported (true|false) #REQUIRED abstract (true|false) #IMPLIED final (true|false) #IMPLIED forward (true|false) #REQUIRED external CDATA #IMPLIED receiver CDATA #IMPLIED>
+
+<!ELEMENT parameter (%type;)>
+<!ATTLIST parameter %basic-declaration; variable (true|false) #REQUIRED read-only (true|false) #REQUIRED type CDATA #REQUIRED>
+
+<!-- types -->
+
+<!ELEMENT array ((%expression;)?, %type;)>
+<!ATTLIST array length CDATA #IMPLIED elementType CDATA #REQUIRED>
+
+<!ELEMENT record ((%type;)?, variable*)>
+<!ATTLIST record abstract (true|false) #REQUIRED final (true|false) #REQUIRED>
+
+<!ELEMENT pointer (%type;)>
+<!ATTLIST pointer variable (true|false) #REQUIRED read-only (true|false) #REQUIRED baseType CDATA #REQUIRED>
+
+<!ELEMENT procedure-type (parameter*, (%type;)?)>
+<!ATTLIST procedure-type>
+
+<!-- expressions -->
+
+<!ELEMENT set (%expression; | range)*>
+<!ATTLIST set %basic-expression;>
+
+	<!ELEMENT range (%expression;, %expression;)>
+	<!ATTLIST range lower CDATA #IMPLIED upper CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT call (%expression;)+>
+<!ATTLIST call %basic-expression;>
+
+<!ELEMENT index (%expression;, %expression;)>
+<!ATTLIST index %basic-expression;>
+
+<!ELEMENT super (%expression;)>
+<!ATTLIST super %basic-expression;>
+
+<!ELEMENT unary (%expression;)>
+<!ATTLIST unary %basic-expression; operator CDATA #REQUIRED>
+
+<!ELEMENT binary (%expression;, %expression;)>
+<!ATTLIST binary %basic-expression; operator CDATA #REQUIRED>
+
+<!ELEMENT literal (#PCDATA)>
+<!ATTLIST literal %basic-expression;>
+
+<!ELEMENT selector (%expression;, identifier)>
+<!ATTLIST selector %basic-expression;>
+
+<!ELEMENT promotion (%expression;)>
+<!ATTLIST promotion %basic-expression;>
+
+<!ELEMENT type-guard (%expression;, identifier)>
+<!ATTLIST type-guard %basic-expression;>
+
+<!ELEMENT conversion (identifier, %expression;)>
+<!ATTLIST conversion %basic-expression;>
+
+<!ELEMENT identifier (#PCDATA)>
+<!ATTLIST identifier %basic-expression;>
+
+<!ELEMENT dereference (%expression;)>
+<!ATTLIST dereference %basic-expression;>
+
+<!ELEMENT parenthesized (%expression;)>
+<!ATTLIST parenthesized %basic-expression;>
+
+<!-- statements -->
+
+<!ELEMENT body (%statement;)*>
+<!ATTLIST body line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT if (%expression;, then, elsif*, else?)>
+<!ATTLIST if %basic-statement;>
+
+	<!ELEMENT then (%statement;)*>
+
+	<!ELEMENT elsif (%statement;)*>
+	<!ATTLIST elsif line CDATA #REQUIRED column CDATA #REQUIRED>
+
+	<!ELEMENT else (%statement;)*>
+
+<!ELEMENT for (identifier, %expression;, %expression;, (%expression;)?, (%statement;)*)>
+<!ATTLIST for %basic-statement;>
+
+<!ELEMENT case (%expression;, case-label*, else?)>
+<!ATTLIST case %basic-statement;>
+
+	<!ELEMENT case-label ((%expression; | range)+, (%statement;)*)>
+
+<!ELEMENT exit EMPTY>
+<!ATTLIST exit %basic-statement;>
+
+<!ELEMENT loop (%statement;)*>
+<!ATTLIST loop %basic-statement;>
+
+<!ELEMENT with (guard+, else?)>
+<!ATTLIST with %basic-statement;>
+
+	<!ELEMENT guard (%type;, (%statement;)*)>
+	<!ATTLIST guard line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT while (%expression;, (%statement;)*)>
+<!ATTLIST while %basic-statement;>
+
+<!ELEMENT repeat ((%statement;)*, %expression;)>
+<!ATTLIST repeat %basic-statement;>
+
+<!ELEMENT return (%expression;)?>
+<!ATTLIST return %basic-statement;>
+
+<!ELEMENT assignment (%expression;, %expression;)>
+<!ATTLIST assignment %basic-statement;>
+
+<!ELEMENT procedure-call (%expression;)+>
+<!ATTLIST procedure-call %basic-statement;>

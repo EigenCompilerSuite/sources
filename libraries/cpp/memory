@@ -1,0 +1,48 @@
+// Standard C++ <memory> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_MEMORY_HEADER_INCLUDED
+#define ECS_CPP_MEMORY_HEADER_INCLUDED
+
+#define __cpp_lib_addressof_constexpr 201603L
+#define __cpp_lib_algorithm_iterator_requirements 202207L
+#define __cpp_lib_allocate_at_least 202302L
+#define __cpp_lib_allocator_traits_is_always_equal 201411L
+#define __cpp_lib_assume_aligned 201811L
+#define __cpp_lib_atomic_shared_ptr 201711L
+#define __cpp_lib_atomic_value_initialization 201911L
+#define __cpp_lib_constexpr_dynamic_alloc 201907L
+#define __cpp_lib_constexpr_memory 202202L
+#define __cpp_lib_enable_shared_from_this 201603L
+#define __cpp_lib_make_unique 201304L
+#define __cpp_lib_out_ptr 202106L
+#define __cpp_lib_ranges 202302L
+#define __cpp_lib_raw_memory_algorithms 201606L
+#define __cpp_lib_shared_ptr_arrays 201707L
+#define __cpp_lib_shared_ptr_weak_type 201606L
+#define __cpp_lib_smart_ptr_for_overwrite 202002L
+#define __cpp_lib_start_lifetime_as 202207L
+#define __cpp_lib_to_address 201711L
+#define __cpp_lib_transparent_operators 201510L
+
+#endif // ECS_CPP_MEMORY_HEADER_INCLUDED

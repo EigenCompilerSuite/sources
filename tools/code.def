@@ -1,0 +1,94 @@
+// Intermediate code instruction set definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef CLASS
+	#define CLASS(class, model1, model2, model3, model4)
+#endif
+
+#ifndef INSTR
+	#define INSTR(name, mnem, class1, class2, class3, ...)
+#endif
+
+// instructions
+
+INSTR (add,    ADD,    RegMem,        ImmRegAdrMem,  ImmRegAdrMem,  Addition)
+INSTR (alias,  ALIAS,  Str,           None,          None,          Alias Name Definition)
+INSTR (and,    AND,    RegMem,        ImmRegMem,     ImmRegMem,     Logical AND)
+INSTR (array,  ARRAY,  Siz,           Siz,           None,          Array Type Declaration)
+INSTR (asm,    ASM,    Str,           Siz,           Str,           Inline Assembly)
+INSTR (br,     BR,     Off,           None,          None,          Unconditional Branch)
+INSTR (break,  BREAK,  None,          None,          None,          Breakpoint)
+INSTR (breq,   BREQ,   Off,           ImmRegAdrMem,  ImmRegAdrMem,  Branch if Equal)
+INSTR (brge,   BRGE,   Off,           ImmRegAdrMem,  ImmRegAdrMem,  Branch if Greater Than or Equal)
+INSTR (brlt,   BRLT,   Off,           ImmRegAdrMem,  ImmRegAdrMem,  Branch if Less Than)
+INSTR (brne,   BRNE,   Off,           ImmRegAdrMem,  ImmRegAdrMem,  Branch if Not Equal)
+INSTR (call,   CALL,   Function,      Siz,           None,          Function Call)
+INSTR (conv,   CONV,   RegMem,        ImmRegAdrMem,  None,          Datum Conversion)
+INSTR (copy,   COPY,   Pointer,       Pointer,       ImmRegMem,     Data Copy)
+INSTR (def,    DEF,    ImmAdr,        None,          None,          Datum Definition)
+INSTR (div,    DIV,    RegMem,        ImmRegMem,     ImmRegMem,     Division)
+INSTR (enter,  ENTER,  Siz,           None,          None,          Stack Frame Creation)
+INSTR (enum,   ENUM,   Off,           None,          None,          Enumeration Type Declaration)
+INSTR (field,  FIELD,  Str,           Siz,           Imm,           Field Declaration)
+INSTR (fill,   FILL,   Pointer,       ImmRegMem,     ImmRegAdrMem,  Data Initialization)
+INSTR (fix,    FIX,    Reg,           None,          None,          Fix Register Mapping)
+INSTR (func,   FUNC,   Off,           None,          None,          Function Type Declaration)
+INSTR (jump,   JUMP,   Function,      None,          None,          Indirect Branch)
+INSTR (leave,  LEAVE,  None,          None,          None,          Stack Frame Deletion)
+INSTR (loc,    LOC,    Str,           Siz,           Siz,           Source Code Location)
+INSTR (lsh,    LSH,    RegMem,        ImmRegMem,     ImmRegMem,     Left Shift)
+INSTR (mod,    MOD,    RegMem,        ImmRegMem,     ImmRegMem,     Modulo)
+INSTR (mov,    MOV,    RegMem,        ImmRegAdrMem,  None,          Datum Copy)
+INSTR (mul,    MUL,    RegMem,        ImmRegMem,     ImmRegMem,     Multiplication)
+INSTR (neg,    NEG,    RegMem,        ImmRegMem,     None,          Negation)
+INSTR (nop,    NOP,    None,          None,          None,          No Operation)
+INSTR (not,    NOT,    RegMem,        ImmRegMem,     None,          Logical NOT)
+INSTR (or,     OR,     RegMem,        ImmRegMem,     ImmRegMem,     Logical OR)
+INSTR (pop,    POP,    RegMem,        None,          None,          Pop from Stack)
+INSTR (ptr,    PTR,    None,          None,          None,          Pointer Type Declaration)
+INSTR (push,   PUSH,   ImmRegAdrMem,  None,          None,          Push onto Stack)
+INSTR (rec,    REC,    Off,           Siz,           None,          Record Type Declaration)
+INSTR (ref,    REF,    None,          None,          None,          Reference Type Declaration)
+INSTR (req,    REQ,    Str,           None,          None,          Name Requirement)
+INSTR (res,    RES,    Siz,           None,          None,          Space Reservation)
+INSTR (ret,    RET,    None,          None,          None,          Return from Function)
+INSTR (rsh,    RSH,    RegMem,        ImmRegMem,     ImmRegMem,     Right Shift)
+INSTR (sub,    SUB,    RegMem,        ImmRegAdrMem,  ImmRegAdrMem,  Subtraction)
+INSTR (sym,    SYM,    Off,           Str,           ImmRegMem,     Symbol Declaration)
+INSTR (trap,   TRAP,   Siz,           None,          None,          Abnormal Program Termination)
+INSTR (type,   TYPE,   StrTyp,        None,          None,          Basic Type Declaration)
+INSTR (unfix,  UNFIX,  Reg,           None,          None,          Unfix Register Mapping)
+INSTR (value,  VALUE,  Str,           Imm,           None,          Enumerator Declaration)
+INSTR (void,   VOID,   None,          None,          None,          Void Type Declaration)
+INSTR (xor,    XOR,    RegMem,        ImmRegMem,     ImmRegMem,     Logical Exclusive OR)
+
+// operand classes
+
+CLASS (Reg,           Register,   Void,      Void,     Void)
+CLASS (Siz,           Size,       Void,      Void,     Void)
+CLASS (Off,           Offset,     Void,      Void,     Void)
+CLASS (Str,           String,     Void,      Void,     Void)
+CLASS (StrTyp,        String,     Type,      Void,     Void)
+CLASS (Imm,           Immediate,  Void,      Void,     Void)
+CLASS (ImmAdr,        Immediate,  Address,   Void,     Void)
+CLASS (RegMem,        Register,   Memory,    Void,     Void)
+CLASS (ImmRegMem,     Immediate,  Register,  Memory,   Void)
+CLASS (ImmRegAdrMem,  Immediate,  Register,  Address,  Memory)
+
+#undef CLASS
+#undef INSTR

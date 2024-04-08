@@ -1,0 +1,91 @@
+.\" Eigen Compiler Suite Driver Manual
+.\" Copyright (C) Florian Negele
+.\"
+.\" This file is part of the Eigen Compiler Suite.
+.\"
+.\" Permission is granted to copy, distribute and/or modify this document
+.\" under the terms of the GNU Free Documentation License, Version 1.3
+.\" or any later version published by the Free Software Foundation.
+.\"
+.\" You should have received a copy of the GNU Free Documentation License
+.\" along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+.\"
+.TH ECSD 1 "Version 0.0.40" "Eigen Compiler Suite" "Eigen Compiler Suite Manual"
+
+.SH NAME
+
+ecsd \- Eigen Compiler Suite Driver
+
+.SH SYNOPSIS
+
+ecsd [\fB\-b\fR \fIdirectory\fR|\fB\-\-base\fR \fIdirectory\fR]
+     [\fB\-c\fR|\fB\-\-compile\fR]
+     [\fB\-d\fR|\fB\-\-disassemble\fR]
+     [\fB\-g\fR|\fB\-\-generate\fR]
+     [\fB\-h\fR|\fB\-\-help\fR]
+     [\fB\-i\fR \fItool\fR|\fB\-\-invoke\fR \fItool\fR]
+     [\fB\-l\fR|\fB\-\-library\fR]
+     [\fB\-o\fR \fIformat\fR|\fB\-\-output\fR \fIformat\fR]
+     [\fB\-p\fR|\fB\-\-protect\fR]
+     [\fB\-r\fR \fIsupport\fR|\fB\-\-runtime\fR \fIsupport\fR]...
+     [\fB\-s\fR \fItype\fR|\fB\-\-source\fR \fItype\fR]
+     [\fB\-t\fR \fIenvironment\fR|\fB\-\-target\fR \fIenvironment\fR]
+     [\fB\-v\fR|\fB\-\-verbose\fR]
+     [\fIinput-file\fR]...
+
+.SH DESCRIPTION
+
+\fBecsd\fR autonomously drives tools of the Eigen Compiler Suite in order to build complete executable files for a specific runtime environment.
+It infers the set of required tools like compilers, assemblers, and linkers from the type of its input files and automatically invokes one tool after the other with appropriate command\-line arguments and environment variables.
+
+.SH OPTIONS
+
+The following list describes the most important options for changing the default build process:
+
+.IP "\fB\-b\fR \fIdirectory\fR, \fB\-\-base\fR \fIdirectory\fR"
+Allows overriding the base directory provided by the \fBECSBASE\fR environment variable which is used to locate tools and the necessary runtime support.
+If omitted, \fBecsd\fR infers the base directory from its own location.
+
+.IP "\fB\-c\fR, \fB\-\-compile\fR"
+Compiles and assembles input files without invoking the linker at the end.
+
+.IP "\fB\-d\fR, \fB\-\-disassemble\fR"
+Invokes the disassembler instead of the linker at the end.
+
+.IP "\fB\-g\fR, \fB\-\-generate\fR"
+Generates and includes debugging information during linking.
+
+.IP "\fB\-h\fR, \fB\-\-help\fR"
+Prints information about all supported command-line arguments.
+This especially also includes all supported source types and available target environments.
+
+.IP "\fB\-i\fR \fItool\fR, \fB\-\-invoke\fR \fItool\fR"
+Processes input files or the standard input stream using the specified tool only.
+
+.IP "\fB\-l\fR, \fB\-\-library\fR"
+Combines input files into a library file.
+
+.IP "\fB\-o\fR \fIformat\fR, \fB\-\-output\fR \fIformat\fR"
+Specifies the output file format of the linker.
+
+.IP "\fB\-p\fR, \fB\-\-protect\fR"
+Prevents the environment from being automatically modified when invoking tools that depend on environment variables.
+
+.IP "\fB\-r\fR \fIsupport\fR, \fB\-\-runtime\fR \fIsupport\fR"
+Includes the specified runtime support during linking.
+
+.IP "\fB\-s\fR \fItype\fR, \fB\-\-source\fR \fItype\fR"
+Allows defining the source type of input files for which the corresponding tool could not be inferred from the filename extension.
+
+.IP "\fB\-t\fR \fIenvironment\fR, \fB\-\-target\fR \fIenvironment\fR"
+Specifies the target environment for cross compilations.
+If omitted, \fBecsd\fR tries to target its own runtime environment.
+
+.IP "\fB\-v\fR, \fB\-\-verbose\fR"
+Enables verbose mode which prints the actual command line before invoking any tool.
+
+.SH COPYRIGHT
+Copyright (C) Florian Negele
+
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation.
+You should have received a copy of the GNU Free Documentation License along with the Eigen Compiler Suite. If not, see <https://www.gnu.org/licenses/>.

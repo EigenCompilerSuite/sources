@@ -1,0 +1,442 @@
+// AVR instruction set definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef INSTR
+	#define INSTR(mnem, code, mask, type1, mask1, type2, mask2)
+#endif
+
+#ifndef MNEM
+	#define MNEM(name, mnem, ...)
+#endif
+
+#ifndef TYPE
+	#define TYPE(type, bits)
+#endif
+
+// mnemonics
+
+MNEM (adc,     ADC,     Add with Carry)
+MNEM (add,     ADD,     Add without Carry)
+MNEM (adiw,    ADIW,    Add Immediate to Word)
+MNEM (and,     AND,     Logical AND)
+MNEM (andi,    ANDI,    Logical AND with Immediate)
+MNEM (asr,     ASR,     Arithmetic Shift Right)
+MNEM (bclr,    BCLR,    Bit Clear in SREG)
+MNEM (bld,     BLD,     Bit Load from the T Flag in SREG to a Bit in Register)
+MNEM (brbc,    BRBC,    Branch if Bit in SREG is Cleared)
+MNEM (brbs,    BRBS,    Branch if Bit in SREG is Set)
+MNEM (brcc,    BRCC,    Branch if Carry Cleared)
+MNEM (brcs,    BRCS,    Branch if Carry Set)
+MNEM (break,   BREAK,   Break)
+MNEM (breq,    BREQ,    Branch if Equal)
+MNEM (brge,    BRGE,    Branch if Greater or Equal (Signed))
+MNEM (brhc,    BRHC,    Branch if Half Carry Flag is Cleared)
+MNEM (brhs,    BRHS,    Branch if Half Carry Flag is Set)
+MNEM (brid,    BRID,    Branch if Global Interrupt is Disabled)
+MNEM (brie,    BRIE,    Branch if Global Interrupt is Enabled)
+MNEM (brlo,    BRLO,    Branch if Lower (Unsigned))
+MNEM (brlt,    BRLT,    Branch if Less Than (Signed))
+MNEM (brmi,    BRMI,    Branch if Minus)
+MNEM (brne,    BRNE,    Branch if Not Equal)
+MNEM (brpl,    BRPL,    Branch if Plus)
+MNEM (brsh,    BRSH,    Branch if Same or Higher (Unsigned))
+MNEM (brtc,    BRTC,    Branch if the T Flag is Cleared)
+MNEM (brts,    BRTS,    Branch if the T Flag is Set)
+MNEM (brvc,    BRVC,    Branch if Overflow Cleared)
+MNEM (brvs,    BRVS,    Branch if Overflow Set)
+MNEM (bset,    BSET,    Bit Set in SREG)
+MNEM (bst,     BST,     Bit Store from Bit in Register to T Flag in SREG)
+MNEM (call,    CALL,    Long Call to a Subroutine)
+MNEM (cbi,     CBI,     Clear Bit in I/O Register)
+MNEM (cbr,     CBR,     Clear Bits in Register)
+MNEM (clc,     CLC,     Clear Carry Flag)
+MNEM (clh,     CLH,     Clear Half Carry Flag)
+MNEM (cli,     CLI,     Clear Global Interrupt Flag)
+MNEM (cln,     CLN,     Clear Negative Flag)
+MNEM (clr,     CLR,     Clear Register)
+MNEM (cls,     CLS,     Clear Signed Flag)
+MNEM (clt,     CLT,     Clear T Flag)
+MNEM (clv,     CLV,     Clear Overflow Flag)
+MNEM (clz,     CLZ,     Clear Zero Flag)
+MNEM (com,     COM,     One`s complement)
+MNEM (cp,      CP,      Compare)
+MNEM (cpc,     CPC,     Compare with Carry)
+MNEM (cpi,     CPI,     Compare with Immediate)
+MNEM (cpse,    CPSE,    Compare Skip if Equal)
+MNEM (dec,     DEC,     Decrement)
+MNEM (eicall,  EICALL,  Extended Indirect Call to Subroutine)
+MNEM (eijmp,   EIJMP,   Extended Indirect Jump)
+MNEM (elpm,    ELPM,    Extended Load Program Memory)
+MNEM (eor,     EOR,     Exclusive OR)
+MNEM (fmul,    FMUL,    Fractional Multiply Unsigned)
+MNEM (fmuls,   FMULS,   Fractional Multiply Signed)
+MNEM (fmulsu,  FMULSU,  Fractional Multiply Signed with Unsigned)
+MNEM (icall,   ICALL,   Indirect Call to Subroutine)
+MNEM (ijmp,    IJMP,    Indirect Jump)
+MNEM (in,      IN,      Load an I/O Location to Register)
+MNEM (inc,     INC,     Increment)
+MNEM (jmp,     JMP,     Jump)
+MNEM (lac,     LAC,     Load and Clear)
+MNEM (las,     LAS,     Load and Set)
+MNEM (lat,     LAT,     Load and Toggle)
+MNEM (ld,      LD,      Load Indirect from Data Space to Register)
+MNEM (ldd,     LDD,     Load Indirect from Data Space to Register with Displacement)
+MNEM (ldi,     LDI,     Load Immediate)
+MNEM (lds,     LDS,     Load Direct from Data Space)
+MNEM (lpm,     LPM,     Load Program Memory)
+MNEM (lsl,     LSL,     Logical Shift Left)
+MNEM (lsr,     LSR,     Logical Shift Right)
+MNEM (mov,     MOV,     Copy Register)
+MNEM (movw,    MOVW,    Copy Register Word)
+MNEM (mul,     MUL,     Multiply Unsigned)
+MNEM (muls,    MULS,    Multiply Signed)
+MNEM (mulsu,   MULSU,   Multiply Signed with Unsigned)
+MNEM (neg,     NEG,     Two`s complement)
+MNEM (nop,     NOP,     No Operation)
+MNEM (or,      OR,      Logical OR)
+MNEM (ori,     ORI,     Logical OR with Immediate)
+MNEM (out,     OUT,     Store Register to I/O Location)
+MNEM (pop,     POP,     Pop Register from Stack)
+MNEM (push,    PUSH,    Push Register on Stack)
+MNEM (rcall,   RCALL,   Relative Call to Subroutine)
+MNEM (ret,     RET,     Return from Subroutine)
+MNEM (reti,    RETI,    Return from Interrupt)
+MNEM (rjmp,    RJMP,    Relative Jump)
+MNEM (rol,     ROL,     Rotate Left through Carry)
+MNEM (ror,     ROR,     Rotate Right through Carry)
+MNEM (sbc,     SBC,     Subtract with Carry)
+MNEM (sbci,    SBCI,    Subtract Immediate with Carry)
+MNEM (sbi,     SBI,     Set Bit in I/O Register)
+MNEM (sbic,    SBIC,    Skip if Bit in I/O Register is Cleared)
+MNEM (sbis,    SBIS,    Skip if Bit in I/O Register is Set)
+MNEM (sbiw,    SBIW,    Subtract Immediate from Word)
+MNEM (sbr,     SBR,     Set Bits in Register)
+MNEM (sbrc,    SBRC,    Skip if Bit in Register is Cleared)
+MNEM (sbrs,    SBRS,    Skip if Bit in Register is Set)
+MNEM (sec,     SEC,     Set Carry Flag)
+MNEM (seh,     SEH,     Set Half Carry Flag)
+MNEM (sei,     SEI,     Set Global Interrupt Flag)
+MNEM (sen,     SEN,     Set Negative Flag)
+MNEM (ser,     SER,     Set All Bits in Register)
+MNEM (ses,     SES,     Set Signed Flag)
+MNEM (set,     SET,     Set T Flag)
+MNEM (sev,     SEV,     Set Overflow Flag)
+MNEM (sez,     SEZ,     Set Zero Flag)
+MNEM (sleep,   SLEEP,   Sleep)
+MNEM (spm,     SPM,     Store Program Memory)
+MNEM (st,      ST,      Store Indirect from Register to Data Space)
+MNEM (std,     STD,     Store Indirect from Register to Data Space with Displacement)
+MNEM (sts,     STS,     Store Direct to Data Space)
+MNEM (sub,     SUB,     Subtract without Carry)
+MNEM (subi,    SUBI,    Subtract Immediate)
+MNEM (swap,    SWAP,    Swap Nibbles)
+MNEM (tst,     TST,     Test for Zero or Minus)
+MNEM (wdr,     WDR,     Watchdog Reset)
+MNEM (xch,     XCH,     Exchange)
+
+// instructions
+
+INSTR (ROL,     0x00001c00,  0x0000fc00,  R,       0x000001f0,  None,   0x0000020f)
+
+INSTR (ADC,     0x00001c00,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (LSL,     0x00000c00,  0x0000fc00,  R,       0x000001f0,  None,   0x0000020f)
+
+INSTR (ADD,     0x00000c00,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (ADIW,    0x00009600,  0x0000ff00,  Rp24,    0x00000030,  Imm6,   0x000000cf)
+
+INSTR (TST,     0x00002000,  0x0000fc00,  R,       0x000001f0,  None,   0x0000020f)
+
+INSTR (AND,     0x00002000,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (ANDI,    0x00007000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (ASR,     0x00009405,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (BLD,     0x0000f800,  0x0000fe08,  R,       0x000001f0,  Imm3,   0x00000007)
+
+INSTR (BREAK,   0x00009598,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (BREQ,    0x0000f001,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRGE,    0x0000f404,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRHC,    0x0000f405,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRHS,    0x0000f005,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRID,    0x0000f407,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRIE,    0x0000f007,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRLO,    0x0000f000,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRLT,    0x0000f004,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRMI,    0x0000f002,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRNE,    0x0000f401,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRPL,    0x0000f402,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRSH,    0x0000f400,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRTC,    0x0000f406,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRTS,    0x0000f006,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRVC,    0x0000f403,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRVS,    0x0000f003,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRCC,    0x0000f400,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRCS,    0x0000f000,  0x0000fc07,  SImm7,   0x000003f8,  None,   0x00000000)
+
+INSTR (BRBC,    0x0000f400,  0x0000fc00,  Imm3,    0x00000007,  SImm7,  0x000003f8)
+
+INSTR (BRBS,    0x0000f000,  0x0000fc00,  Imm3,    0x00000007,  SImm7,  0x000003f8)
+
+INSTR (BST,     0x0000fa00,  0x0000fe08,  R,       0x000001f0,  Imm3,   0x00000007)
+
+INSTR (CALL,    0x940e0000,  0xfe0e0000,  Imm22,   0x01f1ffff,  None,   0x00000000)
+
+INSTR (CBR,     0x00007000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (CLC,     0x00009488,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLH,     0x000094d8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLI,     0x000094f8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLN,     0x000094a8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLS,     0x000094c8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLT,     0x000094e8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLV,     0x000094b8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (CLZ,     0x00009498,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (BCLR,    0x00009488,  0x0000ff8f,  Imm3,    0x00000070,  None,   0x00000000)
+
+INSTR (COM,     0x00009400,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (CP,      0x00001400,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (CPC,     0x00000400,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (CPI,     0x00003000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (CPSE,    0x00001000,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (DEC,     0x0000940a,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (EICALL,  0x00009519,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (EIJMP,   0x00009419,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (ELPM,    0x000095d8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+INSTR (ELPM,    0x00009006,  0x0000fe0f,  R,       0x000001f0,  Z,      0x00000000)
+INSTR (ELPM,    0x00009007,  0x0000fe0f,  R,       0x000001f0,  Zi,     0x00000000)
+
+INSTR (CLR,     0x00002400,  0x0000fc00,  R,       0x000001f0,  None,   0x0000020f)
+
+INSTR (EOR,     0x00002400,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (FMUL,    0x00000308,  0x0000ff88,  R1623,   0x00000070,  R1623,  0x00000007)
+
+INSTR (FMULS,   0x00000380,  0x0000ff88,  R1623,   0x00000070,  R1623,  0x00000007)
+
+INSTR (FMULSU,  0x00000388,  0x0000ff88,  R1623,   0x00000070,  R1623,  0x00000007)
+
+INSTR (ICALL,   0x00009509,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (IJMP,    0x00009409,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (IN,      0x0000b000,  0x0000f800,  R,       0x000001f0,  Imm6,   0x0000060f)
+
+INSTR (INC,     0x00009403,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (JMP,     0x940c0000,  0xfe0e0000,  Imm22,   0x01f1ffff,  None,   0x00000000)
+
+INSTR (LAC,     0x00009206,  0x0000fe0f,  Z,       0x00000000,  R,      0x000001f0)
+
+INSTR (LAS,     0x00009205,  0x0000fe0f,  Z,       0x00000000,  R,      0x000001f0)
+
+INSTR (LAT,     0x00009207,  0x0000fe0f,  Z,       0x00000000,  R,      0x000001f0)
+
+INSTR (LD,      0x0000900c,  0x0000fe0f,  R,       0x000001f0,  X,      0x00000000)
+INSTR (LD,      0x0000900d,  0x0000fe0f,  R,       0x000001f0,  Xi,     0x00000000)
+INSTR (LD,      0x0000900e,  0x0000fe0f,  R,       0x000001f0,  Xd,     0x00000000)
+INSTR (LD,      0x00008008,  0x0000fe0f,  R,       0x000001f0,  Y,      0x00000000)
+INSTR (LD,      0x00009009,  0x0000fe0f,  R,       0x000001f0,  Yi,     0x00000000)
+INSTR (LD,      0x0000900a,  0x0000fe0f,  R,       0x000001f0,  Yd,     0x00000000)
+INSTR (LD,      0x00008000,  0x0000fe0f,  R,       0x000001f0,  Z,      0x00000000)
+INSTR (LD,      0x00009001,  0x0000fe0f,  R,       0x000001f0,  Zi,     0x00000000)
+INSTR (LD,      0x00009002,  0x0000fe0f,  R,       0x000001f0,  Zd,     0x00000000)
+
+INSTR (LDD,     0x00008008,  0x0000d208,  R,       0x000001f0,  YImm,   0x00002c07)
+INSTR (LDD,     0x00008000,  0x0000d208,  R,       0x000001f0,  ZImm,   0x00002c07)
+
+INSTR (LDS,     0x90000000,  0xfe0f0000,  R,       0x01f00000,  Imm16,  0x0000ffff)
+
+INSTR (LPM,     0x000095c8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+INSTR (LPM,     0x00009004,  0x0000fe0f,  R,       0x000001f0,  Z,      0x00000000)
+INSTR (LPM,     0x00009005,  0x0000fe0f,  R,       0x000001f0,  Zi,     0x00000000)
+
+INSTR (LSR,     0x00009406,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (MOV,     0x00002c00,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (MOVW,    0x00000100,  0x0000ff00,  Rp,      0x000000f0,  Rp,     0x0000000f)
+
+INSTR (MUL,     0x00009c00,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (MULS,    0x00000200,  0x0000ff00,  R16,     0x000000f0,  R16,    0x0000000f)
+
+INSTR (MULSU,   0x00000300,  0x0000ff88,  R1623,   0x00000070,  R1623,  0x00000007)
+
+INSTR (NEG,     0x00009401,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (OR,      0x00002800,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (ORI,     0x00006000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (OUT,     0x0000b800,  0x0000f800,  Imm6,    0x0000060f,  R,      0x000001f0)
+
+INSTR (POP,     0x0000900f,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (PUSH,    0x0000920f,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (RCALL,   0x0000d000,  0x0000f000,  SImm12,  0x00000fff,  None,   0x00000000)
+
+INSTR (RET,     0x00009508,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (RETI,    0x00009518,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (RJMP,    0x0000c000,  0x0000f000,  SImm12,  0x00000fff,  None,   0x00000000)
+
+INSTR (ROR,     0x00009407,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (SBC,     0x00000800,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (SBCI,    0x00004000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (SBI,     0x00009a00,  0x0000ff00,  Imm5,    0x000000f8,  Imm3,   0x00000007)
+
+INSTR (SBIC,    0x00009900,  0x0000ff00,  Imm5,    0x000000f8,  Imm3,   0x00000007)
+
+INSTR (SBIS,    0x00009b00,  0x0000ff00,  Imm5,    0x000000f8,  Imm3,   0x00000007)
+
+INSTR (SBIW,    0x00009700,  0x0000ff00,  Rp24,    0x00000030,  Imm6,   0x000000cf)
+
+INSTR (SBR,     0x00006000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (SBRC,    0x0000fc00,  0x0000fe08,  R,       0x000001f0,  Imm3,   0x00000007)
+
+INSTR (SBRS,    0x0000fe00,  0x0000fe08,  R,       0x000001f0,  Imm3,   0x00000007)
+
+INSTR (SEC,     0x00009408,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SEH,     0x00009458,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SEI,     0x00009478,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SEN,     0x00009428,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SER,     0x0000ef0f,  0x0000ff0f,  R16,     0x000000f0,  None,   0x00000000)
+
+INSTR (SES,     0x00009448,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SET,     0x00009468,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SEV,     0x00009438,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SEZ,     0x00009418,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (BSET,    0x00009408,  0x0000ff8f,  Imm3,    0x00000070,  None,   0x00000000)
+
+INSTR (CBI,     0x00009800,  0x0000ff00,  Imm5,    0x000000f8,  Imm3,   0x00000007)
+
+INSTR (LDI,     0x0000e000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (SLEEP,   0x00009588,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SPM,     0x000095e8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (ST,      0x0000920c,  0x0000fe0f,  X,       0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x0000920d,  0x0000fe0f,  Xi,      0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x0000920e,  0x0000fe0f,  Xd,      0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x00008208,  0x0000fe0f,  Y,       0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x00009209,  0x0000fe0f,  Yi,      0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x0000920a,  0x0000fe0f,  Yd,      0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x00008200,  0x0000fe0f,  Z,       0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x00009201,  0x0000fe0f,  Zi,      0x00000000,  R,      0x000001f0)
+INSTR (ST,      0x00009202,  0x0000fe0f,  Zd,      0x00000000,  R,      0x000001f0)
+
+INSTR (STD,     0x00008208,  0x0000d208,  YImm,    0x00002c07,  R,      0x000001f0)
+INSTR (STD,     0x00008200,  0x0000d208,  ZImm,    0x00002c07,  R,      0x000001f0)
+
+INSTR (STS,     0x92000000,  0xfe0f0000,  Imm16,   0x0000ffff,  R,      0x01f00000)
+
+INSTR (NOP,     0x00000000,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (SUB,     0x00001800,  0x0000fc00,  R,       0x000001f0,  R,      0x0000020f)
+
+INSTR (SUBI,    0x00005000,  0x0000f000,  R16,     0x000000f0,  Imm8,   0x00000f0f)
+
+INSTR (SWAP,    0x00009402,  0x0000fe0f,  R,       0x000001f0,  None,   0x00000000)
+
+INSTR (WDR,     0x000095a8,  0x0000ffff,  None,    0x00000000,  None,   0x00000000)
+
+INSTR (XCH,     0x00009204,  0x0000fe0f,  Z,       0x00000000,  R,      0x000001f0)
+
+// operand types
+
+TYPE (None,    0)
+TYPE (Imm3,    3)
+TYPE (Imm5,    5)
+TYPE (Imm6,    6)
+TYPE (Imm8,    8)
+TYPE (Imm16,   16)
+TYPE (Imm22,   22)
+TYPE (SImm7,   7)
+TYPE (SImm12,  12)
+TYPE (R,       5)
+TYPE (R16,     4)
+TYPE (R1623,   3)
+TYPE (Rp,      4)
+TYPE (Rp24,    2)
+TYPE (X,       0)
+TYPE (Xd,      0)
+TYPE (Xi,      0)
+TYPE (Y,       0)
+TYPE (Yd,      0)
+TYPE (Yi,      0)
+TYPE (YImm,    6)
+TYPE (Z,       0)
+TYPE (Zd,      0)
+TYPE (Zi,      0)
+TYPE (ZImm,    6)
+
+#undef INSTR
+#undef MNEM
+#undef TYPE

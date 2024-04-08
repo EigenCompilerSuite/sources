@@ -1,0 +1,42 @@
+// Standard C++ <utility> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_UTILITY_HEADER_INCLUDED
+#define ECS_CPP_UTILITY_HEADER_INCLUDED
+
+#include "initializer_list"
+
+#define __cpp_lib_as_const 201510L
+#define __cpp_lib_constexpr_algorithms 201806L
+#define __cpp_lib_constexpr_utility 201811L
+#define __cpp_lib_exchange_function 201304L
+#define __cpp_lib_forward_like 202207L
+#define __cpp_lib_integer_comparison_functions 202002L
+#define __cpp_lib_integer_sequence 201304L
+#define __cpp_lib_ranges_zip 202110L
+#define __cpp_lib_to_underlying 202102L
+#define __cpp_lib_tuple_like 202207L
+#define __cpp_lib_tuples_by_type 201304L
+#define __cpp_lib_unreachable 202202L
+
+#endif // ECS_CPP_UTILITY_HEADER_INCLUDED

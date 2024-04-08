@@ -1,0 +1,82 @@
+// Standard C++ <cmath> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_CMATH_HEADER_INCLUDED
+#define ECS_CPP_CMATH_HEADER_INCLUDED
+
+#define __cpp_lib_constexpr_cmath 202202L
+#define __cpp_lib_hypot 201603L
+#define __cpp_lib_interpolate 201902L
+#define __cpp_lib_math_special_functions 201603L
+
+namespace std
+{
+	extern "C" auto copysign (double, double) noexcept -> double;
+	extern "C" auto copysignf (float, float) noexcept -> float;
+	extern "C" auto copysignl (long double, long double) noexcept -> long double;
+	extern "C" auto cos (double) noexcept -> double;
+	extern "C" auto cosf (float) noexcept -> float;
+	extern "C" auto cosl (long double) noexcept -> long double;
+	extern "C" auto fabs (double) noexcept -> double;
+	extern "C" auto fabsf (float) noexcept -> float;
+	extern "C" auto fabsl (long double) noexcept -> long double;
+	extern "C" auto floor (double) noexcept -> double;
+	extern "C" auto floorf (float) noexcept -> float;
+	extern "C" auto floorl (long double) noexcept -> long double;
+	extern "C" auto fma (double, double, double) noexcept -> double;
+	extern "C" auto fmaf (float, float, float) noexcept -> float;
+	extern "C" auto fmal (long double, long double, long double) noexcept -> long double;
+	extern "C" auto fmax (double, double) noexcept -> double;
+	extern "C" auto fmaxf (float, float) noexcept -> float;
+	extern "C" auto fmaxl (long double, long double) noexcept -> long double;
+	extern "C" auto fmin (double, double) noexcept -> double;
+	extern "C" auto fminf (float, float) noexcept -> float;
+	extern "C" auto fminl (long double, long double) noexcept -> long double;
+	extern "C" auto sin (double) noexcept -> double;
+	extern "C" auto sinf (float) noexcept -> float;
+	extern "C" auto sinl (long double) noexcept -> long double;
+	extern "C" auto sqrt (double) noexcept -> double;
+	extern "C" auto sqrtf (float) noexcept -> float;
+	extern "C" auto sqrtl (long double) noexcept -> long double;
+	extern "C" auto tan (double) noexcept -> double;
+	extern "C" auto tanf (float) noexcept -> float;
+	extern "C" auto tanl (long double) noexcept -> long double;
+
+	auto isfinite (double) noexcept -> bool;
+	auto isfinite (float) noexcept -> bool;
+	auto isfinite (long double) noexcept -> bool;
+	auto isinf (double) noexcept -> bool;
+	auto isinf (float) noexcept -> bool;
+	auto isinf (long double) noexcept -> bool;
+	auto isnan (double) noexcept -> bool;
+	auto isnan (float) noexcept -> bool;
+	auto isnan (long double) noexcept -> bool;
+	auto isnormal (double) noexcept -> bool;
+	auto isnormal (float) noexcept -> bool;
+	auto isnormal (long double) noexcept -> bool;
+	auto signbit (double) noexcept -> bool;
+	auto signbit (float) noexcept -> bool;
+	auto signbit (long double) noexcept -> bool;
+}
+
+#endif // ECS_CPP_CMATH_HEADER_INCLUDED

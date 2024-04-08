@@ -1,0 +1,158 @@
+% ARM architecture documentation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seearm}{}
+
+\startchapter{ARM}{ARM Hardware Architecture Support}{arm}
+{This \documentation{} describes how the \ecs{} supports the ARM hardware architecture.
+This includes information about the assemblers, disassemblers, and the various compilers featured by the \ecs{} as well as the interoperability between these tools.}
+
+\section{Introduction}
+
+The \ecs{} features various compilers, assemblers, and disassemblers that target the ARM hardware architecture by ARM Limited.
+Figure~\ref{fig:armdataflow} shows the data flow in-between these tools.
+
+\begin{figure}
+\flowgraph{
+\resource{intermediate\\code} \ar[d] & & \resource{assembly\\source code} \ar[d] \\
+\converter{A32/A64/T32\\Generator} \ar[r] \ar[rd] \ar[d] & \resource{assembly\\listing} \ar[r] & \converter{A32/A64/T32\\Assembler} \ar[ld] \\
+\resource{debugging\\information} & \resource{object file} \ar[d] \\
+& \converter{A32/A64/T32\\Disassembler} \ar[d] \\
+& \resource{disassembly\\listing} \\
+}\caption{Data flow within the tools targeting the ARM architecture}
+\label{fig:armdataflow}
+\end{figure}
+
+All compilers targeting the ARM architecture translate their programs using an intermediate code representation.
+The A32, A64 and T32 generators are able to translate the intermediate code representation of a program into machine code for ARM processors executing the respective instruction set.
+All of them store the resulting binary code and data in so-called object files.
+Additionally, all generators are able to create an assembly code listing of the machine code for debugging purposes.
+This assembly code listing can also be processed by the corresponding assembler yielding exactly the same object file.
+The corresponding disassembler is able to open object files and print a human-readable disassembly listing of their contents.
+\seeobject\seecode
+
+\section{Instruction Sets}
+
+Tools targeting the ARM architecture support the instruction sets listed in Tables~\ref{tab:arma32set} to~\ref{tab:armset} and use the same assembly syntax as predefined by the ARM architecture~\cite{arm:instructionset}.
+The only exception are immediate values which are not prefixed by a number sign.
+\seeassembly
+
+\instructionset{arma32}{Supported ARM A32 instruction set}{5}{6}
+\instructionset{arma64}{Supported ARM A64 instruction set}{5}{6}
+\instructionset{arm}{Supported ARM T32 instruction set}{5}{6}
+
+The A64 and T32 assemblers allow users to temporarily switch to the A32 instruction set by passing 32 as operand to the bit mode directive.
+The original instruction set can be restored using bit modes 64 and 16 respectively.
+
+\section{Calling Convention}\index{Calling convention!of ARM}
+
+The machine code generators and runtime support for the ARM architecture as provided by the \ecs{} use the following calling convention in order to enable interoperability.
+
+\subsection{Stack Operations}
+
+Arguments for functions are in general passed using the stack according to the intermediate code specification.
+See \Documentation{}~\documentationref{code}{Intermediate Code Representation} for more information about the role of the stack.
+Function arguments are pushed on the stack in reverse order and cleaned by the caller.
+
+\subsection{Floating-Point Support}
+
+The ARM architecture optionally supports floating-point operations.
+The A32 and A64 generators are able to generate native floating-point operations for processors that do support them.
+
+\subsection{Register Mapping}
+
+The special-purpose registers defined by the intermediate code representation are mapped to their corresponding physical registers in the following way:
+
+\begin{itemize}
+
+\item Result Register\alignright\texttt{\$res}\nopagebreak
+
+The intermediate code result register \texttt{\$res} is mapped to registers \texttt{r0} and \texttt{r1} in 32-bit mode or registers \texttt{w0} or \texttt{x0} in 64-bit mode depending on the size of the actual return type.
+If supported natively, floating-point results are stored in registers \texttt{s0} or \texttt{d0} depending on their size.
+
+\item Stack Pointer Register\alignright\texttt{\$sp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$sp} is mapped to register \texttt{sp}.
+
+\item Frame Pointer Register\alignright\texttt{\$fp}\nopagebreak
+
+The intermediate code frame pointer register \texttt{\$fp} is mapped to register \texttt{r11} in 32-bit mode or \texttt{x29} in 64-bit mode.
+
+\item Link Register\alignright\texttt{\$lnk}\nopagebreak
+
+The intermediate code link register \texttt{\$lnk} is supported and mapped to register \texttt{lr} in 32-bit mode or register \texttt{x30} in 64-bit mode.
+
+\end{itemize}
+
+All other intermediate code registers are mapped as needed to the remaining physical registers.
+Their contents and mapping are therefore considered volatile across function calls.
+
+\section{Runtime Support}\index{Runtime support!for ARM}
+
+The \ecs{} provides runtime support for the ARM architecture and runtime environments based on this hardware architecture in object files.
+Users targeting a specific runtime environment have to use an appropriate linker together with these object files in order create an executable program.
+This section gives information about all supported runtime environments based on the ARM hardware architecture as well as the required combination of linker and object files.
+
+Basic architectural runtime support is provided by the object files \objfile{arma32\-run}, \objfile{arma64\-run}, \objfile{armt32\-run} and \objfile{armt32\-fpe\-run}.
+Users should always include one of these object files during linking regardless of the actual target runtime environment.
+All other object files given to the linker should target the same hardware architecture.
+
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-arma32\-run}, \libfile{cpp\-arma64\-run}, \libfile{cpp\-armt32\-run} and \libfile{cpp\-armt32\-fpe\-run} library files respectively.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-arma32\-run}, \libfile{ob\-arma64\-run}, \libfile{ob\-armt32\-run} and \libfile{ob\-armt32\-fpe\-run} library files respectively.
+\seecpp\seeoberon
+
+\subsection{Linux}
+
+Programs targeting Linux-based operating systems are created using the \tool{link\-bin} linker tool.
+It creates either 32-bit or 64-bit Executable and Linking Format (ELF) files~\cite{elffile} if provided with the runtime support stored in the \objfile{arma32\-linux\-run}, \objfile{arma64\-linux\-run}, \objfile{armt32\-linux\-run} and \objfile{armt32\-fpe\-linux\-run} object files respectively.
+Calling the \tool{ecsd} utility tool using the \environment{arma32\-linux}, \environment{arma64\-linux}, \environment{armt32\-linux} or \environment{armt32\-fpe\-linux} target environment achieves the same result.
+External libraries are available using additional runtime support stored in the following object files: \objfile{arma32\-libdl}, \objfile{arma32\-libpthread}, \objfile{arma32\-libsdl}, \objfile{arma64\-libdl}, \objfile{arma64\-libpthread}, \objfile{arma64\-libsdl}, \objfile{armt32\-libdl}, \objfile{armt32\-libpthread}, \objfile{armt32\-libsdl}, \objfile{armt32\-fpe\-libdl}, \objfile{armt32\-fpe\-libpthread}, and \objfile{armt32\-fpe\-libsdl}.
+
+\subsection{Raspberry Pi}
+
+The \ecs{} provides basic runtime support for a native Raspberry Pi~2 Model~B computer environment stored in the \objfile{rpi2b\-run} object file.
+Users creating their own systems may use the \tool{link\-bin} linker together with this object file in order create an executable bootloader.
+Calling the \tool{ecsd} utility tool using the \environment{rpi2b} target environment achieves the same result.
+The UART communication device is configured to use a baud rate of 115200~bps with eight data bits, no parity, and one stop bit.
+
+\section{ARM Tools}
+
+The \ecs{} provides the following tools that are able to process object files targeting the ARM hardware architecture.
+\interface
+
+\cdarma
+\cdarmb
+\cdarmc
+\cdarmcfpe
+\cpparma
+\cpparmb
+\cpparmc
+\cpparmcfpe
+\falarma
+\falarmb
+\falarmc
+\falarmcfpe
+\obarma
+\obarmb
+\obarmc
+\obarmcfpe
+\armaasm
+\armbasm
+\armcasm
+\armadism
+\armbdism
+\armcdism
+\linkbin
+\linkmem
+
+\concludechapter

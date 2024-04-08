@@ -1,0 +1,228 @@
+% Overview over the Eigen Compiler Suite
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startpresentation{Overview}{overview}
+
+\section{Features}
+
+\begin{frame}{Features}{Supported Programming Languages}
+\begin{center}
+\cpplogo{2em}
+\fallogo{2em}
+\oblogo{4em}
+\end{center}
+\begin{columns}[T]
+\column{9em}
+\begin{block}{Languages:}
+\begin{itemize}
+\item \cpp{}
+\item FALSE
+\item Oberon
+\end{itemize}
+\end{block}
+\column{9em}
+\begin{block}{Tools:}
+\begin{itemize}
+\item Pretty Printers
+\item Semantic Checkers
+\item Interpreters
+\item Compilers
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Features}{Supported Hardware Architectures}
+\begin{columns}[T]
+\column{13em}
+\begin{block}{Architectures:}
+\begin{description}[FPGA:]
+\item[8-bit:] AVR
+\item[16-bit:] M68000
+\item[32-bit:] ARM A32, ARM T32, AVR32, MIPS32, PowerPC32, Wasm
+\item[64-bit:] AMD64, ARM A64, MIPS64, PowerPC64
+\item[FPGA:] MicroBlaze, MMIX, OpenRISC 1000, RISC
+\end{description}
+\end{block}
+\column{7em}
+\begin{block}{Tools:}
+\begin{itemize}
+\item Compilers
+\item Assemblers
+\item Disassemblers
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Features}{Supported Runtime Environments}
+\begin{columns}[T]
+\column{16em}
+\begin{block}{Runtime Support:}
+\begin{description}[Executables:]
+\item[Executables:] DOS, Windows, Linux, OS~X, Atari TOS
+\item[Bootloaders:] AVR microcontrollers, Raspberry Pi, BIOS, EFI
+\item[Simulators:] MMIX, RISC, WebAssembly
+\end{description}
+\end{block}
+\column{4em}
+\begin{block}{Tools:}
+\begin{itemize}
+\item Linkers
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+\section{Design}
+
+\begin{frame}{Design}{Objectives}
+\begin{columns}[T]
+\column{6em}
+\begin{itemize}
+\item Usability \bigskip
+\item Reliability \bigskip
+\item Portability \bigskip
+\end{itemize}
+\column{12em}
+\begin{itemize}
+\item Interoperability \bigskip
+\item Textual Representations \bigskip
+\item Generic Abstractions \bigskip
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Reliability}{29 Regression Test Suites} % ls tests/*.tst | wc -l
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule Subject & Tests \\ \midrule
+\cpp{} & $3\,400$ \\ % wc -l tests/*cppprint*.res
+FALSE & $70$ \\ % wc -l tests/falprint*.res
+Oberon & $2\,400$ \\ % wc -l tests/*obprint*.res
+Assembly Code& $16\,000$ \\ % wc -l tests/*printasm.res
+Intermediate Code & $4\,100$ \\ % wc -l tests/cdprint*.res
+Linker & $1\,100$ \\ % wc -l tests/link*.res
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{Reliability}{Sample Test File}
+\begin{small}\begin{ttfamily}\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\multicolumn{2}{@{}l@{}}{\structure{\# Oberon execution tests}} \\\\
+\structure{positive:} & empty module \\\\ & MODULE Test; \\ & END Test. \\\\
+\structure{negative:} & simple halt \\\\ & MODULE Test; \\ & BEGIN HALT (123); \\ & END Test. \\
+\bottomrule
+\end{tabular}
+\end{center}\end{ttfamily}\end{small}
+\end{frame}
+
+\begin{frame}{Abstractions}{Intermediate Code}\nocite{code}\flowgraph{
+\resource{\cpp{}\\source code} \ar[r] & \converter{Front-End\\for \cpp{}} \ar[rd] & \converter{Optimizer} \ar@/l/[d] & \converter{Back-End\\for AVR} \ar[r] & \resource{AVR\\machine code} \\
+\resource{Oberon\\source code} \ar[r] & \converter{Front-End for\\Oberon} \ar[r] & \resource{intermediate\\code} \ar@/r/[u] \ar[dd] \ar[ru] \ar[r] \ar[rd] & \converter{Back-End\\for M68000} \ar[r] & \resource{M68000\\machine code} \\
+\resource{FALSE\\source code} \ar[r] & \converter{Front-End\\for FALSE} \ar[ru] & & \converter{Back-End\\for AMD64} \ar[r] & \resource{AMD64\\machine code} \\
+& \resource{input} \ar[r] & \converter{Interpreter} \ar[r] & \resource{output} \\
+}\end{frame}
+
+\begin{frame}{Abstractions}{Object Files}\nocite{object}\flowgraph{
+\resource{\cpp{}\\source code} \ar[r] & \converter{cppamd64} \ar[rd] & & \converter{linklib} \ar[r] & \resource{library file} \\
+\resource{assembly\\source code} \ar[r] & \converter{amd64asm} \ar[r] & \resource{object files} \ar[ru] \ar[r] \ar[rd] & \converter{amd64dism} \ar[r] & \resource{disassembly\\listing} \\
+\resource{Oberon\\source code} \ar[r] & \converter{obamd64} \ar[ru] & & \converter{linkbin} \ar[r] & \resource{binary file} \\
+}\end{frame}
+
+\section{Functionality}
+
+\newcommand{\lang}[1]{{\color{olive}#1}}
+\newcommand{\arch}[1]{{\color{teal}#1}}
+\newcommand{\env}[1]{{\color{violet}#1}}
+
+\begin{frame}{Functionality}{Cross Compiling and Linking with Runtime Support}\nocite{guide}
+\begin{center}\resizebox{!}{11ex}{
+\begin{tabular}{@{}ccccc@{}}
+\toprule Tool & File & \lang{Language} & \arch{Architecture} & \env{Environment} \\
+\midrule\multicolumn{5}{@{}l@{}}{\textbf{\structure{\cpp{} targeting Windows:}}} \\
+\tool{\lang{cpp}\arch{amd64}} & \file{test1.cpp} \\
+\tool{linkbin} & \file{test1.obf} & \file{\lang{cpp}\arch{amd64}run.lib} & \file{\arch{amd64}run.obf} & \file{\env{win64}run.obf} \\
+$\to$ \tool{ecsd} & \file{test1.cpp} & & & \tool{-t \env{win64}} \\
+\midrule\multicolumn{5}{@{}l@{}}{\textbf{\structure{\cpp{} targeting OS~X:}}} \\
+\tool{\lang{cpp}\arch{amd64}} & \file{test2.cpp} \\
+\tool{linkbin} & \file{test2.obf} & \file{\lang{cpp}\arch{amd64}run.lib} & \file{\arch{amd64}run.obf} & \file{\env{osx64}run.obf} \\
+$\to$ \tool{ecsd} & \file{test2.cpp} & & & \tool{-t \env{osx64}} \\
+\midrule\multicolumn{5}{@{}l@{}}{\textbf{\structure{Oberon targeting Linux on ARM:}}} \\
+\tool{\lang{ob}\arch{arma32}} & \file{test3.mod} \\
+\tool{linkbin} & \file{test3.obf} & \file{\lang{ob}\arch{arma32}run.lib} & \file{\arch{arma32}run.obf} & \file{\env{arma32linux}run.obf} \\
+$\to$ \tool{ecsd} & \file{test3.mod} & & & \tool{-t \env{arma32linux}} \\
+\bottomrule
+\end{tabular}
+}\end{center}
+\end{frame}
+
+\section{Status}
+
+\newcommand{\progress}[1]{\color{gray}\rule[-0.2ex]{\dimexpr#1em/20}{2ex}\color{gray!20}\rule[-0.2ex]{\dimexpr(100em-#1em)/20}{2ex} & #1\%}
+
+\begin{frame}{Status}{Status and Open Issues}
+\begin{center}\resizebox{!}{14ex}{
+\begin{tabular}{@{}llrl@{}}
+\toprule
+Component & Completion & & Open Issues \\
+\midrule
+\cpp{} & \progress{20} & Semantic Analysis, Code \\ & & & Generation, Test Suites \\
+FALSE & \progress{100} \\
+Oberon & \progress{100} \\
+\midrule
+AMD64 & \progress{100} \\
+ARM A32 & \progress{100} \\
+ARM A64 & \progress{100} \\
+ARM T32 & \progress{100} & \\
+AVR & \progress{100} & \\
+AVR32 & \progress{100} & \\
+M68000 & \progress{100} & \\
+MIPS & \progress{50} & Runtime Tests \\
+MMIX & \progress{100} \\
+MicroBlaze & \progress{50} & Machine Code Generation \\
+OpenRISC 1000 & \progress{100} & \\
+PowerPC & \progress{50} & Machine Code Generation \\
+RISC & \progress{100} \\
+WebAssembly & \progress{100} \\
+\bottomrule
+\end{tabular}
+}\end{center}
+\end{frame}
+
+\section{Comparison}
+
+\begin{frame}{Comparison}{With other Compiler Suites}
+\begin{columns}[T]
+\column{9em}
+\begin{itemize}
+\item[$+$] free software
+\item[$+$] maintainable by a single person
+\item[$+$] completely self-contained
+\item[$+$] easily retargetable
+\end{itemize}
+\column{9em}
+\begin{itemize}
+\item[$-$] few optimizations
+\item[$-$] no debugger
+\item[$-$] no support for IDE integration
+\item[$-$] no ABI compatibility
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\concludepresentation

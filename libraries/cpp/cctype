@@ -1,0 +1,45 @@
+// Standard C++ <cctype> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_CCTYPE_HEADER_INCLUDED
+#define ECS_CPP_CCTYPE_HEADER_INCLUDED
+
+namespace std
+{
+	extern "C" auto isalnum (int) noexcept -> int;
+	extern "C" auto isalpha (int) noexcept -> int;
+	extern "C" auto isblank (int) noexcept -> int;
+	extern "C" auto iscntrl (int) noexcept -> int;
+	extern "C" auto isdigit (int) noexcept -> int;
+	extern "C" auto isgraph (int) noexcept -> int;
+	extern "C" auto islower (int) noexcept -> int;
+	extern "C" auto isprint (int) noexcept -> int;
+	extern "C" auto ispunct (int) noexcept -> int;
+	extern "C" auto isspace (int) noexcept -> int;
+	extern "C" auto isupper (int) noexcept -> int;
+	extern "C" auto isxdigit (int) noexcept -> int;
+	extern "C" auto tolower (int) noexcept -> int;
+	extern "C" auto toupper (int) noexcept -> int;
+}
+
+#endif // ECS_CPP_CCTYPE_HEADER_INCLUDED

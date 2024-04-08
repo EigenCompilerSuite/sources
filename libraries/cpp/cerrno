@@ -1,0 +1,106 @@
+// Standard C++ <cerrno> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_CERRNO_HEADER_INCLUDED
+#define ECS_CPP_CERRNO_HEADER_INCLUDED
+
+#define E2BIG 1
+#define EACCES 2
+#define EADDRINUSE 3
+#define EADDRNOTAVAIL 4
+#define EAFNOSUPPORT 5
+#define EAGAIN 6
+#define EALREADY 7
+#define EBADF 8
+#define EBADMSG 9
+#define EBUSY 10
+#define ECANCELED 11
+#define ECHILD 12
+#define ECONNABORTED 13
+#define ECONNREFUSED 14
+#define ECONNRESET 15
+#define EDEADLK 16
+#define EDESTADDRREQ 17
+#define EDOM 18
+#define EEXIST 19
+#define EFAULT 20
+#define EFBIG 21
+#define EHOSTUNREACH 22
+#define EIDRM 23
+#define EILSEQ 24
+#define EINPROGRESS 25
+#define EINTR 26
+#define EINVAL 27
+#define EIO 28
+#define EISCONN 29
+#define EISDIR 30
+#define ELOOP 31
+#define EMFILE 32
+#define EMLINK 33
+#define EMSGSIZE 34
+#define ENAMETOOLONG 35
+#define ENETDOWN 36
+#define ENETRESET 37
+#define ENETUNREACH 38
+#define ENFILE 39
+#define ENOBUFS 40
+#define ENODATA 41
+#define ENODEV 42
+#define ENOENT 43
+#define ENOEXEC 44
+#define ENOLCK 45
+#define ENOLINK 46
+#define ENOMEM 47
+#define ENOMSG 48
+#define ENOPROTOOPT 49
+#define ENOSPC 50
+#define ENOSR 51
+#define ENOSTR 52
+#define ENOSYS 53
+#define ENOTCONN 54
+#define ENOTDIR 55
+#define ENOTEMPTY 56
+#define ENOTRECOVERABLE 57
+#define ENOTSOCK 58
+#define ENOTSUP 59
+#define ENOTTY 60
+#define ENXIO 61
+#define EOPNOTSUPP 62
+#define EOVERFLOW 63
+#define EOWNERDEAD 64
+#define EPERM 65
+#define EPIPE 66
+#define EPROTO 67
+#define EPROTONOSUPPORT 68
+#define EPROTOTYPE 69
+#define ERANGE 70
+#define EROFS 71
+#define ESPIPE 72
+#define ESRCH 73
+#define ETIME 74
+#define ETIMEDOUT 75
+#define ETXTBSY 76
+#define EWOULDBLOCK 78
+#define EXDEV 79
+
+#endif // ECS_CPP_CERRNO_HEADER_INCLUDED

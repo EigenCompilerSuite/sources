@@ -1,0 +1,274 @@
+% Common user interface
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startchapter{User Interface}{User Interface}{interface}
+{The \ecs{} features a variety of different tools like compilers, assemblers, and linkers.
+This \documentation{} describes their input and output and explains the common user interface that is shared across all of these tools.}
+
+\epigraph{The trivial round, the common task, \\ would furnish all we ought to ask.}{John Keble}
+
+\section{Introduction}
+
+The \ecs{} is a toolchain that consists of several different programming tools targeting a variety of programming languages, hardware architectures, and runtime environments.
+The following list categorizes all tools provided by the \ecs{} and visualizes their input and output:
+
+\begin{itemize}
+
+\item Preprocessors\index{Preprocessors}\nopagebreak
+
+Preprocessors are tools that perform simple lexical substitutions like macro expansions and conditional inclusion on source code written in a programming language.
+This very first phase of translating the source code is also part of all subsequent tools if the corresponding programming language supports preprocessing.
+An example of a preprocessor tool is \tool{cpp\-prep}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Preprocessor} \ar[r] & \resource{preprocessed\\source code}}
+
+\item Pretty Printers\index{Pretty printers}\nopagebreak
+
+Pretty printers are tools that reformat source code written in a programming language by printing it again using a consistent layout.
+Examples of pretty printer tools are \tool{asm\-print} and \tool{fal\-print}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Pretty Printer} \ar[r] & \resource{reformatted\\source code}}
+
+\item Semantic Checkers\index{Semantic checkers}\nopagebreak
+
+Semantic checkers perform syntactic and semantic checks on source code written in a programming language and print diagnostic messages.
+Some checkers may have to process additional semantic information stored in separate files.
+This phase of translating the source code is also part of all subsequent tools.
+Examples of semantic checker tools are \tool{cpp\-check} and \tool{cd\-check}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Semantic\\Checker} \ar@/l/[d] \ar[r] & \resource{diagnostic\\messages} \\ & \resource{external\\information} \ar@/r/[u]}
+
+\item Serializers\index{Serializers}\nopagebreak
+
+Serializers are debugging tools that dump the complete internal representation of a program in a human readable format.
+This potentially also allows external development tools to make use of the same internal program representation.
+Examples of serialization tools are \tool{ob\-dump} and \tool{fal\-dump}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Serializer} \ar[r] & \resource{internal\\representation}}
+
+\item Interpreters\index{Interpreters}\nopagebreak
+
+Interpreters read and process source code for a programming language by emulating a runtime environment for this language and executing the program accordingly.
+The actual interpreted program defines the input and output the interpreter processes and produces.
+Examples of interpreter tools are \tool{cpp\-run} and \tool{cd\-run}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Interpreter} \ar@/u/[r] & \resource{input/\\output} \ar@/d/[l]}
+
+\item Transpilers\index{Transpilers}\nopagebreak
+
+Transpilers translate source code written in one programming language into source code for another programming language.
+They store the resulting code in corresponding source code files.
+Examples of transpiler tools are \tool{fal\-cpp} and \tool{ob\-cpp}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Transpiler} \ar[r] & \resource{translated\\source code}}
+
+\item Documentation Generators\index{Documentation generators}\nopagebreak
+
+Documentation generators extract the structure and comments of the source code in order to generate documentations about the program.
+They store the resulting documentation in document files of various formats. \seedocumentation
+Examples of documentation generator tools are \tool{cpp\-html} and \tool{ob\-latex}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Documentation\\Generator} \ar[r] & \resource{formatted\\document}}
+
+\item Compilers\index{Compilers}\nopagebreak
+
+Compilers translate programs written in a programming language into machine code for some hardware processors.
+They store the resulting binary representation of the source code in object files. \seeobject
+In addition, they also create debugging information and assembly code listings of the generated machine code.
+Examples of compiler tools are \tool{cpp\-amd64} and \tool{ob\-avr}.
+
+\flowgraph{\resource{source code} \ar[r] & \converter{Compiler} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{debugging\\information} & \resource{assembly\\listing}}
+
+\item Debugging Information Converters\index{Debugging information converters}\nopagebreak
+
+Debugging information converters process debugging information files and generate debugging object files storing a binary representation thereof in a format suitable for the debugger of a specific runtime environment. \seedebugging
+An example of a debugging information converter tool is \tool{dbg\-dwarf}.
+
+\flowgraph{\resource{debugging\\information} \ar[r] & \toolbox{Converter} \ar[r] & \resource{debugging\\object file}}
+
+\item Assemblers\index{Assemblers}\nopagebreak
+
+Assemblers translate assembly code for some specific hardware architecture into equivalent binary machine code.
+They store the resulting binary representation of the source assembly code in object files. \seeassembly
+Examples of assembler tools are \tool{arma32\-asm} and \tool{ppc\-asm}.
+
+\flowgraph{\resource{assembly\\source code} \ar[r] & \converter{Assembler} \ar[r] & \resource{object file}}
+
+\item Disassemblers\index{Disassemblers}\nopagebreak
+
+Disassemblers translate machine code for some specific hardware architecture stored in object files by printing it using a human-readable disassembly listing.
+Examples of disassembler tools are \tool{mibl\-dism} and \tool{arma64\-dism}.
+
+\flowgraph{\resource{object file} \ar[r] & \converter{Disassembler} \ar[r] & \resource{disassembly\\listing}}
+
+\item Linkers\index{Linkers}\nopagebreak
+
+Linkers assemble the binary representation of a program stored in object files to generate output files that are executable on some target platforms.
+Examples of linker tools are \tool{link\-bin} and \tool{link\-prg}.
+
+\flowgraph{\resource{object files} \ar[r] & \converter{Linker} \ar[r] & \resource{executable\\binary image}}
+
+\end{itemize}
+
+Although all of these tools process and produce different kinds of input and output, all of them present the same command-line interface to the user which is described in the following sections.
+
+\section{Command-Line Arguments}\index{Command-line arguments}
+
+Each tool of the \ecs{} provides a command-line user interface and accepts zero, one or more command-line arguments.
+If there are one or more command-line arguments, each of them is treated as the name of an input file relative to the current working directory.
+The notion of command-line options is not supported in order to make the contents of output files independent from the tool invocation.
+
+Input files are plain text files containing the source code or other contents to be processed.
+Output files are generated in the current working directory and have the same name as the input file being processed whereas the filename extension gets replaced by an appropriate suffix.
+If the user does not provide any command-line argument, the tool reads the source code from the standard input stream.
+Beforehand, it prints its version and a short copyright notice.
+
+If there are more than one command-line argument, each input file is processed in sequence according to the given order of the arguments.
+If there are errors during the processing of an input file, subsequent command-line arguments are ignored.
+Some tools like assemblers and disassemblers do not depend on other input except for the actual source code.
+In this case, the order of the command-line arguments is irrelevant and it would be equivalent to execute the tool once for every input file.
+
+However, there are tools that depend on the actual order of the command-line arguments.
+They even may behave differently if executed several times with the same command-line argument.
+This may especially be the case for compilers which may store additional semantic information in separate files for every input file they compile.
+In addition, interpreters may also depend on the actual order of the input files they have processed so far.
+
+On the other hand, it is crucial for some tools to process several input files during the same execution of the tool.
+Particularly linkers have to collect the information stored in several object files to generate an executable binary image.
+In this case, the order of the arguments is not important, since all information is collected first before the linking process is started.
+However, linkers generate output files named after the very first argument with the filename extension being replaced by an appropriate suffix.
+
+\section{Diagnostic Messages}\index{Diagnostic messages}\index{Messages|see{Diagnostic messages}}
+
+All tools of the \ecs{} use the same scheme for the diagnostic messages they generate.
+The following list describes the different types of messages used by the \ecs{}:
+
+\begin{itemize}
+
+\item Errors\index{Error messages}\nopagebreak
+
+Error messages indicate a problem within the contents of an input file that prohibits the tool from proceeding successfully.
+Compilers for example use error messages to output syntactic or semantic errors that have to be fixed by the programmer.
+In general, tools diagnose only the first few of the encountered problems but always yield a return code indicating the failure.
+
+\item Fatal Errors\index{Fatal error messages}\nopagebreak
+
+Fatal errors indicate a general failure of the tool that cannot be fixed by changing the contents of the input file.
+This includes for example internal program errors, failures to open files, or critical system conditions like out of memory.
+
+\item Warnings\index{Warnings}\nopagebreak
+
+Warning messages indicate potential flaws within the contents of an input file.
+They do not cause the tool to fail but they identify issues that may lead to unexpected behavior.
+Therefore, warnings may be prevented by changing the contents of an input file without changing its semantics.
+
+\item Notes\index{Notes}\nopagebreak
+
+Notes give additional information about the result of processing an input file.
+They are often used for debugging purposes or to diagnose violations of coding conventions.
+
+\end{itemize}
+
+All diagnostic messages are written to the standard error stream.
+Each message consists of a short line of text and the name of the input file or the tool that caused the diagnostic message.
+The message also contains the position\index{Position}\index{Diagnostic messages!Position} within the input file, if the problem can be located.
+Since input files are text files in general, the position is usually given as the number of the text line containing the problem followed by the column therein.
+For convenience, some tools like compilers also indicate the problematic position by reproducing the respective line of text from the input file.
+
+\section{The \ecs{} Driver}\index{Eigen Compiler Suite!Driver}\index{Driver, Eigen Compiler Suite}
+
+The \ecs{} provides a utility tool called \tool{ecsd} which autonomously drives its toolchain in order to build complete executable files for a specific runtime environment.
+It infers the set of required tools like compilers, assemblers, and linkers from the type of its input files and automatically invokes one tool after the other with appropriate command-line arguments and environment variables\index{Environment variables}.
+
+\flowgraph{\resource{input\\files} \ar[d] \ar[rd]|\hole \ar[rrd]|!{[r];[d]}\hole|\hole \ar@{-->}[r] & \converter{ecsd\vphantom{Compilers}} \ar@{~}[ld] \ar@{~}[d] \ar@{~}[rd] \ar@{-->}[r] & \resource{executable\\file} \\
+\converter{Compilers} \ar[d] \ar[rd] & \converter{Assemblers\vphantom{Compilers}} \ar[d] & \converter{Linkers\vphantom{Compilers}} \ar[u] \\
+\resource{debugging\\information\vphantom{support}} & \resource{object\vphantom{debugging}\\files\vphantom{support}} \ar[ru] & \resource{runtime\vphantom{debugging}\\support} \ar[u]}
+
+In contrast to all other tools of the \ecs{}, this utility tool does support command-line options which influence how tools are identified and invoked.
+The following list describes the form and behavior of the most important options:
+
+\begin{description}
+
+\item\syntax{"-b" <directory> $\mid$ "-""-base" <directory>}\alignright Use Specified Base Directory\nopagebreak
+
+Allows overriding the base directory provided by the \environmentvariable{ECSBASE} environment variable which is used to locate tools and the necessary runtime support.
+If omitted, the tool infers the base directory from its own location.
+
+\item\syntax{"-c" $\mid$ "-""-compile"}\alignright Compile and Assemble Only\nopagebreak
+
+Compiles and assembles input files without invoking the linker at the end.
+The output is a set of object files rather than an executable file.
+
+\item\syntax{"-d" $\mid$ "-""-disassemble"}\alignright Disassemble Object Files\nopagebreak
+
+Invokes the disassembler instead of the linker at the end.
+The output is a set of disassembly listings rather than an executable file.
+
+\item\syntax{"-g" $\mid$ "-""-generate"}\alignright Generate Debugging Information\nopagebreak
+
+Generates and includes debugging information during linking.
+The resulting executable file can be executed and tested using a symbolic debugger.
+
+\item\syntax{"-h" $\mid$ "-""-help"}\alignright Print Command-Line Help\nopagebreak
+
+Prints information about all supported command-line arguments.
+This especially also includes all supported source types and available target environments.
+
+\item\syntax{"-i" <tool> $\mid$ "-""-invoke" <tool>}\alignright Invoke Specified Tool Only\nopagebreak
+
+Processes either input files or the standard input stream using the specified tool.
+The output is whatever that tool generates rather than an executable file.
+\ifbook See page~\pageref{idx:tools} for an index of all available tools. \fi
+
+\item\syntax{"-l" $\mid$ "-""-library"}\alignright Create Library File\nopagebreak
+
+Combines input files into a single object file.
+The output is a library file rather than an executable file.
+
+\item\syntax{"-o" <format> $\mid$ "-""-output" <format>}\alignright Output Specified File Format\nopagebreak
+
+Specifies the output file format of the linker.
+The available file formats correspond to the suffixes of the linker tools listed in \Documentation{}~\documentationref{object}{Object File Representation}.
+If omitted, the tool uses the default file format of the target environment.
+
+\item\syntax{"-p" $\mid$ "-""-protect"}\alignright Protect Environment Variables\nopagebreak
+
+Prevents the environment from being automatically modified when invoking tools that depend on environment variables.
+
+\item\syntax{"-r" <support> $\mid$ "-""-runtime" <support>}\alignright Include Specified Runtime Support\nopagebreak
+
+Includes additional runtime support stored in the specified object or library file during linking.
+\ifbook See page~\pageref{idx:runtime} for an index of all available runtime support. \fi
+
+\item\syntax{"-s" <type> $\mid$ "-""-source" <type>}\alignright Use Specified Source Type\nopagebreak
+
+Allows defining the source type of input files for which the corresponding tool could not be inferred from the filename extension.
+
+\item\syntax{"-t" <environment> $\mid$ "-""-target" <environment>}\alignright Target Specified Environment\nopagebreak
+
+Specifies the target environment for cross compilations.
+\ifbook See page~\pageref{idx:environment} for an index of all available target environments. \fi
+If omitted, the tool tries to target its own runtime environment.
+
+\item\syntax{"-v" $\mid$ "-""-verbose"}\alignright Print Command Line\nopagebreak
+
+Enables verbose mode which prints the actual command line before invoking any tool.
+This is helpful for examining how and which tools are invoked and what runtime support is provided.
+
+\end{description}
+
+The \tool{ecsd} driver tool is most useful when it is accessible via the \environmentvariable{PATH} environment variable of the runtime environment and is part of an appropriate installation of the \ecs{}.
+See \Documentation{}~\documentationref{guide}{User Guide} for some examples of using this utility tool in practice.
+
+\concludechapter

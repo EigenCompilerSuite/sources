@@ -1,0 +1,91 @@
+// Standard C++ <cstdlib> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_CSTDLIB_HEADER_INCLUDED
+#define ECS_CPP_CSTDLIB_HEADER_INCLUDED
+
+#define __cpp_lib_constexpr_cmath 202202L
+
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+#define MB_CUR_MAX (sizeof (long long))
+#define NULL nullptr
+#define RAND_MAX 32767
+
+namespace std
+{
+	using div_t = int;
+	using ldiv_t = long int;
+	using lldiv_t = long long int;
+	using size_t = decltype (sizeof 0);
+
+	auto at_exit (void (*) ()) noexcept -> int;
+	auto at_quick_exit (void (*) ()) noexcept -> int;
+	auto bsearch (const void*, const void*, size_t, size_t, int (const void*, const void*)) noexcept -> void*;
+	auto div (long int, long int) noexcept -> ldiv_t;
+	auto div (long long int, long long int) noexcept -> lldiv_t;
+	auto qsort (void*, size_t, size_t, int (const void*, const void*)) noexcept -> void*;
+
+	extern "C" auto _Exit [[noreturn]] (int) noexcept -> void;
+	extern "C" auto abort [[noreturn]] () noexcept -> void;
+	extern "C" auto abs (int) noexcept -> int;
+	extern "C" auto aligned_alloc (size_t, size_t) noexcept -> void*;
+	extern "C" auto at_exit (void (*) ()) noexcept -> int;
+	extern "C" auto at_quick_exit (void (*) ()) noexcept -> int;
+	extern "C" auto atof (const char*) noexcept -> double;
+	extern "C" auto atoi (const char*) noexcept -> int;
+	extern "C" auto atol (const char*) noexcept -> long int;
+	extern "C" auto atoll (const char*) noexcept -> long long int;
+	extern "C" auto bsearch (const void*, const void*, size_t, size_t, int (const void*, const void*)) noexcept -> void*;
+	extern "C" auto calloc (size_t, size_t) noexcept -> void*;
+	extern "C" auto div (int, int) noexcept -> div_t;
+	extern "C" auto exit [[noreturn]] (int) noexcept -> void;
+	extern "C" auto free (void*) noexcept -> void;
+	extern "C" auto getenv (const char*) noexcept -> char*;
+	extern "C" auto labs (long int) noexcept -> long int;
+	extern "C" auto ldiv (long int, long int) noexcept -> ldiv_t;
+	extern "C" auto llabs (long long int) noexcept -> long long int;
+	extern "C" auto lldiv (long long int, long long int) noexcept -> lldiv_t;
+	extern "C" auto malloc (size_t) noexcept -> void*;
+	extern "C" auto mblen (const char*, size_t) noexcept -> int;
+	extern "C" auto mbstowcs (wchar_t*, const char*, size_t) noexcept -> size_t;
+	extern "C" auto mbtowc (wchar_t*, const char*, size_t) noexcept -> int;
+	extern "C" auto qsort (void*, size_t, size_t, int (const void*, const void*)) noexcept -> void*;
+	extern "C" auto quick_exit [[noreturn]] (int) noexcept -> void;
+	extern "C" auto rand () noexcept -> int;
+	extern "C" auto realloc (void*, size_t) noexcept -> void*;
+	extern "C" auto realloc (void*, size_t) noexcept -> void*;
+	extern "C" auto srand (unsigned int) noexcept -> void;
+	extern "C" auto strtod (const char*, char**) noexcept -> double;
+	extern "C" auto strtof (const char*, char**) noexcept -> float;
+	extern "C" auto strtol (const char*, char**) noexcept -> long int;
+	extern "C" auto strtold (const char*, char**) noexcept -> long double;
+	extern "C" auto strtoll (const char*, char**) noexcept -> long long int;
+	extern "C" auto strtoul (const char*, char**) noexcept -> unsigned long int;
+	extern "C" auto strtoull (const char*, char**) noexcept -> unsigned long long int;
+	extern "C" auto system (const char*) noexcept -> int;
+	extern "C" auto wcstombs (char*, const wchar_t*, size_t) noexcept -> size_t;
+	extern "C" auto wctomb (char*, wchar_t) noexcept -> int;
+}
+
+#endif // ECS_CPP_CSTDLIB_HEADER_INCLUDED

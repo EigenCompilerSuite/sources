@@ -1,0 +1,148 @@
+% AVR architecture documentation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seeavr}{}
+
+\startchapter{AVR}{AVR Hardware Architecture Support}{avr}
+{This \documentation{} describes how the \ecs{} supports the AVR hardware architecture.
+This includes information about the assembler, disassembler, and the various compilers featured by the \ecs{} as well as the interoperability between these tools.}
+
+\section{Introduction}
+
+The \ecs{} features various compilers, an assembler, and a disassembler that target the AVR hardware architecture by Atmel.
+Figure~\ref{fig:avrdataflow} shows the data flow in-between these tools.
+
+\begin{figure}
+\flowgraph{
+\resource{intermediate\\code} \ar[d] & & \resource{assembly\\source code} \ar[d] \\
+\converter{AVR\\Generator} \ar[r] \ar[rd] \ar[d] & \resource{assembly\\listing} \ar[r] & \converter{AVR\\Assembler} \ar[ld] \\
+\resource{debugging\\information} & \resource{object file} \ar[d] \\
+& \converter{AVR\\Disassembler} \ar[d] \\
+& \resource{disassembly\\listing} \\
+}\caption{Data flow within the tools targeting the AVR architecture}
+\label{fig:avrdataflow}
+\end{figure}
+
+All compilers targeting the AVR architecture translate their programs using an intermediate code representation.
+The AVR generator is able to translate the intermediate code representation of a program into machine code for AVR processors.
+It stores the resulting binary code and data in so-called object files.
+Additionally, the generator is able to create an assembly code listing of the machine code for debugging purposes.
+This assembly code listing can also be processed by the assembler yielding exactly the same object file.
+The disassembler is able to open object files and print a human-readable disassembly listing of their contents.
+\seeobject\seecode
+
+\section{Instruction Set}
+
+Tools targeting the AVR architecture support the instruction set listed in Table~\ref{tab:avrset} and use the same assembly syntax as predefined by Atmel~\cite{avr:instructionset}.
+\seeassembly
+
+\instructionset{avr}{Supported AVR instruction set}{5}{6}
+
+\section{Calling Convention}\index{Calling convention!of AVR}
+
+The machine code generator and runtime support for the AVR architecture as provided by the \ecs{} use the following calling convention in order to enable interoperability.
+In general, the order of memory accesses to values that consist of several octets is most significant byte first or big-endian respectively.
+
+\subsection{Stack Operations}
+
+Arguments for functions are in general passed using the stack according to the intermediate code specification.
+See \Documentation{}~\documentationref{code}{Intermediate Code Representation} for more information about the role of the stack.
+Function arguments are pushed on the stack in reverse order and cleaned by the caller.
+Because the AVR instructions \texttt{push} and \texttt{pop} modify the stack register in a different order with respect to the one defined by the intermediate code,
+all data on the stack is accessed using a one octet displacement.
+
+\subsection{Floating-Point Support}
+
+The AVR architecture does not support any floating-point operations natively.
+The AVR runtime support has currently no software emulation for floating-point operations.
+
+\subsection{Register Mapping}
+
+The special-purpose registers defined by the intermediate code representation are mapped to their corresponding physical registers in the following way:
+
+\begin{itemize}
+
+\item Result Register\alignright\texttt{\$res}\nopagebreak
+
+The intermediate code result register \texttt{\$res} is mapped to AVR registers \texttt{r0} up to \texttt{r7} depending on the size of the actual return type.
+
+\item Stack Pointer Register\alignright\texttt{\$sp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$sp} is mapped to AVR registers \texttt{SPL} and \texttt{SPH} respectively.
+
+\item Frame Pointer Register\alignright\texttt{\$fp}\nopagebreak
+
+The intermediate code frame pointer register \texttt{\$fp} is mapped to AVR registers \texttt{r24} and \texttt{r25} respectively.
+
+\item Link Register\alignright\texttt{\$lnk}\nopagebreak
+
+The intermediate code link register \texttt{\$lnk} is not supported.
+
+\end{itemize}
+
+All other intermediate code registers are mapped as needed to the remaining physical registers.
+Their contents and mapping are therefore considered volatile across function calls.
+
+\section{Runtime Support}\index{Runtime support!for AVR}
+
+The \ecs{} provides runtime support for the AVR architecture and runtime environments based on this hardware architecture in object files.
+Users targeting a specific runtime environment have to use an appropriate linker together with these object files in order create an executable program.
+This section gives information about all supported runtime environments based on the AVR hardware architecture as well as the required combination of linker and object files.
+
+Basic architectural runtime support is provided by the object file \objfile{avr\-run}.
+Users should always include this object file during linking regardless of the actual target runtime environment.
+All other object files given to the linker should target the same hardware architecture.
+
+The \ecs{} additionally supports remote execution of programs targeting AVR processors.
+The runtime support is stored in the \objfile{avr\-re\-mote} object file.
+It synchronizes the start of a program and its result with a host machine using the standard output stream.
+
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-avr\-run} library file.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-avr\-run} library file.
+\seecpp\seeoberon
+
+\subsection{ATmega32 Microcontrollers}
+
+Programs targeting the ATmega32 microcontroller by Atmel~\cite{atmega32} are created using the \tool{link\-hex} linker tool.
+It creates an Intel HEX file~\cite{hexfile} for programming the microcontroller if provided with the runtime support stored in \objfile{at\-mega32\-run} object file.
+Calling the \tool{ecsd} utility tool using the \environment{at\-mega32} target environment achieves the same result.
+The USART communication device is configured to use a baud rate of 115200~bps with eight data bits, no parity, and one stop bit.
+
+\subsection{ATmega328 Microcontrollers}
+
+Programs targeting the ATmega328 microcontroller by Atmel~\cite{atmega328} are created using the \tool{link\-hex} linker tool.
+It creates an Intel HEX file~\cite{hexfile} for programming the microcontroller if provided with the runtime support stored in \objfile{at\-mega328\-run} object file.
+Calling the \tool{ecsd} utility tool using the \environment{at\-mega328} target environment achieves the same result.
+The USART communication device is configured to use a baud rate of 115200~bps with eight data bits, no parity, and one stop bit.
+
+\subsection{ATmega8515 Microcontrollers}
+
+Programs targeting the ATmega8515 microcontroller by Atmel~\cite{atmega8515} are created using the \tool{link\-hex} linker tool.
+It creates an Intel HEX file~\cite{hexfile} for programming the microcontroller if provided with the runtime support stored in \objfile{at\-mega8515\-run} object file.
+Calling the \tool{ecsd} utility tool using the \environment{at\-mega8515} target environment achieves the same result.
+The USART communication device is configured to use a baud rate of 115200~bps with eight data bits, no parity, and one stop bit.
+
+\section{AVR Tools}
+
+The \ecs{} provides the following tools that are able to process object files targeting the AVR hardware architecture.
+\interface
+
+\cdavr
+\cppavr
+\falavr
+\obavr
+\avrasm
+\avrdism
+\linkhex
+
+\concludechapter

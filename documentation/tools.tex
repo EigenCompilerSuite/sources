@@ -1,0 +1,226 @@
+% Eigen Compiler Suite tool reference
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\flowgraph}[1]{}
+\newcounter{tool}\newcounter{compiler}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\lehead{\chaptermarkformat Tool Reference}\rohead{\topmark{ -- }\botmark}
+\newcommand{\seeprefix}{}\renewcommand{\seedocumentationref}[3]{\seeprefix{}\documentationref{#2}{#3}\renewcommand{\seeprefix}{/}}
+\renewcommand{\toolsection}[1]{\normalfont\par\medskip\noindent\textbf{#1}\refstepcounter{tool}\phantomsection\addcontentsline{toc}{section}{#1}\markboth{}{\ifodd\thepage#1\else\botmark\fi}\index[tools]{#1 tool@\tool{#1} tool}\renewcommand{\seeprefix}{\em\alignright\mbox{See Chapter }}}
+
+\startchapter{Tool Reference}{}{tools}{}
+
+This chapter lists all \ref*{tools:all}~tools provided by the \ecs{} in alphabetical order.
+All of them share the same command-line user interface as detailed in Chapter~\ref{interface}.
+The implementation-defined behavior of programming language-specific tools like pretty printers, semantic checkers, serializers, interpreters, and compilers is described in Chapters~\ref{cpp} to~\ref{oberon}.
+For more information about assembler and disassembler tools, see Chapter~\ref{assembly}.
+The hardware architectures targeted by all of these tools are described in Chapters~\ref{amd64} to~\ref{wasm} whereas Chapter~\ref{object} details linker tools and their functionality.
+For more information about debugging tools and documentation generators, see Chapters~\ref{code} to~\ref{documentation}.
+
+\epigraph{This world is but canvas to our imaginations.}{Henry David Thoreau}
+
+\bigskip
+\begin{small}
+\begin{multicols}{2}
+\amdaasm
+\amdadism
+\amdbasm
+\amdbdism
+\amdcasm
+\amdcdism
+\armaasm
+\armadism
+\armbasm
+\armbdism
+\armcasm
+\armcdism
+\asmprint
+\avrasm
+\avrdism
+\avrttasm
+\avrttdism
+\cdamda
+\cdamdb
+\cdamdc
+\cdarma
+\cdarmb
+\cdarmc
+\cdarmcfpe
+\cdavr
+\cdavrtt
+\cdcheck
+\cdmabk
+\cdmibl
+\cdmipsa
+\cdmipsb
+\cdmmix
+\cdopt
+\cdorok
+\cdppca
+\cdppcb
+\cdrisc
+\cdrun
+\cdwasm
+\cppamda
+\cppamdb
+\cppamdc
+\cpparma
+\cpparmb
+\cpparmc
+\cpparmcfpe
+\cppavr
+\cppavrtt
+\cppcheck
+\cppcode
+\cppdoc
+\cppdump
+\cpphtml
+\cpplatex
+\cppmabk
+\cppmibl
+\cppmipsa
+\cppmipsb
+\cppmmix
+\cpporok
+\cppppca
+\cppppcb
+\cppprep
+\cppprint
+\cpprisc
+\cpprun
+\cppwasm
+\dbgdwarf
+\doccheck
+\dochtml
+\doclatex
+\docprint
+\falamda
+\falamdb
+\falamdc
+\falarma
+\falarmb
+\falarmc
+\falarmcfpe
+\falavr
+\falavrtt
+\falcheck
+\falcode
+\falcpp
+\faldump
+\falmabk
+\falmibl
+\falmipsa
+\falmipsb
+\falmmix
+\falorok
+\falppca
+\falppcb
+\falprint
+\falrisc
+\falrun
+\falwasm
+\linkbin
+\linkhex
+\linklib
+\linkmem
+\linkprg
+\mabkasm
+\mabkdism
+\mapsearch
+\miblasm
+\mibldism
+\mipsaasm
+\mipsadism
+\mipsbasm
+\mipsbdism
+\mmixasm
+\mmixdism
+\obamda
+\obamdb
+\obamdc
+\obarma
+\obarmb
+\obarmc
+\obarmcfpe
+\obavr
+\obavrtt
+\obcheck
+\obcode
+\obcpp
+\obdoc
+\obdump
+\obhtml
+\oblatex
+\obmabk
+\obmibl
+\obmipsa
+\obmipsb
+\obmmix
+\oborok
+\obppca
+\obppcb
+\obprint
+\obrisc
+\obrun
+\obwasm
+\orokasm
+\orokdism
+\ppcaasm
+\ppcadism
+\ppcbasm
+\ppcbdism
+\riscasm
+\riscdism
+\wasmasm
+\wasmdism
+\label{tools:all}
+\end{multicols}
+\end{small}
+
+Table~\ref{tab:tools} lists all \ref*{tools:compilers}~compiler and assembler tools and shows their naming scheme consisting of common programming language prefixes and hardware architecture suffixes.
+
+\newcommand{\compilerref}[2]{\emph{\ref{#1:#2}}}
+\newcommand{\compiler}[1]{\tool{#1}\refstepcounter{compiler}}
+\newcommand{\languageref}[1]{\emph{Chapter~\ref{#1}}}
+\newcommand{\architectureref}[1]{\multicolumn{2}{@{}l}{\emph{See Chapter~\ref{#1}}}}
+\newcommand{\backends}[1]{\compiler{cpp#1} & \compiler{fal#1} & \compiler{ob#1}}
+\newcommand{\backendrefs}[1]{\compilerref{cpp}{cpp#1} & \compilerref{false}{fal#1} & \compilerref{oberon}{ob#1}}
+\newcommand{\compilers}[1]{\backends{#1} & \compiler{#1asm}}
+\newcommand{\compilerrefs}[1]{\backendrefs{#1} & \compilerref{assembly}{#1asm}}
+
+\begin{table}
+\centering\footnotesize
+\begin{tabular}{@{}lrcccc@{}}
+\toprule \multicolumn{2}{@{}r}{Programming} & & & & Generic \\ \multicolumn{2}{@{}r}{Language} & \cpp{} & FALSE & Oberon & Assembly \\
+\multicolumn{2}{@{}l}{Hardware} & \languageref{cpp} & \languageref{false} & \languageref{oberon} & \languageref{assembly} \\ \multicolumn{2}{@{}l}{Architecture} \\
+\midrule AMD64 & 16-bit & \compilers{amd16} \\ & & \compilerrefs{amd16} \\ & 32-bit & \compilers{amd32} \\ & & \compilerrefs{amd32} \\ & 64-bit & \compilers{amd64} \\ \architectureref{amd64} & \compilerrefs{amd64} \\
+\midrule ARM & A32 & \compilers{arma32} \\ & & \compilerrefs{arma32} \\ & A64 & \compilers{arma64} \\ & & \compilerrefs{arma64} \\ & T32 & \compilers{armt32} \\ & & \compilerrefs{armt32} \\ & & \backends{armt32fpe} \\ \architectureref{arm} & \backendrefs{armt32fpe} \\
+\midrule \multicolumn{2}{@{}l}{AVR} & \compilers{avr} \\ \architectureref{avr} & \compilerrefs{avr} \\
+\midrule \multicolumn{2}{@{}l}{AVR32} & \compilers{avr32} \\ \architectureref{avr32} & \compilerrefs{avr32} \\
+\midrule \multicolumn{2}{@{}l}{M68000} & \compilers{m68k} \\ \architectureref{m68k} & \compilerrefs{m68k} \\
+\midrule \multicolumn{2}{@{}l}{MicroBlaze} & \compilers{mibl} \\ \architectureref{mibl} & \compilerrefs{mibl} \\
+\midrule MIPS & 32-bit & \compilers{mips32} \\ & & \compilerrefs{mips32} \\ & 64-bit & \compilers{mips64} \\ \architectureref{mips} & \compilerrefs{mips64} \\
+\midrule \multicolumn{2}{@{}l}{MMIX} & \compilers{mmix} \\ \architectureref{mmix} & \compilerrefs{mmix} \\
+\midrule \multicolumn{2}{@{}l}{OpenRISC 1000} & \compilers{or1k} \\ \architectureref{or1k} & \compilerrefs{or1k} \\
+\midrule PowerPC & 32-bit & \compilers{ppc32} \\ & & \compilerrefs{ppc32} \\ & 64-bit & \compilers{ppc64} \\ \architectureref{ppc} & \compilerrefs{ppc64} \\
+\midrule \multicolumn{2}{@{}l}{RISC} & \compilers{risc} \\ \architectureref{risc} & \compilerrefs{risc} \\
+\midrule \multicolumn{2}{@{}l}{WebAssembly} & \compilers{wasm} \label{tools:compilers} \\ \architectureref{wasm} & \compilerrefs{wasm} \\
+\bottomrule
+\end{tabular}
+\caption{References to all \ref*{tools:compilers}~compiler and assembler tools}
+\label{tab:tools}
+\end{table}
+
+\concludechapter
+\lehead{\leftmark}\rohead{\rightmark}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}

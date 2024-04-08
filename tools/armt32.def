@@ -1,0 +1,1831 @@
+// ARM T32 instruction set definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef INSTR
+	#define INSTR(mnem, code, mask, type0, type1, type2, type3, type4, type5, flags)
+#endif
+
+#ifndef TYPE
+	#define TYPE(type)
+#endif
+
+// base instructions
+
+INSTR (ADC,        0x4140,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ADC,        0x4140,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (ADC,        0xf1400000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADC,        0xf1400000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADC,        0xeb400030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ADC,        0xeb400030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ADC,        0xeb400000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADC,        0xeb400000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ADC,        0xeb400000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ADC,        0xeb400000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ADCS,       0x4140,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (ADCS,       0x4140,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (ADCS,       0xf1500000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADCS,       0xf1500000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADCS,       0xeb500030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ADCS,       0xeb500030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ADCS,       0xeb500000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADCS,       0xeb500000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ADCS,       0xeb500000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ADCS,       0xeb500000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ADR,        0xa000,      0xf800,      R8N,    I08T4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADR,        0xf2af0000,  0xfbff8000,  R8,     I012N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADR,        0xf20f0000,  0xfbff8000,  R8,     I012,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMN,        0x42c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMN,        0xf1100f00,  0xfbf08f00,  R16,    IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMN,        0xeb100f30,  0xfff0fff0,  R16,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMN,        0xeb100f00,  0xfff0fff0,  R16,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (CMN,        0xeb100f00,  0xfff08f00,  R16,    R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0x1c00,      0xfe00,      R0N,    R3N,    I63,    Void,   Void,  Void,  R | I | Q)
+INSTR (ADD,        0x3000,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ADD,        0x3000,      0xf800,      R8N,    R8N,    I08,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (ADD,        0x1800,      0xfe00,      R03N,   R6N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ADD,        0x1800,      0xfe00,      R0N,    R3N,    R6N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (ADD,        0xb000,      0xff80,      RSP,    I07T4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xb000,      0xff80,      RSP,    RSP,    I07T4,  Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0x4468,      0xff78,      RSP,    R07,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0x4468,      0xff78,      R07,    RSP,    R07,    Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0x4400,      0xff00,      R07,    R3,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0x4400,      0xff00,      R07,    R07,    R3,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0x4485,      0xff87,      RSP,    R3,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0x4485,      0xff87,      RSP,    RSP,    R3,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xa800,      0xf800,      R8N,    RSP,    I08T4,  Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xa000,      0xf800,      R8N,    RPC,    I08T4,  Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xf10d0d00,  0xfbff8f00,  RSP,    IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xf10d0000,  0xfbff8000,  R8,     RSP,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xf1000000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xf1000000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xf20d0d00,  0xfbff8f00,  RSP,    I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xf20d0000,  0xfbff8000,  R8,     RSP,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xf2000000,  0xfbf08000,  R816,   I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xf2000000,  0xfbf08000,  R8,     R16,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xeb0d0d30,  0xfffffff0,  RSP,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb0d0030,  0xfffff0f0,  R8,     RSP,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xeb000030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb000030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xeb0d0d00,  0xfffffff0,  RSP,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb0d0d00,  0xffff8f00,  RSP,    R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb0d0000,  0xfffff0f0,  R8,     RSP,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb0d0000,  0xffff8000,  R8,     RSP,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ADD,        0xeb000000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb000000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb000000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ADD,        0xeb000000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ADDS,       0x1c00,      0xfe00,      R0N,    R3N,    I63,    Void,   Void,  Void,  O | Q)
+INSTR (ADDS,       0x3000,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (ADDS,       0x3000,      0xf800,      R8N,    R8N,    I08,    Void,   Void,  Void,  O | Q)
+
+INSTR (ADDS,       0x1800,      0xfe00,      R03N,   R6N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (ADDS,       0x1800,      0xfe00,      R0N,    R3N,    R6N,    Void,   Void,  Void,  O | Q)
+
+INSTR (ADDS,       0xf11d0d00,  0xfbff8f00,  RSP,    IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xf11d0000,  0xfbff8000,  R8,     RSP,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADDS,       0xf1100000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xf1100000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ADDS,       0xeb1d0d30,  0xfffffff0,  RSP,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb1d0030,  0xfffff0f0,  R8,     RSP,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ADDS,       0xeb100030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb100030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ADDS,       0xeb1d0d00,  0xfffffff0,  RSP,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb1d0d00,  0xffff8f00,  RSP,    R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb1d0000,  0xfffff0f0,  R8,     RSP,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb1d0000,  0xffff8000,  R8,     RSP,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ADDS,       0xeb100000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb100000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb100000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ADDS,       0xeb100000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ADDW,       0xf20d0d00,  0xfbff8f00,  RSP,    I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADDW,       0xf20d0000,  0xfbff8000,  R8,     RSP,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (ADDW,       0xf20f0000,  0xfbff8000,  R8,     RPC,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (ADDW,       0xf2000000,  0xfbf08000,  R816,   I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (ADDW,       0xf2000000,  0xfbf08000,  R8,     R16,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (AND,        0x4000,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (AND,        0x4000,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (AND,        0xf0000000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (AND,        0xf0000000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (AND,        0xea000030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (AND,        0xea000030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (AND,        0xea000000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (AND,        0xea000000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (AND,        0xea000000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (AND,        0xea000000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (TST,        0x4200,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (TST,        0xf0100f00,  0xfbf08f00,  R16,    IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (TST,        0xea100f30,  0xfff0fff0,  R16,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (TST,        0xea100f00,  0xfff0fff0,  R16,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (TST,        0xea100f00,  0xfff08f00,  R16,    R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (ANDS,       0x4000,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (ANDS,       0x4000,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (ANDS,       0xf0100000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ANDS,       0xf0100000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ANDS,       0xea100030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ANDS,       0xea100030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ANDS,       0xea100000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ANDS,       0xea100000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ANDS,       0xea100000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ANDS,       0xea100000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ASR,        0x1000,      0xf800,      R03N,   I65M,   Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ASR,        0x1000,      0xf800,      R0N,    R3N,    I65M,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (ASR,        0x4100,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ASR,        0x4100,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (ASR,        0xea4f0020,  0xffff8030,  R08,    I612M,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (ASR,        0xea4f0020,  0xffff8030,  R8,     R0,     I612M,  Void,   Void,  Void,  C | Q)
+
+INSTR (ASR,        0xfa40f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ASR,        0xfa40f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (ASRS,       0x1000,      0xf800,      R03N,   I65M,   Void,   Void,   Void,  Void,  O | Q)
+INSTR (ASRS,       0x1000,      0xf800,      R0N,    R3N,    I65M,   Void,   Void,  Void,  O | Q)
+
+INSTR (ASRS,       0x4100,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (ASRS,       0x4100,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (ASRS,       0xea5f0020,  0xffff8030,  R08,    I612M,  Void,   Void,   Void,  Void,  O | Q)
+INSTR (ASRS,       0xea5f0020,  0xffff8030,  R8,     R0,     I612M,  Void,   Void,  Void,  O | Q)
+
+INSTR (ASRS,       0xfa50f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  O | Q)
+INSTR (ASRS,       0xfa50f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  O | Q)
+
+INSTR (B,          0xd000,      0xf000,      O08,    Void,   Void,   Void,   Void,  Void,  R | O | Q)
+INSTR (B,          0xe000,      0xf800,      O011,   Void,   Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (B,          0xe000,      0xf800,      O011,   Void,   Void,   Void,   Void,  Void,  O | Q)
+INSTR (B,          0xf0008000,  0xf800d000,  O020,   Void,   Void,   Void,   Void,  Void,  R | O | Q)
+INSTR (B,          0xf0009000,  0xf800d000,  O024,   Void,   Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (B,          0xf0009000,  0xf800d000,  O024,   Void,   Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (BFC,        0xf36f0000,  0xffff8020,  R8,     I612,   I05P,   Void,   Void,  Void,  O | Q)
+
+INSTR (BFI,        0xf3600000,  0xfff08020,  R8,     R16,    I612,   I05P,   Void,  Void,  O | Q)
+
+INSTR (BIC,        0x4380,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (BIC,        0x4380,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (BIC,        0xf0200000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (BIC,        0xf0200000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (BIC,        0xea200030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (BIC,        0xea200030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (BIC,        0xea200000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (BIC,        0xea200000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (BIC,        0xea200000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (BIC,        0xea200000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (BICS,       0x4380,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (BICS,       0x4380,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (BICS,       0xf0200000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (BICS,       0xf0200000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (BICS,       0xea300030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (BICS,       0xea300030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (BICS,       0xea300000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (BICS,       0xea300000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (BICS,       0xea300000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (BICS,       0xea300000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (DBG,        0xf3af80f0,  0xfffffff0,  I04,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (BKPT,       0xbe00,      0xff00,      I08,    Void,   Void,   Void,   Void,  Void,  Q)
+
+INSTR (BL,         0xf000d000,  0xf800d000,  O024,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (BLX,        0x4780,      0xff87,      R3,     Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (BLX,        0xf000c000,  0xf800d001,  O024H,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (BX,         0x4700,      0xff87,      R3,     Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (BXJ,        0xf3c08f00,  0xfff0ffff,  R16,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CBNZ,       0xb900,      0xfd00,      R0N,    I36T2,  Void,   Void,   Void,  Void,  Q)
+
+INSTR (CBZ,        0xb100,      0xfd00,      R0N,    I36T2,  Void,   Void,   Void,  Void,  Q)
+
+INSTR (CLREX,      0xf3bf8f2f,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CLZ,        0xfab0f080,  0xfff0f0f0,  R8,     R016,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMP,        0x2800,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (CMP,        0x4280,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (CMP,        0x4500,      0xff00,      R07,    R3,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMP,        0xf1b00f00,  0xfbf08f00,  R16,    IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMP,        0xebb00f30,  0xfff0fff0,  R16,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (CMP,        0xebb00f00,  0xfff0fff0,  R16,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (CMP,        0xebb00f00,  0xfff08f00,  R16,    R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (CPS,        0xf3af8100,  0xffffff00,  I05,    Void,   Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (CPSID,      0xb670,      0xfff0,      IM0,    Void,   Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (CPSID,      0xf3af8600,  0xffffff00,  IM5,    Void,   Void,   Void,   Void,  Void,  O | Q | W)
+INSTR (CPSID,      0xf3af8700,  0xffffff00,  IM5,    I05,    Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (CPSIE,      0xb660,      0xfff0,      IM0,    Void,   Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (CPSIE,      0xf3af8400,  0xffffff00,  IM5,    Void,   Void,   Void,   Void,  Void,  O | Q | W)
+INSTR (CPSIE,      0xf3af8500,  0xffffff00,  IM5,    I05,    Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (CRC32B,     0xfac0f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  Q)
+
+INSTR (CRC32H,     0xfac0f090,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  Q)
+
+INSTR (CRC32W,     0xfac0f0a0,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  Q)
+
+INSTR (CRC32CB,    0xfad0f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  Q)
+
+INSTR (CRC32CH,    0xfad0f090,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  Q)
+
+INSTR (CRC32CW,    0xfad0f0a0,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  Q)
+
+INSTR (DBG,        0xf3af80f0,  0xfffffff0,  I04,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (DCPS1,      0xf78f8001,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  0)
+
+INSTR (DCPS2,      0xf78f8002,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  0)
+
+INSTR (DCPS3,      0xf78f8003,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  0)
+
+INSTR (DMB,        0xf3bf8f5f,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (DMB,        0xf3bf8f50,  0xfffffff0,  BO0,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (DSB,        0xf3bf8f4f,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (DSB,        0xf3bf8f40,  0xfffffff0,  BO0,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (EOR,        0x4040,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (EOR,        0x4040,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (EOR,        0xf0800000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (EOR,        0xf0800000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (EOR,        0xea800030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (EOR,        0xea800030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (EOR,        0xea800000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (EOR,        0xea800000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (EOR,        0xea800000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (EOR,        0xea800000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (TEQ,        0xf0900f00,  0xfbf08f00,  R16,    IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (TEQ,        0xea900f30,  0xfff0fff0,  R16,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (TEQ,        0xea900f00,  0xfff0fff0,  R16,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (TEQ,        0xea900f00,  0xfff08f00,  R16,    R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (EORS,       0x4040,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (EORS,       0x4040,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (EORS,       0xf0900000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (EORS,       0xf0900000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (EORS,       0xea900030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (EORS,       0xea900030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (EORS,       0xea900000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (EORS,       0xea900000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (EORS,       0xea900000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (EORS,       0xea900000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ERET,       0xf3de8f00,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (ESB,        0xf3af8010,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | W)
+
+INSTR (HLT,        0xba80,      0xffc0,      I06,    Void,   Void,   Void,   Void,  Void,  Q)
+
+INSTR (HVC,        0xf7e08000,  0xfff0f000,  I0162,  Void,   Void,   Void,   Void,  Void,  Q)
+
+INSTR (HVC,        0xf7e08000,  0xfff0f000,  I0162,  Void,   Void,   Void,   Void,  Void,  Q)
+
+INSTR (ISB,        0xf3bf8f6f,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (ISB,        0xf3bf8f60,  0xfffffff0,  BO0SY,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (IT,         0xbf08,      0xff0f,      CC,     Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDA,        0xe8d00faf,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDAB,       0xe8d00f8f,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDAEX,      0xe8d00fef,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDAEXB,     0xe8d00fcf,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDAEXD,     0xe8d000ff,  0xfff000ff,  R12,    R8,     M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (LDAEXH,     0xe8d00fdf,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDAH,       0xe8d00f9f,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDC,        0xed1f5e00,  0xff7fff00,  P14,    C5,     O0923,  Void,   Void,  Void,  C | Q)
+INSTR (LDC,        0xed1f5e00,  0xff7fff00,  P14,    C5,     MPC9,   Void,   Void,  Void,  C | Q)
+INSTR (LDC,        0xed105e00,  0xff70ff00,  P14,    C5,     M169,   Void,   Void,  Void,  C | Q)
+INSTR (LDC,        0xec305e00,  0xff70ff00,  P14,    C5,     M16,    O0923,  Void,  Void,  C | Q)
+INSTR (LDC,        0xed305e00,  0xff70ff00,  P14,    C5,     M1694,  Void,   Void,  Void,  C | Q)
+INSTR (LDC,        0xec905e00,  0xfff0ff00,  P14,    C5,     M16,    I08,    Void,  Void,  C | Q)
+
+INSTR (POP,        0xbc00,      0xfe00,      RL08P,  Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (POP,        0xf85d0b04,  0xffff0fff,  RL12,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (POP,        0xe8bd0000,  0xffff2000,  RL016,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDM,        0xc800,      0xf800,      R8NW,   RL08,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDM,        0xe8900000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDMIA,      0xc800,      0xf800,      R8NW,   RL08,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDMIA,      0xe8900000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDMFD,      0xc800,      0xf800,      R8NW,   RL08,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDMFD,      0xe8900000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDMDB,      0xe9100000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDMEA,      0xe9100000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDR,        0x6800,      0xf800,      R0N,    M3N6W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0x9800,      0xf800,      R8N,    MSP8,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0x4800,      0xf800,      R8N,    I08T4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0x5800,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0xf85f0000,  0xff7f0000,  R12,    O012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0xf8d00000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0xf8500c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0xf8500900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0xf8500d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDR,        0xf8500000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLD,        0xf810f000,  0xfff0ffc0,  MI160,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLD,        0xf81ff000,  0xff7ff000,  O012,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLD,        0xf890f000,  0xfff0f000,  M1612,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLD,        0xf810fc00,  0xfff0ff00,  M168N,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLDW,       0xf830f000,  0xfff0ffc0,  MI160,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLDW,       0xf8b0f000,  0xfff0f000,  M1612,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLDW,       0xf830fc00,  0xfff0ff00,  M168N,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLI,        0xf910f000,  0xfff0ffc0,  MI160,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLI,        0xf91ff000,  0xff7ff000,  O012,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLI,        0xf990f000,  0xfff0f000,  M1612,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (PLI,        0xf910fc00,  0xfff0ff00,  M168N,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRB,       0x7800,      0xf800,      R0N,    M3N6B,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0x5c00,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0xf81f0000,  0xff7f0000,  R12,    O012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0xf8900000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0xf8100c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0xf8100900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0xf8100d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRB,       0xf8100000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRBT,      0xf8100e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDREX,      0xe8500f00,  0xfff00f00,  R12,    M168W,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDREXB,     0xe8d00f4f,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDREXD,     0xe8d0007f,  0xfff000ff,  R12,    R8,     M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (LDREXH,     0xe8d00f5f,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRD,       0xe95f0000,  0xff7f0000,  R12,    R8,     O0923,  Void,   Void,  Void,  C | Q)
+INSTR (LDRD,       0xe95f0000,  0xff7f0000,  R12,    R8,     MPC9,   Void,   Void,  Void,  C | Q)
+INSTR (LDRD,       0xe9500000,  0xff700000,  R12,    R8,     M169,   Void,   Void,  Void,  C | Q)
+INSTR (LDRD,       0xe8700000,  0xff700000,  R12,    R8,     M16,    O0923,  Void,  Void,  C | Q)
+INSTR (LDRD,       0xe9700000,  0xff700000,  R12,    R8,     M1694,  Void,   Void,  Void,  C | Q)
+
+INSTR (LDRH,       0x8800,      0xf800,      R0N,    M3N6H,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0x5a00,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0xf83f0000,  0xff7f0000,  R12,    O012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0xf8b00000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0xf8300c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0xf8300900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0xf8300d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRH,       0xf8300000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRHT,      0xf8300e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRSB,      0x5600,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSB,      0xf91f0000,  0xff7f0000,  R12,    O012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSB,      0xf9900000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSB,      0xf9100c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSB,      0xf9100900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSB,      0xf9100d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSB,      0xf9100000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRSBT,     0xf9100e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRSH,      0x5e00,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSH,      0xf93f0000,  0xff7f0000,  R12,    O012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSH,      0xf9b00000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSH,      0xf9300c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSH,      0xf9300900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSH,      0xf9300d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LDRSH,      0xf9300000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRSHT,     0xf9300e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LDRT,       0xf8500e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (LSL,        0x0000,      0xf800,      R03N,   I65O,   Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (LSL,        0x0000,      0xf800,      R0N,    R3N,    I65O,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (LSL,        0x4080,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (LSL,        0x4080,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (LSL,        0xea4f0000,  0xffff8030,  R08,    I612O,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LSL,        0xea4f0000,  0xffff8030,  R8,     R0,     I612O,  Void,   Void,  Void,  C | Q)
+
+INSTR (LSL,        0xfa00f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (LSL,        0xfa00f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (LSLS,       0x0000,      0xf800,      R03N,   I65O,   Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSLS,       0x0000,      0xf800,      R0N,    R3N,    I65O,   Void,   Void,  Void,  O | Q)
+
+INSTR (LSLS,       0x4080,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSLS,       0x4080,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (LSLS,       0xea5f0000,  0xffff8030,  R08,    I612O,  Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSLS,       0xea5f0000,  0xffff8030,  R8,     R0,     I612O,  Void,   Void,  Void,  O | Q)
+
+INSTR (LSLS,       0xfa10f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSLS,       0xfa10f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  O | Q)
+
+INSTR (LSR,        0x0800,      0xf800,      R03N,   I65M,   Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (LSR,        0x0800,      0xf800,      R0N,    R3N,    I65M,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (LSR,        0x40c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (LSR,        0x40c0,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (LSR,        0xea4f0010,  0xffff8030,  R08,    I612M,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (LSR,        0xea4f0010,  0xffff8030,  R8,     R0,     I612M,  Void,   Void,  Void,  C | Q)
+
+INSTR (LSR,        0xfa20f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (LSR,        0xfa20f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (LSRS,       0x0800,      0xf800,      R03N,   I65M,   Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSRS,       0x0800,      0xf800,      R0N,    R3N,    I65M,   Void,   Void,  Void,  O | Q)
+
+INSTR (LSRS,       0x40c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSRS,       0x40c0,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (LSRS,       0xea5f0010,  0xffff8030,  R08,    I612M,  Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSRS,       0xea5f0010,  0xffff8030,  R8,     R0,     I612M,  Void,   Void,  Void,  O | Q)
+
+INSTR (LSRS,       0xfa30f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  O | Q)
+INSTR (LSRS,       0xfa30f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  O | Q)
+
+INSTR (MCR,        0xee000e10,  0xff100ef0,  P81,    I213,   R12,    C16,    C0,    Void,  C | Q)
+INSTR (MCR,        0xee000e10,  0xff100e10,  P81,    I213,   R12,    C16,    C0,    I53,   C | Q)
+
+INSTR (MCRR,       0xec400e00,  0xfff00e00,  P81,    I44,    R12,    R16,    C0,    Void,  C | Q)
+
+INSTR (MUL,        0x4340,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (MUL,        0x4340,      0xffc0,      R0N,    R3N,    R0N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (MUL,        0xfb00f000,  0xfff0f0f0,  R08,    R16,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (MUL,        0xfb00f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (MLA,        0xfb000000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (MLS,        0xfb000010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (ROR,        0x41c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ROR,        0x41c0,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (ROR,        0xea4f0030,  0xffff8030,  R08,    I612O,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (ROR,        0xea4f0030,  0xffff8030,  R8,     R0,     I612O,  Void,   Void,  Void,  C | Q)
+
+INSTR (ROR,        0xfa60f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ROR,        0xfa60f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (RORS,       0x41c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (RORS,       0x41c0,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (RORS,       0xea5f0030,  0xffff8030,  R08,    I612O,  Void,   Void,   Void,  Void,  O | Q)
+INSTR (RORS,       0xea5f0030,  0xffff8030,  R8,     R0,     I612O,  Void,   Void,  Void,  O | Q)
+
+INSTR (RORS,       0xfa70f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  O | Q)
+INSTR (RORS,       0xfa70f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  O | Q)
+
+INSTR (RRX,        0xea4f0030,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (RRX,        0xea4f0030,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (RRXS,       0xea5f0030,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (RRXS,       0xea5f0030,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOV,        0x2000,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (MOV,        0x4600,      0xff00,      R07,    R3,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOV,        0x0000,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (MOV,        0x0000,      0xe000,      R0N,    R3N,    S611,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (MOV,        0x4100,      0xffc0,      R0N,    R0N,    ASR3,   Void,   Void,  Void,  R | I | Q)
+INSTR (MOV,        0x4080,      0xffc0,      R0N,    R0N,    LSL3,   Void,   Void,  Void,  R | I | Q)
+INSTR (MOV,        0x40c0,      0xffc0,      R0N,    R0N,    LSR3,   Void,   Void,  Void,  R | I | Q)
+INSTR (MOV,        0x41c0,      0xffc0,      R0N,    R0N,    ROR3,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (MOV,        0xf04f0000,  0xfbff8000,  R8,     IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOV,        0xf2400000,  0xfbf08000,  R8,     I0164,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOV,        0xea4f0030,  0xfffff0f0,  R8,     R16,    SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOV,        0xea4f0000,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (MOV,        0xea4f0000,  0xffff8000,  R8,     R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOV,        0xfa00f000,  0xff90f0f0,  R8,     R16,    SR0,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (MOVW,       0xf2400000,  0xfbf08000,  R8,     I0164,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOVS,       0x2000,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (MOVS,       0x0000,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (MOVS,       0x0000,      0xe000,      R0N,    R3N,    S611,   Void,   Void,  Void,  O | Q)
+
+INSTR (MOVS,       0x4100,      0xffc0,      R0N,    R0N,    ASR3,   Void,   Void,  Void,  O | Q)
+INSTR (MOVS,       0x4080,      0xff80,      R0N,    R0N,    LSL3,   Void,   Void,  Void,  O | Q)
+INSTR (MOVS,       0x40c0,      0xffc0,      R0N,    R0N,    LSR3,   Void,   Void,  Void,  O | Q)
+INSTR (MOVS,       0x41c0,      0xffc0,      R0N,    R0N,    ROR3,   Void,   Void,  Void,  O | Q)
+
+INSTR (MOVS,       0xf05f0000,  0xfbff8000,  R8,     IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOVS,       0xea5f0030,  0xfffff0f0,  R8,     R16,    SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOVS,       0xea5f0000,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (MOVS,       0xea5f0000,  0xffff8000,  R8,     R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (MOVS,       0xfa10f000,  0xff90f0f0,  R8,     R16,    SR0,    Void,   Void,  Void,  O | Q)
+
+INSTR (MOVT,       0xf2c00000,  0xfbf08000,  R8,     I0164,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MRC,        0xee100e10,  0xff100ef0,  P81,    I213,   R12,    C16,    C0,    Void,  C | Q)
+INSTR (MRC,        0xee100e10,  0xff100e10,  P81,    I213,   R12,    C16,    C0,    I53,   C | Q)
+
+INSTR (MRRC,       0xec500e00,  0xfff00e00,  P81,    I44,    R12,    R16,    C0,    Void,  C | Q)
+
+INSTR (MULS,       0x4340,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (MULS,       0x4340,      0xffc0,      R0N,    R3N,    R0N,    Void,   Void,  Void,  O | Q)
+
+INSTR (MVN,        0x43c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+
+INSTR (MVN,        0xf06f0000,  0xfbff8000,  R8,     IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MVN,        0xea6f0030,  0xfffff0f0,  R8,     R16,    SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (MVN,        0xea6f0000,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (MVN,        0xea6f0000,  0xffff8000,  R8,     R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (MVNS,       0x43c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (MVNS,       0xf07f0000,  0xfbff8000,  R8,     IC,     Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (MVNS,       0xea7f0030,  0xfffff0f0,  R8,     R16,    SRRX,   Void,   Void,  Void,  C | Q)
+
+INSTR (MVNS,       0xea7f0000,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (MVNS,       0xea7f0000,  0xffff8000,  R8,     R0,     S612,   Void,   Void,  Void,  C | Q)
+
+INSTR (NOP,        0xbf00,      0xffff,      Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (NOP,        0xf3af8000,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | W)
+
+INSTR (ORN,        0xf0600000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORN,        0xf0600000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ORN,        0xea600030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ORN,        0xea600030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ORN,        0xea600000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORN,        0xea600000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ORN,        0xea600000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ORN,        0xea600000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ORNS,       0xf0700000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORNS,       0xf0700000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ORNS,       0xea700030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ORNS,       0xea700030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ORNS,       0xea700000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORNS,       0xea700000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ORNS,       0xea700000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ORNS,       0xea700000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ORR,        0x4300,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (ORR,        0x4300,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (ORR,        0xf0400000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORR,        0xf0400000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ORR,        0xea400030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ORR,        0xea400030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ORR,        0xea400000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORR,        0xea400000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ORR,        0xea400000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ORR,        0xea400000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (ORRS,       0x4300,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (ORRS,       0x4300,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (ORRS,       0xf0500000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORRS,       0xf0500000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (ORRS,       0xea500030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (ORRS,       0xea500030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (ORRS,       0xea500000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (ORRS,       0xea500000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (ORRS,       0xea500000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (ORRS,       0xea500000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (PKHBT,      0xeac00000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (PKHBT,      0xeac00000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (PKHBT,      0xeac00000,  0xfff08030,  R816,   R0,     SLSL6,  Void,   Void,  Void,  C | Q)
+INSTR (PKHBT,      0xeac00000,  0xfff08030,  R8,     R16,    R0,     SLSL6,  Void,  Void,  C | Q)
+
+INSTR (PKHTB,      0xeac00000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (PKHTB,      0xeac00000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (PKHTB,      0xeac00020,  0xfff08030,  R816,   R0,     SASR6,  Void,   Void,  Void,  C | Q)
+INSTR (PKHTB,      0xeac00020,  0xfff08030,  R8,     R16,    R0,     SASR6,  Void,  Void,  C | Q)
+
+INSTR (PUSH,       0xb400,      0xfe00,      RL08P,  Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (PUSH,       0xf84d0d04,  0xffff0fff,  RL12,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (PUSH,       0xe92d0000,  0xffff2000,  RL016,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (QADD,       0xfa80f080,  0xfff0f0f0,  R0,     R816,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (QADD,       0xfa80f080,  0xfff0f0f0,  R8,     R0,     R16,    Void,   Void,  Void,  C | Q)
+
+INSTR (QADD16,     0xfa90f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (QADD16,     0xfa90f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (QADD8,      0xfa80f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (QADD8,      0xfa80f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (QASX,       0xfaa0f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (QASX,       0xfaa0f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (QDADD,      0xfa80f090,  0xfff0f0f0,  R0,     R816,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (QDADD,      0xfa80f090,  0xfff0f0f0,  R8,     R0,     R16,    Void,   Void,  Void,  C | Q)
+
+INSTR (QDSUB,      0xfa80f0b0,  0xfff0f0f0,  R0,     R816,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (QDSUB,      0xfa80f0b0,  0xfff0f0f0,  R8,     R0,     R16,    Void,   Void,  Void,  C | Q)
+
+INSTR (QSUB16,     0xfad0f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (QSUB16,     0xfad0f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (QSUB8,      0xfac0f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (QSUB8,      0xfac0f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (QSAX,       0xfae0f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (QSAX,       0xfae0f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (QSUB,       0xfa80f0a0,  0xfff0f0f0,  R0,     R816,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (QSUB,       0xfa80f0a0,  0xfff0f0f0,  R8,     R0,     R16,    Void,   Void,  Void,  C | Q)
+
+INSTR (RBIT,       0xfa90f0a0,  0xfff0f0f0,  R8,     R016,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (REV,        0xba00,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (REV,        0xfa90f080,  0xfff0f0f0,  R8,     R016,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (REV16,      0xba40,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (REV16,      0xfa90f090,  0xfff0f0f0,  R8,     R016,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (REVSH,      0xbac0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (REVSH,      0xfa90f0b0,  0xfff0f0f0,  R8,     R016,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (RFE,        0xe990c000,  0xffd0ffff,  R16W,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (RFEDB,      0xe810c000,  0xffd0ffff,  R16W,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (RFEIA,      0xe990c000,  0xffd0ffff,  R16W,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (RSB,        0x4240,      0xffc0,      R03N,   I0,     Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (RSB,        0x4240,      0xffc0,      R0N,    R3N,    I0,     Void,   Void,  Void,  R | I | Q)
+
+INSTR (RSB,        0xf1c00000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (RSB,        0xf1c00000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (RSB,        0xebc00030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (RSB,        0xebc00030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (RSB,        0xebc00000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (RSB,        0xebc00000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (RSB,        0xebc00000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (RSB,        0xebc00000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (RSBS,       0x4240,      0xffc0,      R03N,   I0,     Void,   Void,   Void,  Void,  O | Q)
+INSTR (RSBS,       0x4240,      0xffc0,      R0N,    R3N,    I0,     Void,   Void,  Void,  O | Q)
+
+INSTR (RSBS,       0xf1d00000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (RSBS,       0xf1d00000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (RSBS,       0xebd00030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (RSBS,       0xebd00030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (RSBS,       0xebd00000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (RSBS,       0xebd00000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (RSBS,       0xebd00000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (RSBS,       0xebd00000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SADD16,     0xfa90f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SADD16,     0xfa90f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SADD8,      0xfa80f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SADD8,      0xfa80f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SASX,       0xfaa0f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SASX,       0xfaa0f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SBC,        0x4180,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (SBC,        0x4180,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (SBC,        0xf1600000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SBC,        0xf1600000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (SBC,        0xeb600030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (SBC,        0xeb600030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (SBC,        0xeb600000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SBC,        0xeb600000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (SBC,        0xeb600000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SBC,        0xeb600000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SBCS,       0x4180,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (SBCS,       0x4180,      0xffc0,      R0N,    R0N,    R3N,    Void,   Void,  Void,  O | Q)
+
+INSTR (SBCS,       0xf1700000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SBCS,       0xf1700000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (SBCS,       0xeb700030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (SBCS,       0xeb700030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (SBCS,       0xeb700000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SBCS,       0xeb700000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (SBCS,       0xeb700000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SBCS,       0xeb700000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SBFX,       0xf3400000,  0xfff08020,  R8,     R16,    I612,   I05W,   Void,  Void,  C | Q)
+
+INSTR (SDIV,       0xfb90f0f0,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SDIV,       0xfb90f0f0,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SEL,        0xfaa0f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SEL,        0xfaa0f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SETEND,     0xb650,      0xfff7,      I31,    Void,   Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (SETPAN,     0xb610,      0xfff7,      I31,    Void,   Void,   Void,   Void,  Void,  O | Q)
+
+INSTR (SEV,        0xbf40,      0xffff,      Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SEV,        0xf3af8004,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SEVL,       0xbf50,      0xffff,      Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SEVL,       0xf3af8005,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SHADD16,    0xfa90f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SHADD16,    0xfa90f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SHADD8,     0xfa80f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SHADD8,     0xfa80f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SHASX,      0xfaa0f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SHASX,      0xfaa0f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SHSAX,      0xfae0f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SHSAX,      0xfae0f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SHSUB16,    0xfad0f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SHSUB16,    0xfad0f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SHSUB8,     0xfac0f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SHSUB8,     0xfac0f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMC,        0xf7f08000,  0xfff0ffff,  I164,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SMULBB,     0xfb10f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMULBB,     0xfb10f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMULBT,     0xfb10f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMULBT,     0xfb10f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMULTB,     0xfb10f020,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMULTB,     0xfb10f020,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMULTT,     0xfb10f030,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMULTT,     0xfb10f030,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMLABB,     0xfb100000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLABT,     0xfb100010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLATB,     0xfb100020,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLATT,     0xfb100030,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMUAD,      0xfb20f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMUAD,      0xfb20f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMUADX,     0xfb20f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMUADX,     0xfb20f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMLAD,      0xfb200000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLADX,     0xfb200010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLAL,      0xfbc00000,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLALBB,    0xfbc00080,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLALBT,    0xfbc00090,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLALTB,    0xfbc000a0,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLALTT,    0xfbc000b0,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLALD,     0xfbc000c0,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLALDX,    0xfbc000d0,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMULWB,     0xfb30f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMULWB,     0xfb30f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMULWT,     0xfb30f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMULWT,     0xfb30f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMLAWB,     0xfb300000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLAWT,     0xfb300010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMUSD,      0xfb40f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMUSD,      0xfb40f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMUSDX,     0xfb40f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMUSDX,     0xfb40f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMLSD,      0xfb400000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLSDX,     0xfb400010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMLSLD,     0xfbd000c0,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMLSLDX,    0xfbd000d0,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SMMUL,      0xfb50f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMMUL,      0xfb50f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMMULR,     0xfb50f010,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SMMULR,     0xfb50f010,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SMMLA,      0xfb500000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMMLAR,     0xfb500010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMMLS,      0xfb600000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMMLSR,     0xfb600010,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (SMULL,      0xfb800000,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (SRS,        0xe98dc000,  0xffdfffe0,  RSPW,   I05,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SRSDB,      0xe80dc000,  0xffdfffe0,  RSPW,   I05,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SRSIA,      0xe98dc000,  0xffdfffe0,  RSPW,   I05,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SSAT16,     0xf3200000,  0xfff0f0f0,  R8,     I04D,   R16,    Void,   Void,  Void,  C | Q)
+
+INSTR (SSAT,       0xf3200000,  0xfff08020,  R8,     I05D,   R16,    SASR6,  Void,  Void,  C | Q)
+INSTR (SSAT,       0xf3000000,  0xfff0f0e0,  R8,     I05D,   R16,    Void,   Void,  Void,  C | Q)
+INSTR (SSAT,       0xf3000000,  0xfff08020,  R8,     I05D,   R16,    SLSL6,  Void,  Void,  C | Q)
+
+INSTR (SSAX,       0xfae0f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SSAX,       0xfae0f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SSUB16,     0xfad0f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SSUB16,     0xfad0f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (SSUB8,      0xfac0f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SSUB8,      0xfac0f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (STC,        0xed005e00,  0xff70ff00,  P14,    C5,     M169,   Void,   Void,  Void,  C | Q)
+INSTR (STC,        0xec205e00,  0xff70ff00,  P14,    C5,     M16,    O0923,  Void,  Void,  C | Q)
+INSTR (STC,        0xed205e00,  0xff70ff00,  P14,    C5,     M1694,  Void,   Void,  Void,  C | Q)
+INSTR (STC,        0xec805e00,  0xfff0ff00,  P14,    C5,     M16,    I08,    Void,  Void,  C | Q)
+
+INSTR (STL,        0xe8c00faf,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STLB,       0xe8c00f8f,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STLEX,      0xe8c00fe0,  0xfff00ff0,  R0,     R12,    M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (STLEXB,     0xe8c00fc0,  0xfff00ff0,  R0,     R12,    M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (STLEXD,     0xe8c000f0,  0xfff000f0,  R0,     R12,    R8,     M16,    Void,  Void,  C | Q)
+
+INSTR (STLEXH,     0xe8c00fd0,  0xfff00ff0,  R0,     R12,    M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (STLH,       0xe8c00f9f,  0xfff00fff,  R12,    M16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STM,        0xc000,      0xf800,      R8WN,   RL08,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (STM,        0xe8800000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STMIA,      0xc000,      0xf800,      R8WN,   RL08,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (STMIA,      0xe8800000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STMEA,      0xc000,      0xf800,      R8WN,   RL08,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (STMEA,      0xe8800000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STMDB,      0xe9000000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STMFD,      0xe9000000,  0xffd00000,  R16W,   RL016,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STR,        0x6000,      0xf800,      R0N,    M3N6W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0x9000,      0xf800,      R8N,    MSP8,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0x5000,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0xf8c00000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0xf8400c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0xf8400900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0xf8400d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STR,        0xf8400000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STRB,       0x7000,      0xf800,      R0N,    M3N6B,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRB,       0x5400,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRB,       0xf8800000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRB,       0xf8000c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRB,       0xf8000900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (STRB,       0xf8000d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRB,       0xf8000000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STRBT,      0xf8000e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STRD,       0xe9400000,  0xff700000,  R12,    R8,     M169,   Void,   Void,  Void,  C | Q)
+INSTR (STRD,       0xe8600000,  0xff700000,  R12,    R8,     M16,    O0923,  Void,  Void,  C | Q)
+INSTR (STRD,       0xe9600000,  0xff700000,  R12,    R8,     M1694,  Void,   Void,  Void,  C | Q)
+
+INSTR (STREX,      0xe8400000,  0xfff00000,  R8,     R12,    M168W,  Void,   Void,  Void,  C | Q)
+
+INSTR (STREXB,     0xe8c00f40,  0xfff00ff0,  R0,     R12,    M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (STREXD,     0xe8c00070,  0xfff000f0,  R0,     R12,    R8,     M16,    Void,  Void,  C | Q)
+
+INSTR (STREXH,     0xe8c00f50,  0xfff00ff0,  R0,     R12,    M16,    Void,   Void,  Void,  C | Q)
+
+INSTR (STRH,       0x8000,      0xf800,      R0N,    M3N6H,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRH,       0x5200,      0xfe00,      R0N,    MI36N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRH,       0xf8a00000,  0xfff00000,  R12,    M1612,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRH,       0xf8200c00,  0xfff00f00,  R12,    M168N,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRH,       0xf8200900,  0xfff00d00,  R12,    M16,    O099,   Void,   Void,  Void,  C | Q)
+INSTR (STRH,       0xf8200d00,  0xfff00d00,  R12,    M169W,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (STRH,       0xf8200000,  0xfff00fc0,  R12,    MI160,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STRHT,      0xf8200e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (STRT,       0xf8400e00,  0xfff00f00,  R12,    M168B,  Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0x1e00,      0xfe00,      R0N,    R3N,    I63,    Void,   Void,  Void,  R | I | Q)
+INSTR (SUB,        0x3800,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (SUB,        0x3800,      0xf800,      R8N,    R8N,    I08,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (SUB,        0x1a00,      0xfe00,      R03N,   R6N,    Void,   Void,   Void,  Void,  R | I | Q)
+INSTR (SUB,        0x1a00,      0xfe00,      R0N,    R3N,    R6N,    Void,   Void,  Void,  R | I | Q)
+
+INSTR (SUB,        0xb080,      0xff80,      RSP,    I07T4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xb080,      0xff80,      RSP,    RSP,    I07T4,  Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xf2af0000,  0xfbff8000,  R8,     RPC,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xf1ad0d00,  0xfbff8f00,  RSP,    IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xf1ad0000,  0xfbff8000,  R8,     RSP,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xf1a00000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xf1a00000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xf2ad0d00,  0xfbff8f00,  RSP,    I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xf2ad0000,  0xfbff8000,  R8,     RSP,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xf2a00000,  0xfbf08000,  R816,   I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xf2a00000,  0xfbf08000,  R8,     R16,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xebad0d30,  0xfffffff0,  RSP,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xebad0030,  0xfffff0f0,  R8,     RSP,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xeba00030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xeba00030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xebad0d00,  0xfffffff0,  RSP,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xebad0d00,  0xffff8f00,  RSP,    R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xebad0000,  0xfffff0f0,  R8,     RSP,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xebad0000,  0xffff8000,  R8,     RSP,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SUB,        0xeba00000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xeba00000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xeba00000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SUB,        0xeba00000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0x1e00,      0xfe00,      R0N,    R3N,    I63,    Void,   Void,  Void,  O | Q)
+INSTR (SUBS,       0x3800,      0xf800,      R8N,    I08,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (SUBS,       0x3800,      0xf800,      R8N,    R8N,    I08,    Void,   Void,  Void,  O | Q)
+
+INSTR (SUBS,       0x1a00,      0xfe00,      R03N,   R6N,    Void,   Void,   Void,  Void,  O | Q)
+INSTR (SUBS,       0x1a00,      0xfe00,      R0N,    R3N,    R6N,    Void,   Void,  Void,  O | Q)
+
+INSTR (SUBS,       0xf3de8f00,  0xffffff00,  RPC,    RLR,    I08,    Void,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0xf1bd0d00,  0xfbff8f00,  RSP,    IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xf1bd0000,  0xfbff8000,  R8,     RSP,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0xf1b00000,  0xfbf08000,  R816,   IC,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xf1b00000,  0xfbf08000,  R8,     R16,    IC,     Void,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0xebbd0d30,  0xfffffff0,  RSP,    R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebbd0030,  0xfffff0f0,  R8,     RSP,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0xebb00030,  0xfff0f0f0,  R816,   R0,     SRRX,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebb00030,  0xfff0f0f0,  R8,     R16,    R0,     SRRX,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0xebbd0d00,  0xfffffff0,  RSP,    R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebbd0d00,  0xffff8f00,  RSP,    R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebbd0000,  0xfffff0f0,  R8,     RSP,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebbd0000,  0xffff8000,  R8,     RSP,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SUBS,       0xebb00000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebb00000,  0xfff08000,  R816,   R0,     S612,   Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebb00000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SUBS,       0xebb00000,  0xfff08000,  R8,     R16,    R0,     S612,   Void,  Void,  C | Q)
+
+INSTR (SUBW,       0xf2a00000,  0xfbf08000,  R816,   I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUBW,       0xf2a00000,  0xfbf08000,  R8,     R16,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (SUBW,       0xf2ad0d00,  0xfbff8f00,  RSP,    I012,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SUBW,       0xf2ad0000,  0xfbff8000,  R8,     RSP,    I012,   Void,   Void,  Void,  C | Q)
+
+INSTR (SVC,        0xdf00,      0xff00,      I08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SXTB,       0xb240,      0xffc0,      R03N,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB,       0xb240,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SXTB,       0xfa4ff080,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB,       0xfa4ff080,  0xfffff0c0,  R08,    SROR4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB,       0xfa4ff080,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB,       0xfa4ff080,  0xfffff0c0,  R8,     R0,     SROR4,  Void,   Void,  Void,  C | Q)
+
+INSTR (SXTAB,      0xfa40f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTAB,      0xfa40f080,  0xfff0f0c0,  R816,   R0,     SROR4,  Void,   Void,  Void,  C | Q)
+INSTR (SXTAB,      0xfa40f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SXTAB,      0xfa40f080,  0xfff0f0c0,  R8,     R16,    R0,     SROR4,  Void,  Void,  C | Q)
+
+INSTR (SXTB16,     0xfa2ff080,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB16,     0xfa2ff080,  0xfffff0c0,  R08,    SROR4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB16,     0xfa2ff080,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTB16,     0xfa2ff080,  0xfffff0c0,  R8,     R0,     SROR4,  Void,   Void,  Void,  C | Q)
+
+INSTR (SXTAB16,    0xfa20f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTAB16,    0xfa20f080,  0xfff0f0c0,  R816,   R0,     SROR4,  Void,   Void,  Void,  C | Q)
+INSTR (SXTAB16,    0xfa20f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SXTAB16,    0xfa20f080,  0xfff0f0c0,  R8,     R16,    R0,     SROR4,  Void,  Void,  C | Q)
+
+INSTR (SXTH,       0xb200,      0xffc0,      R03N,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTH,       0xb200,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SXTH,       0xfa0ff080,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTH,       0xfa0ff080,  0xfffff0c0,  R08,    SROR4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTH,       0xfa0ff080,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTH,       0xfa0ff080,  0xfffff0c0,  R8,     R0,     SROR4,  Void,   Void,  Void,  C | Q)
+
+INSTR (SXTAH,      0xfa00f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (SXTAH,      0xfa00f080,  0xfff0f0c0,  R816,   R0,     SROR4,  Void,   Void,  Void,  C | Q)
+INSTR (SXTAH,      0xfa00f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (SXTAH,      0xfa00f080,  0xfff0f0c0,  R8,     R16,    R0,     SROR4,  Void,  Void,  C | Q)
+
+INSTR (UADD16,     0xfa90f040,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UADD16,     0xfa90f040,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UADD8,      0xfa80f040,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UADD8,      0xfa80f040,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UASX,       0xfaa0f040,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UASX,       0xfaa0f040,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UBFX,       0xf3c00000,  0xfff08020,  R8,     R16,    I612,   I05W,   Void,  Void,  C | Q)
+
+INSTR (UDF,        0xde00,      0xff00,      I08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (UDF,        0xf7f0a000,  0xfff0f000,  I0162,  Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (UDIV,       0xfbb0f0f0,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UDIV,       0xfbb0f0f0,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UHADD16,    0xfa90f060,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UHADD16,    0xfa90f060,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UHADD8,     0xfa80f060,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UHADD8,     0xfa80f060,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UHASX,      0xfaa0f060,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UHASX,      0xfaa0f060,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UHSAX,      0xfae0f060,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UHSAX,      0xfae0f060,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UHSUB16,    0xfad0f060,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UHSUB16,    0xfad0f060,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UHSUB8,     0xfac0f060,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UHSUB8,     0xfac0f060,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UMAAL,      0xfbe00060,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (UMLAL,      0xfbe00000,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (UMULL,      0xfba00000,  0xfff000f0,  R12,    R8,     R16,    R0,     Void,  Void,  C | Q)
+
+INSTR (UQADD16,    0xfa90f050,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UQADD16,    0xfa90f050,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UQADD8,     0xfa80f050,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UQADD8,     0xfa80f050,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UQASX,      0xfaa0f050,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UQASX,      0xfaa0f050,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UQSAX,      0xfae0f050,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UQSAX,      0xfae0f050,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UQSUB16,    0xfad0f050,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UQSUB16,    0xfad0f050,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UQSUB8,     0xfac0f050,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UQSUB8,     0xfac0f050,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (USAD8,      0xfb70f000,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (USAD8,      0xfb70f000,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (USADA8,     0xfb700000,  0xfff000f0,  R8,     R16,    R0,     R12,    Void,  Void,  C | Q)
+
+INSTR (USAT16,     0xf3a00000,  0xfff0f0f0,  R8,     I04D,   R16,    Void,   Void,  Void,  C | Q)
+
+INSTR (USAT,       0xf3a00000,  0xfff08020,  R8,     I05D,   R16,    SASR6,  Void,  Void,  C | Q)
+INSTR (USAT,       0xf3800000,  0xfff0f0e0,  R8,     I05D,   R16,    Void,   Void,  Void,  C | Q)
+INSTR (USAT,       0xf3800000,  0xfff08020,  R8,     I05D,   R16,    SLSL6,  Void,  Void,  C | Q)
+
+INSTR (USAX,       0xfae0f040,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (USAX,       0xfae0f040,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (USUB16,     0xfad0f040,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (USUB16,     0xfad0f040,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (USUB8,      0xfac0f040,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (USUB8,      0xfac0f040,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+
+INSTR (UXTB,       0xb2c0,      0xffc0,      R03N,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB,       0xb2c0,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (UXTB,       0xfa5ff080,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB,       0xfa5ff080,  0xfffff0c0,  R08,    SROR4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB,       0xfa5ff080,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB,       0xfa5ff080,  0xfffff0c0,  R8,     R0,     SROR4,  Void,   Void,  Void,  C | Q)
+
+INSTR (UXTAB,      0xfa50f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTAB,      0xfa50f080,  0xfff0f0c0,  R816,   R0,     SROR4,  Void,   Void,  Void,  C | Q)
+INSTR (UXTAB,      0xfa50f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (UXTAB,      0xfa50f080,  0xfff0f0c0,  R8,     R16,    R0,     SROR4,  Void,  Void,  C | Q)
+
+INSTR (UXTB16,     0xfa3ff080,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB16,     0xfa3ff080,  0xfffff0c0,  R08,    SROR4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB16,     0xfa3ff080,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTB16,     0xfa3ff080,  0xfffff0c0,  R8,     R0,     SROR4,  Void,   Void,  Void,  C | Q)
+
+INSTR (UXTAB16,    0xfa30f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTAB16,    0xfa30f080,  0xfff0f0c0,  R816,   R0,     SROR4,  Void,   Void,  Void,  C | Q)
+INSTR (UXTAB16,    0xfa30f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (UXTAB16,    0xfa30f080,  0xfff0f0c0,  R8,     R16,    R0,     SROR4,  Void,  Void,  C | Q)
+
+INSTR (UXTH,       0xb280,      0xffc0,      R03N,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTH,       0xb280,      0xffc0,      R0N,    R3N,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (UXTH,       0xfa1ff080,  0xfffff0f0,  R08,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTH,       0xfa1ff080,  0xfffff0c0,  R08,    SROR4,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTH,       0xfa1ff080,  0xfffff0f0,  R8,     R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTH,       0xfa1ff080,  0xfffff0c0,  R8,     R0,     SROR4,  Void,   Void,  Void,  C | Q)
+
+INSTR (UXTAH,      0xfa10f080,  0xfff0f0f0,  R816,   R0,     Void,   Void,   Void,  Void,  C | Q)
+INSTR (UXTAH,      0xfa10f080,  0xfff0f0c0,  R816,   R0,     SROR4,  Void,   Void,  Void,  C | Q)
+INSTR (UXTAH,      0xfa10f080,  0xfff0f0f0,  R8,     R16,    R0,     Void,   Void,  Void,  C | Q)
+INSTR (UXTAH,      0xfa10f080,  0xfff0f0c0,  R8,     R16,    R0,     SROR4,  Void,  Void,  C | Q)
+
+INSTR (WFE,        0xbf20,      0xffff,      Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (WFE,        0xf3af8002,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | W)
+
+INSTR (WFI,        0xbf30,      0xffff,      Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (WFI,        0xf3af8003,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | W)
+
+INSTR (YIELD,      0xbf10,      0xffff,      Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (YIELD,      0xf3af8001,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | W)
+
+// advanced SIMD and Floating-point instructions
+
+INSTR (AESD,       0xffb00340,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD8)
+
+INSTR (AESE,       0xffb00300,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD8)
+
+INSTR (AESIMC,     0xffb003c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD8)
+
+INSTR (AESMC,      0xffb00380,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD8)
+
+INSTR (FLDMDBX,    0xed300b01,  0xffb00f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (FLDMIAX,    0xec900b01,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (FSTMDBX,    0xed200b01,  0xffb00f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (FSTMIAX,    0xec800b01,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (SHA1C,      0xef000c40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  SD32)
+
+INSTR (SHA1H,      0xffb902c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD32)
+
+INSTR (SHA1M,      0xef200c40,  0xffb00f50,  Q12,    Q0,     Q16,    Void,   Void,  Void,  SD32)
+
+INSTR (SHA1P,      0xef100c40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  SD32)
+
+INSTR (SHA1SU0,    0xef300c40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  SD32)
+
+INSTR (SHA1SU1,    0xffba0380,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD32)
+
+INSTR (SHA256H,    0xff000c40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  SD32)
+
+INSTR (SHA256H2,   0xff100c40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  SD32)
+
+INSTR (SHA256SU0,  0xffba03c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  SD32)
+
+INSTR (SHA256SU1,  0xff200c40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  SD32)
+
+INSTR (VABA,       0xef000710,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABA,       0xef100710,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABA,       0xef200710,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABA,       0xff000710,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABA,       0xff100710,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABA,       0xff200710,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VABA,       0xef000750,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABA,       0xef100750,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABA,       0xef200750,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABA,       0xff000750,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABA,       0xff100750,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABA,       0xff200750,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VABAL,      0xef800500,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABAL,      0xef900500,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABAL,      0xefa00500,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABAL,      0xff800500,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABAL,      0xff900500,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABAL,      0xffa00500,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VABD,       0xff300d00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABD,       0xff300d00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABD,       0xff200d00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VABD,       0xff200d00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VABD,       0xff300d40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABD,       0xff300d40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABD,       0xff200d40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VABD,       0xff200d40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VABD,       0xef000700,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABD,       0xef000700,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABD,       0xef100700,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABD,       0xef100700,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABD,       0xef200700,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABD,       0xef200700,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABD,       0xff000700,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABD,       0xff000700,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABD,       0xff100700,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABD,       0xff100700,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABD,       0xff200700,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SU32)
+INSTR (VABD,       0xff200700,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VABD,       0xef000740,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABD,       0xef000740,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABD,       0xef100740,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABD,       0xef100740,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABD,       0xef200740,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABD,       0xef200740,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABD,       0xff000740,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABD,       0xff000740,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABD,       0xff100740,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABD,       0xff100740,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABD,       0xff200740,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SU32)
+INSTR (VABD,       0xff200740,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VABDL,      0xef800700,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABDL,      0xef900700,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABDL,      0xefa00700,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABDL,      0xff800700,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VABDL,      0xff900700,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VABDL,      0xffa00700,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VABS,       0xffb10300,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABS,       0xffb50300,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABS,       0xffb90300,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABS,       0xffb50700,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABS,       0xffb90700,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VABS,       0xffb10340,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VABS,       0xffb50340,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VABS,       0xffb90340,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VABS,       0xffb50740,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABS,       0xffb90740,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VABS,       0xeeb009c0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VABS,       0xeeb00ac0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VABS,       0xeeb00bc0,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VACGE,      0xff300e00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGE,      0xff300e00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGE,      0xff200e00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACGE,      0xff200e00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACGE,      0xff300e40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGE,      0xff300e40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGE,      0xff200e40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACGE,      0xff200e40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACLE,      0xff100e00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLE,      0xff100e00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLE,      0xff000e00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACLE,      0xff000e00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACLE,      0xff100e40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLE,      0xff100e40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLE,      0xff000e40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACLE,      0xff000e40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACGT,      0xff300e10,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGT,      0xff300e10,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGT,      0xff200e10,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACGT,      0xff200e10,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACGT,      0xff300e50,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGT,      0xff300e50,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACGT,      0xff200e50,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACGT,      0xff200e50,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACLT,      0xff300e10,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLT,      0xff300e10,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLT,      0xff200e10,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACLT,      0xff200e10,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VACLT,      0xff300e50,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLT,      0xff300e50,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VACLT,      0xff200e50,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VACLT,      0xff200e50,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VADD,       0xef100d00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VADD,       0xef100d00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VADD,       0xef000d00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VADD,       0xef000d00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VADD,       0xef100d40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VADD,       0xef100d40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VADD,       0xef000d40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VADD,       0xef000d40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VADD,       0xee300900,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VADD,       0xee300900,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VADD,       0xee300a00,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VADD,       0xee300a00,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF32)
+INSTR (VADD,       0xee300b00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+INSTR (VADD,       0xee300b00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VADD,       0xef000800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI8)
+INSTR (VADD,       0xef000800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI8)
+INSTR (VADD,       0xef100800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI16)
+INSTR (VADD,       0xef100800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI16)
+INSTR (VADD,       0xef200800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI32)
+INSTR (VADD,       0xef200800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI32)
+INSTR (VADD,       0xef300800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI64)
+INSTR (VADD,       0xef300800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI64)
+
+INSTR (VADD,       0xef000840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI8)
+INSTR (VADD,       0xef000840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI8)
+INSTR (VADD,       0xef100840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI16)
+INSTR (VADD,       0xef100840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI16)
+INSTR (VADD,       0xef200840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI32)
+INSTR (VADD,       0xef200840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI32)
+INSTR (VADD,       0xef300840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI64)
+INSTR (VADD,       0xef300840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI64)
+
+INSTR (VADDHN,     0xef800400,  0xffb00f50,  D12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI16)
+INSTR (VADDHN,     0xef900400,  0xffb00f50,  D12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI32)
+INSTR (VADDHN,     0xefa00400,  0xffb00f50,  D12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI64)
+
+INSTR (VADDL,      0xef800000,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VADDL,      0xef900000,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VADDL,      0xefa00000,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VADDL,      0xff800000,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VADDL,      0xff900000,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VADDL,      0xffa00000,  0xffb00f50,  Q12,    D16,    D0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VADDW,      0xef800100,  0xffb00f50,  Q1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VADDW,      0xef800100,  0xffb00f50,  Q12,    Q16,    D0,     Void,   Void,  Void,  C | Q | SS8)
+INSTR (VADDW,      0xef900100,  0xffb00f50,  Q1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VADDW,      0xef900100,  0xffb00f50,  Q12,    Q16,    D0,     Void,   Void,  Void,  C | Q | SS16)
+INSTR (VADDW,      0xefa00100,  0xffb00f50,  Q1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VADDW,      0xefa00100,  0xffb00f50,  Q12,    Q16,    D0,     Void,   Void,  Void,  C | Q | SS32)
+INSTR (VADDW,      0xff800100,  0xffb00f50,  Q1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SU8)
+INSTR (VADDW,      0xff800100,  0xffb00f50,  Q12,    Q16,    D0,     Void,   Void,  Void,  C | Q | SU8)
+INSTR (VADDW,      0xff900100,  0xffb00f50,  Q1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SU16)
+INSTR (VADDW,      0xff900100,  0xffb00f50,  Q12,    Q16,    D0,     Void,   Void,  Void,  C | Q | SU16)
+INSTR (VADDW,      0xffa00100,  0xffb00f50,  Q1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SU32)
+INSTR (VADDW,      0xffa00100,  0xffb00f50,  Q12,    Q16,    D0,     Void,   Void,  Void,  C | Q | SU32)
+
+INSTR (VCMP,       0xeeb40940,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VCMP,       0xeeb40a40,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VCMP,       0xeeb40b40,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VCMP,       0xeeb50940,  0xffbf0fff,  S12,    I0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VCMP,       0xeeb50a40,  0xffbf0fff,  S12,    I0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VCMP,       0xeeb50b40,  0xffbf0fff,  D12,    I0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VCVT,       0xeeb70ac0,  0xffbf0fd0,  D12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF64F32)
+INSTR (VCVT,       0xeeb70bc0,  0xffbf0fd0,  S12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF32F64)
+
+INSTR (VCVT,       0xffb60600,  0xffbf0fd0,  D12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF16F32)
+INSTR (VCVT,       0xffb60700,  0xffbf0fd0,  Q12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF32F16)
+
+INSTR (VCVT,       0xffb70600,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF16S16)
+INSTR (VCVT,       0xffb70680,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF16U16)
+INSTR (VCVT,       0xffb70700,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS16F16)
+INSTR (VCVT,       0xffb70780,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SU16F16)
+INSTR (VCVT,       0xffbb0600,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF32S32)
+INSTR (VCVT,       0xffbb0680,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF32U32)
+INSTR (VCVT,       0xffbb0700,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS32F32)
+INSTR (VCVT,       0xffbb0780,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SU32F32)
+
+INSTR (VCVT,       0xffb70640,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF16S16)
+INSTR (VCVT,       0xffb706c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF16U16)
+INSTR (VCVT,       0xffb70740,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS16F16)
+INSTR (VCVT,       0xffb707c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SU16F16)
+INSTR (VCVT,       0xffbb0640,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF32S32)
+INSTR (VCVT,       0xffbb06c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF32U32)
+INSTR (VCVT,       0xffbb0740,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS32F32)
+INSTR (VCVT,       0xffbb07c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SU32F32)
+
+INSTR (VCVT,       0xeebc09c0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SU32F16)
+INSTR (VCVT,       0xeebd09c0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SS32F16)
+INSTR (VCVT,       0xeebc0ac0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SU32F32)
+INSTR (VCVT,       0xeebd0ac0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SS32F32)
+INSTR (VCVT,       0xeebc0bc0,  0xffbf0fd0,  S12,    D0,     Void,   Void,   Void,  Void,  C | Q | SU32F64)
+INSTR (VCVT,       0xeebd0bc0,  0xffbf0fd0,  S12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS32F64)
+
+INSTR (VCVT,       0xeeb80940,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF16U32)
+INSTR (VCVT,       0xeeb809c0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF16S32)
+INSTR (VCVT,       0xeeb80a40,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF32U32)
+INSTR (VCVT,       0xeeb80ac0,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF32S32)
+INSTR (VCVT,       0xeeb80b40,  0xffbf0fd0,  D12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF64U32)
+INSTR (VCVT,       0xeeb80bc0,  0xffbf0fd0,  D12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF64S32)
+
+INSTR (VDIV,       0xee800900,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VDIV,       0xee800900,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VDIV,       0xee800a00,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VDIV,       0xee800a00,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF32)
+INSTR (VDIV,       0xee800b00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+INSTR (VDIV,       0xee800b00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VPOP,       0xecbd0b00,  0xffbf0f01,  DRL,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VPOP,       0xecbd0b00,  0xffbf0f01,  DRL,    Void,   Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VPOP,       0xecbd0a00,  0xffbf0f00,  SRL,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VPOP,       0xecbd0a00,  0xffbf0f00,  SRL,    Void,   Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VLDR,       0xed1f0900,  0xff3f0f00,  S12,    O0992,  Void,   Void,   Void,  Void,  C | Q | SD16)
+INSTR (VLDR,       0xed1f0a00,  0xff3f0f00,  S12,    O0923,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDR,       0xed1f0a00,  0xff3f0f00,  S12,    O0923,  Void,   Void,   Void,  Void,  C | Q | SD32)
+INSTR (VLDR,       0xed1f0b00,  0xff3f0f00,  D12,    O0923,  Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDR,       0xed1f0b00,  0xff3f0f00,  D12,    O0923,  Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VLDR,       0xed100900,  0xff300f00,  S12,    M1692,  Void,   Void,   Void,  Void,  C | Q | SD16)
+INSTR (VLDR,       0xed100a00,  0xff300f00,  S12,    M169,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDR,       0xed100a00,  0xff300f00,  S12,    M169,   Void,   Void,   Void,  Void,  C | Q | SD32)
+INSTR (VLDR,       0xed100b00,  0xff300f00,  D12,    M169,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDR,       0xed100b00,  0xff300f00,  D12,    M169,   Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VLDM,       0xec900b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDM,       0xec900b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VLDM,       0xec900a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDM,       0xec900a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VLDMIA,     0xec900b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDMIA,     0xec900b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VLDMIA,     0xec900a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDMIA,     0xec900a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VLDMDB,     0xed100b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDMDB,     0xed100b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VLDMDB,     0xed100a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VLDMDB,     0xed100a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VMOV,       0xeeb00a40,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VMOV,       0xeeb00b40,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VMOV,       0xee000a10,  0xfff00f7f,  S16,    R12,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VMOV,       0xee100a10,  0xfff00f7f,  R12,    S16,    Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (VMRS,       0xeef1fa10,  0xffffffff,  Void,   Void,   Void,   Void,   Void,  Void,  C | Q)
+
+INSTR (VMUL,       0xff100d10,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VMUL,       0xff100d10,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VMUL,       0xff000d10,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VMUL,       0xff000d10,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VMUL,       0xff100d50,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VMUL,       0xff100d50,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VMUL,       0xff000d50,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VMUL,       0xff000d50,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VMUL,       0xee200900,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VMUL,       0xee200900,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VMUL,       0xee200a00,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VMUL,       0xee200a00,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF32)
+INSTR (VMUL,       0xee200b00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+INSTR (VMUL,       0xee200b00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VNEG,       0xffb10380,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VNEG,       0xffb50380,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VNEG,       0xffb90380,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VNEG,       0xffb50780,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VNEG,       0xffb90780,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VNEG,       0xffb103c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS8)
+INSTR (VNEG,       0xffb503c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS16)
+INSTR (VNEG,       0xffb903c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SS32)
+INSTR (VNEG,       0xffb507c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VNEG,       0xffb907c0,  0xffbf0fd0,  Q12,    Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VNEG,       0xeeb10940,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VNEG,       0xeeb10a40,  0xffbf0fd0,  S12,    S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VNEG,       0xeeb10b40,  0xffbf0fd0,  D12,    D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VPUSH,      0xed2d0b00,  0xffbf0f01,  DRL,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VPUSH,      0xed2d0b00,  0xffbf0f01,  DRL,    Void,   Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VPUSH,      0xed2d0a00,  0xffbf0f00,  SRL,    Void,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VPUSH,      0xed2d0a00,  0xffbf0f00,  SRL,    Void,   Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VSUB,       0xef300d00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VSUB,       0xef300d00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VSUB,       0xef200d00,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VSUB,       0xef200d00,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VSUB,       0xef300d40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VSUB,       0xef300d40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VSUB,       0xef200d40,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VSUB,       0xef200d40,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SF32)
+
+INSTR (VSUB,       0xee300940,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF16)
+INSTR (VSUB,       0xee300940,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF16)
+INSTR (VSUB,       0xee300a40,  0xffb00f50,  S1216,  S0,     Void,   Void,   Void,  Void,  C | Q | SF32)
+INSTR (VSUB,       0xee300a40,  0xffb00f50,  S12,    S16,    S0,     Void,   Void,  Void,  C | Q | SF32)
+INSTR (VSUB,       0xee300b40,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SF64)
+INSTR (VSUB,       0xee300b40,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SF64)
+
+INSTR (VSUB,       0xff000800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI8)
+INSTR (VSUB,       0xff000800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI8)
+INSTR (VSUB,       0xff100800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI16)
+INSTR (VSUB,       0xff100800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI16)
+INSTR (VSUB,       0xff200800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI32)
+INSTR (VSUB,       0xff200800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI32)
+INSTR (VSUB,       0xff300800,  0xffb00f50,  D1216,  D0,     Void,   Void,   Void,  Void,  C | Q | SI64)
+INSTR (VSUB,       0xff300800,  0xffb00f50,  D12,    D16,    D0,     Void,   Void,  Void,  C | Q | SI64)
+
+INSTR (VSUB,       0xff000840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI8)
+INSTR (VSUB,       0xff000840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI8)
+INSTR (VSUB,       0xff100840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI16)
+INSTR (VSUB,       0xff100840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI16)
+INSTR (VSUB,       0xff200840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI32)
+INSTR (VSUB,       0xff200840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI32)
+INSTR (VSUB,       0xff300840,  0xffb00f50,  Q1216,  Q0,     Void,   Void,   Void,  Void,  C | Q | SI64)
+INSTR (VSUB,       0xff300840,  0xffb00f50,  Q12,    Q16,    Q0,     Void,   Void,  Void,  C | Q | SI64)
+
+INSTR (VSTR,       0xed000900,  0xff300f00,  S12,    M1692,  Void,   Void,   Void,  Void,  C | Q | SD16)
+INSTR (VSTR,       0xed000a00,  0xff300f00,  S12,    M169,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTR,       0xed000a00,  0xff300f00,  S12,    M169,   Void,   Void,   Void,  Void,  C | Q | SD32)
+INSTR (VSTR,       0xed000b00,  0xff300f00,  D12,    M169,   Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTR,       0xed000b00,  0xff300f00,  D12,    M169,   Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VSTM,       0xec800b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTM,       0xec800b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VSTM,       0xec800a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTM,       0xec800a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VSTMIA,     0xec800b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTMIA,     0xec800b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VSTMIA,     0xec800a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTMIA,     0xec800a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q | SD32)
+
+INSTR (VSTMDB,     0xed000b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTMDB,     0xed000b00,  0xff900f01,  R16W,   DRL,    Void,   Void,   Void,  Void,  C | Q | SD64)
+
+INSTR (VSTMDB,     0xed000a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q)
+INSTR (VSTMDB,     0xed000a00,  0xff900f00,  R16W,   SRL,    Void,   Void,   Void,  Void,  C | Q | SD32)
+
+// operand types
+
+TYPE (I04)
+TYPE (I04D)
+TYPE (I05)
+TYPE (I05D)
+TYPE (I05P)
+TYPE (I05W)
+TYPE (I06)
+TYPE (I07T4)
+TYPE (I08)
+TYPE (I08T4)
+TYPE (I012)
+TYPE (I012N)
+TYPE (I0162)
+TYPE (I0164)
+TYPE (I31)
+TYPE (I36T2)
+TYPE (I44)
+TYPE (I53)
+TYPE (I63)
+TYPE (I65O)
+TYPE (I65M)
+TYPE (I612)
+TYPE (I612O)
+TYPE (I612M)
+TYPE (I164)
+TYPE (I213)
+TYPE (IC)
+TYPE (I0)
+TYPE (O08)
+TYPE (O099)
+TYPE (O0992)
+TYPE (O0923)
+TYPE (O011)
+TYPE (O012)
+TYPE (O020)
+TYPE (O024)
+TYPE (O024H)
+TYPE (R0)
+TYPE (R0N)
+TYPE (R03N)
+TYPE (R07)
+TYPE (R08)
+TYPE (R016)
+TYPE (R3)
+TYPE (R3N)
+TYPE (R6N)
+TYPE (R8)
+TYPE (R8N)
+TYPE (R8WN)
+TYPE (R8NW)
+TYPE (R816)
+TYPE (R12)
+TYPE (R16)
+TYPE (R16W)
+TYPE (RSP)
+TYPE (RSPW)
+TYPE (RLR)
+TYPE (RPC)
+TYPE (D0)
+TYPE (D12)
+TYPE (D1216)
+TYPE (D16)
+TYPE (S0)
+TYPE (S12)
+TYPE (S1216)
+TYPE (S16)
+TYPE (Q0)
+TYPE (Q12)
+TYPE (Q1216)
+TYPE (Q16)
+TYPE (SR0)
+TYPE (LSL3)
+TYPE (LSR3)
+TYPE (ASR3)
+TYPE (ROR3)
+TYPE (RL08)
+TYPE (RL08P)
+TYPE (RL016)
+TYPE (RL12)
+TYPE (DRL)
+TYPE (SRL)
+TYPE (M3N6B)
+TYPE (M3N6H)
+TYPE (M3N6W)
+TYPE (M16)
+TYPE (M168B)
+TYPE (M168N)
+TYPE (M168W)
+TYPE (M169)
+TYPE (M1692)
+TYPE (M1694)
+TYPE (M169W)
+TYPE (M1612)
+TYPE (MPC9)
+TYPE (MSP8)
+TYPE (MI36N)
+TYPE (MI160)
+TYPE (S611)
+TYPE (S612)
+TYPE (SLSL6)
+TYPE (SASR6)
+TYPE (SROR4)
+TYPE (SRRX)
+TYPE (CC)
+TYPE (IM0)
+TYPE (IM5)
+TYPE (BO0)
+TYPE (BO0SY)
+TYPE (P81)
+TYPE (P14)
+TYPE (C0)
+TYPE (C16)
+TYPE (C5)
+
+#undef INSTR
+#undef TYPE

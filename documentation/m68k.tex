@@ -1,0 +1,121 @@
+% M68000 architecture documentation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seemabk}{}
+
+\startchapter{M68000}{M68000 Hardware Architecture Support}{m68k}
+{This \documentation{} describes how the \ecs{} supports the M68000 hardware architecture.
+This includes information about the assembler, disassembler, and the various compilers featured by the \ecs{} as well as the interoperability between these tools.}
+
+\section{Introduction}
+
+The \ecs{} features various compilers, an assembler, and a disassembler that target the M68000 hardware architecture by Motorola.
+Figure~\ref{fig:m68kdataflow} shows the data flow in-between these tools.
+
+\begin{figure}
+\flowgraph{
+\resource{intermediate\\code} \ar[d] & & \resource{assembly\\source code} \ar[d] \\
+\converter{M68000\\Generator} \ar[r] \ar[rd] \ar[d] & \resource{assembly\\listing} \ar[r] & \converter{M68000\\Assembler} \ar[ld] \\
+\resource{debugging\\information} & \resource{object file} \ar[d] \\
+& \converter{M68000\\Disassembler} \ar[d] \\
+& \resource{disassembly\\listing} \\
+}\caption{Data flow within the tools targeting the M68000 architecture}
+\label{fig:m68kdataflow}
+\end{figure}
+
+All compilers targeting the M68000 architecture translate their programs using an intermediate code representation.
+The M68000 generator is able to translate the intermediate code representation of a program into machine code for M68000 processors.
+It stores the resulting binary code and data in so-called object files.
+Additionally, the generator is able to create an assembly code listing of the machine code for debugging purposes.
+This assembly code listing can also be processed by the assembler yielding exactly the same object file.
+The disassembler is able to open object files and print a human-readable disassembly listing of their contents.
+\seeobject\seecode
+
+\section{Instruction Set}
+
+Tools targeting the M68000 architecture support the instruction set listed in Table~\ref{tab:m68kset} and use the same assembly syntax as predefined by Motorola~\cite{m68k:instructionset}.
+The only exception are immediate values which are not prefixed by a number sign.
+\seeassembly
+
+\instructionset{m68k}{Supported M68000 instruction set}{5}{6}
+
+\section{Calling Convention}\index{Calling convention!of M68000}
+
+The machine code generator and runtime support for the M68000 architecture as provided by the \ecs{} use the following calling convention in order to enable interoperability.
+
+\subsection{Stack Operations}
+
+Arguments for functions are in general passed using the stack according to the intermediate code specification.
+See \Documentation{}~\documentationref{code}{Intermediate Code Representation} for more information about the role of the stack.
+Function arguments are pushed on the stack in reverse order and cleaned by the caller.
+
+\subsection{Floating-Point Support}
+
+There is currently no support for floating-point operations.
+
+\subsection{Register Mapping}
+
+The special-purpose registers defined by the intermediate code representation are mapped to their corresponding physical registers in the following way:
+
+\begin{itemize}
+
+\item Result Register\alignright\texttt{\$res}\nopagebreak
+
+The intermediate code result register \texttt{\$res} is mapped to M68000 registers \texttt{a0} or \texttt{d0} and \texttt{d1} depending on the actual return type.
+
+\item Stack Pointer Register\alignright\texttt{\$sp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$sp} is mapped to the M68000 register \texttt{a7} (\texttt{sp}).
+
+\item Frame Pointer Register\alignright\texttt{\$fp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$fp} is mapped to the M68000 register \texttt{a6}.
+
+\end{itemize}
+
+All other intermediate code registers are mapped as needed to the remaining physical registers.
+Their contents and mapping are therefore considered volatile across function calls.
+
+\section{Runtime Support}\index{Runtime support!for M68000}
+
+The \ecs{} provides runtime support for the M68000 architecture and runtime environments based on this hardware architecture in object files.
+Users targeting a specific runtime environment have to use an appropriate linker together with these object files in order create an executable program.
+This section gives information about all supported runtime environments based on the M68000 hardware architecture as well as the required combination of linker and object files.
+
+Basic architectural runtime support is provided by the object file \objfile{m86k\-run}.
+Users should always include this object file during linking regardless of the actual target runtime environment.
+All other object files given to the linker should target the same hardware architecture.
+
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-m86k\-run} library file.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-m86k\-run} library file.
+\seecpp\seeoberon
+
+Programs targeting the Atari TOS operating system are created using the \tool{link\-prg} linker tool.
+It creates GEMDOS executable files~\cite{gemdosfile} if provided with the runtime support stored in the \objfile{tos\-run} object file.
+Calling the \tool{ecsd} utility tool using the \environment{tos} target environment achieves the same result.
+GEMDOS, BIOS, and XBIOS functions are available using additional runtime support stored in the \objfile{tos\-api} object file.
+
+\section{M68000 Tools}
+
+The \ecs{} provides the following tools that are able to process object files targeting the M68000 hardware architecture.
+\interface
+
+\cdmabk
+\cppmabk
+\falmabk
+\obmabk
+\mabkasm
+\mabkdism
+\linkprg
+
+\concludechapter

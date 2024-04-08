@@ -1,0 +1,216 @@
+% User manual for FALSE
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seefalse}{}
+
+\startchapter{FALSE}{User Manual for FALSE}{false}
+{FALSE is a stack-oriented programming language that supports lambda abstractions and is quite powerful for its size.
+Although FALSE is quite cryptic by design and therefore considered esoteric, it provides language features that enable interoperability with other programming languages.
+This \documentation{} describes the language and its implementation by the \ecs{}.}
+
+\epigraph{What is written without effort \\ is in general read without pleasure.}{Samuel Johnson}
+
+\section{Introduction}
+
+FALSE is an esoteric but still powerful programming language designed by Wouter van~Oortmerssen, named after his favorite truth value~\cite{oortmerssen1993}.
+
+\begin{center}\fallogo{2em}\end{center}
+
+Each FALSE program consists of comments enclosed in braces and expressions.
+Expressions consist of symbols which are mostly represented as a single character.
+Table~\ref{tab:falsymbols} lists all of these symbols and the way the operate on the stack and the 26 variables predefined by the FALSE programming language.
+The notation $u, v \to s, t$ means that $u$ and $v$ are popped from the stack in that order and $s$ and $t$ are pushed onto it afterward.
+An $\epsilon$ on either side of that notation denotes that the corresponding operation does not push or pop anything respectively.
+The symbols listed under the category named special-purpose are actually implementation-defined and are explained in more detail in Section~\ref{sec:falimplementation}.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule Category & Symbol & Description & Stack Operation \\
+\midrule Literals
+& \texttt{number} & Value of integer $n$ & $\epsilon \to n$ \\
+& \texttt{'character} & Value of character $c$ & $\epsilon \to c$ \\
+& \texttt{a\ldots z} & Address $a$ of variable & $\epsilon \to a$ \\
+& \texttt{[\ldots ]} & Address $f$ of function & $\epsilon \to f$ \\
+\midrule Arithmetic
+& \texttt{\_} & Negation & $x \to -x$ \\
+Operations
+& \texttt{+} & Add & $y, x \to x + y$ \\
+& \texttt{-} & Subtract & $y, x \rightarrow x - y$ \\
+& \texttt{*} & Multiply & $y, x \rightarrow x \times y$ \\
+& \texttt{/} & Divide & $y, x \rightarrow x \div y$ \\
+\midrule Logical
+& \texttt{\textasciitilde} & Complement & $x \to \neg x$ \\
+Operations
+& \texttt{\&} & And & $y, x \to x \land y$ \\
+& \texttt{|} & Or & $y, x \to x \lor y$ \\
+\midrule Comparison
+& \texttt{=} & Test if equal & $y, x \to x = y$ \\
+Operations
+& \texttt{>} & Test if greater & $y, x \to x > y$ \\
+\midrule Stack
+& \texttt{\$} & Duplicate & $x \to x, x$ \\
+Operations
+& \texttt{\%} & Delete & $x \to \epsilon$ \\
+& \texttt{\textbackslash} & Swap & $x, y \to x, y$ \\
+& \texttt{@} & Rotate & $x, y, z \to y, x, z$ \\
+& \texttt{\o} & Select & $n \to n^{\mathit th}$ element \\
+\midrule Statements
+& \texttt{:} & Write $x$ to address $a$ & $a, x \to \epsilon$ \\
+& \texttt{;} & Read $x$ from address $a$ & $a \to x$ \\
+& \texttt{!} & Call function $f$ & $f \to \epsilon$ \\
+& \texttt{?} & Call function $f$ if $x$ is true & $f, x \to \epsilon$ \\
+& \texttt{\#} & Call function $f$ while & $f, g \to \epsilon$ \\ & & function $g$ returns true \\
+\midrule Input/
+& \texttt{.} & Print $x$ as integer & $x \to \epsilon$ \\
+Output
+& \texttt{,} & Print $x$ as character & $x \to \epsilon$ \\
+& \texttt{\^} & Read $x$ as character & $\epsilon \to x$ \\
+& \texttt{"\ldots "} & Print string $s$ & $\epsilon \to \epsilon$ \\
+& \texttt{\ss} & Flush output stream & $\epsilon \to \epsilon$ \\
+\midrule Language
+& \texttt{"\ldots "V} & Address $a$ of external variable $s$ & $\epsilon \to a$ \\
+extensions
+& \texttt{"\ldots "F} & Address $a$ of external function $s$ & $\epsilon \to a$ \\
+& \texttt{"\ldots "\`} & Emit inline assembly & $\epsilon \to \epsilon$ \\
+\bottomrule
+\end{tabular}
+\caption{The symbols of the FALSE programming language}
+\label{tab:falsymbols}\index{Symbols, of FALSE}\index{FALSE!Symbols}
+\end{table}
+
+In general, there are three kinds of symbols which either push values onto the stack, change values on the stack, or just pop values from it in order to perform memory accesses or input and output.
+The type of the actual value that is pushed onto or popped from the stack is defined by the operation performed by the symbol.
+Arithmetic operations like \texttt{+} and \texttt{-} for example pop two integer values from the stack and push their result back onto the stack again.
+A single character symbol like \texttt{a} or \texttt{b} on the other hand names a variable and pushes the address of that variable onto the stack.
+The actual contents of the variable can be an integer or another address and is accessed using the dereference symbol \texttt{;}.
+The third kind of symbols are statements like assignments that perform their operation without pushing any new values onto the stack.
+
+\section{Implementation-Defined Behavior}\label{sec:falimplementation}
+
+Some issues in the specification of the otherwise abstract programming language are either left unspecified or depend on its original implementation.
+This section describes the concrete implementation specific behavior defined by the \ecs{}:
+
+\begin{itemize}
+
+\item
+The actual size of the values stored on the stack and in variables is equal to the address size of the target hardware architecture.
+
+\item
+The logical and comparison operations generate Boolean values where false is represented using the integer zero and true is represented using the integer one.
+For evaluations of Boolean values the integer zero denotes false while all other values denote true.
+
+\item
+The behavior of programs that pop more elements from the stack than were pushed onto it beforehand is undefined.
+The same holds for programs that access memory using invalid addresses.
+
+\item
+After the execution of each program, the value on top of the stack is taken as the return code for the runtime environment.
+In order to allow programs that do not explicitly push a return code, each program first pushes a value indicating successful execution.
+
+\item
+The original specification allowed emitting inline assembly for the Motorola M68000 family of microprocessors using integer numbers in the range 0 up to 65335 followed by an apostrophe.
+The \ecs{} does not provide this form of code generation because it supports more than one hardware architecture.
+All of them define their own instruction set encoding which affects the length of an instruction as well as endianness issues.
+
+Instead, the \ecs{} allows emitting inline assembly by providing the actual inline assembly code as a string followed by an apostrophe.
+This is a more generic solution which does not need the programmer to apply the instruction set encoding manually.
+Nevertheless, representing binary code and data with plain integers is still possible using the double byte data directive.
+\seeassembly\seemabk
+
+\item
+The \ecs{} defines two new operations that allow retrieving the address of variables and functions that are not defined by FALSE programs.
+This enables interoperability with other languages as described in Section~\ref{sec:falinteroperability}.
+
+\end{itemize}
+
+Accessing external symbols as well as the emission of inline assembly is only available in the compilers tools provided by the \ecs{}.
+The interpreter does not support these operations and issues a corresponding error message.
+
+\section{FALSE Tools}
+
+The \ecs{} provides several different tools that process programs written in FALSE\@.
+\interface
+
+The tools process FALSE programs in several consecutive stages.
+In each stage, the internal representation of the program is changed and transformed.
+Figure~\ref{fig:faldataflow} shows all stages and the different representations.
+
+\begin{figure}
+\flowgraph{
+& \resource{FALSE\\source code} \ar[d] \\
+& \converter{Lexer} \ar[d] \\
+& \resource{tokens} \ar[d] \\
+& \converter{Parser} \ar[d] \\
+\converter{Serializer} \ar[d] & \resource{abstract\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Pretty Printer} \ar[d] \\
+\resource{internal\\representation} & \converter{Semantic\\Checker} \ar[d] & \resource{reformatted\\source code} \\
+\converter{Interpreter} \ar@/l/[d] & \resource{attributed\\syntax tree} \ar[l] \ar[d] \ar[r] & \converter{Transpiler} \ar[d] \\
+\resource{input/\\output} \ar@/r/[u] & \converter{Intermediate\\Code Emitter} \ar[d] & \resource{translated\\source code} \\
+& \resource{intermediate\\code} \ar[d] \ar@/u/[r] & \converter{Optimizer} \ar@/d/[l] \\
+& \converter{Machine Code\\Generator} \ar[d] \\
+& \resource{object file} \\
+}\caption{Data flow within the tools for FALSE}
+\label{fig:faldataflow}
+\end{figure}
+
+\falprint
+\falcheck
+\faldump
+\falrun
+\falcpp
+\falcode
+\falamda
+\falamdb
+\falamdc
+\falarma
+\falarmb
+\falarmc
+\falarmcfpe
+\falavr
+\falavrtt
+\falmabk
+\falmibl
+\falmipsa
+\falmipsb
+\falmmix
+\falorok
+\falppca
+\falppcb
+\falrisc
+\falwasm
+
+\section{Interoperability}\label{sec:falinteroperability}
+
+The compilers for FALSE enable interoperability with other programming languages implemented by the \ecs{}.
+The interoperability is enabled by a common intermediate code representation and calling convention. \seecode
+The compilers define several intermediate code sections for each program and maintain the following naming convention.
+
+The main program is defined in a code section called \texttt{main}.
+For each function inside the main program, the compilers define a code section called \texttt{function} followed by an integer index.
+The index is incremented with each function discovered lexicographically in the source code and begins with zero.
+In addition, each variable that is actually used is defined in a data section with the same name.
+
+Accessing code and data sections that are defined elsewhere is enabled by two special-purpose symbols that push the corresponding address onto the stack.
+Since all stack operations operate on the actual call stack, it is even possible to provide arguments for external functions.
+However, the arguments are always passed as addresses.
+The return value of a function is pushed onto the stack after the call.
+
+Functions defined by the compilers can also be called from other programs.
+They first pop the return address from the stack such that the top of the stack corresponds to the last argument passed by the caller.
+In the end, right before returning to the caller, the top of the stack is taken as return value of the function.
+
+In addition, the compilers for the FALSE programming language also allow writing inline assembly code.
+The corresponding symbol is described in Section~\ref{sec:falimplementation} and enables arbitrary access to any section.
+\seeassembly
+
+\concludechapter

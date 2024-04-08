@@ -1,0 +1,382 @@
+% Object file representation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seeobject}{}
+
+\startchapter{Object Files}{Object File Representation}{object}
+{This \documentation{} describes the purpose and the open format of object files which are used by the \ecs{} to represent generic binary code and data.
+Additionally, it describes the functionality and interface of the linker tools provided by the \ecs{}.}
+
+\epigraph{The finest eloquence is that which gets things done.}{David Lloyd George}
+
+\section{Introduction}
+
+\emph{Object files} are containers for all binary information that is required to build executable programs.
+This includes information about so-called \emph{sections} that describe the contents and location of the code and the global data of a program.
+Additionally, object files contain information about how these sections are interconnected.
+
+The \ecs{} features several assemblers for different hardware architectures as well as compilers for different programming languages.
+Although all of these tools process different types of input files, they all generate the same type of output file, namely one object file per translation unit.
+Other tools like disassemblers and linkers on the other hand are able to continue processing the generated object files.
+Linkers for example allocate space for all sections and establish the necessary interconnections in order to create an executable binary program.
+Which tools actually generated the object files in the first place is irrelevant during this linking process.
+Object files therefore clearly separate the source code from its binary representation by forming a generic abstraction of code and data as shown in Figure~\ref{fig:objdataflow}.
+
+\begin{figure}
+\flowgraph{
+\resource{language\\source code} \ar[d] & \resource{assembly\\source code} \ar[d] & \resource{debugging\\information} \ar[d] \\
+\converter{Compiler} \ar[rd] & \converter{Assembler\vphantom{Compiler}} \ar[d] & \converter{Converter\vphantom{Compiler}} \ar[ld] \\
+& \resource{object files} \ar[ld] \ar[d] \ar[rd] \\
+\converter{Linker} \ar[d] & \converter{Disassembler} \ar[d] & \converter{Combiner} \ar[d] \\
+\resource{executable\\program} & \resource{disassembly\\listing} & \resource{static\\library} \\
+}\caption[Object files as a generic abstraction of code and data]{Object files as a generic abstraction of code and data in-between the various kinds of tools of the \ecs{}}
+\label{fig:objdataflow}
+\end{figure}
+
+Combining object files to build programs offers several advantages.
+First, it enables \emph{interoperability}\index{Interoperability} between different compilers and assemblers which allows writing code and data in one programming language and using it from another.
+Furthermore, using object files as a binary intermediate representation of a program effectively decouples the compilation from the linking stage and allows compilers and assemblers to become completely independent from the runtime environments targeted by linkers and their actual executable file formats.
+Additionally, the use of object files enables \emph{separate compilation}\index{Separate compilation} which allows saving development time by compiling only those parts of a program that have actually changed instead of all of them.
+This also allows \emph{statically linking}\index{Statically linking} against precompiled object and library files which typically provide the necessary runtime support for programming languages, the hardware architecture and runtime environment, as well as additional external libraries.
+
+\section{Object File Structure}
+
+Object files consist of a list of sections called \emph{binary sections}\index{Binary sections}.
+Each binary section describes a contiguous sequence of relocatable binary data like machine code and contains information about how the section interconnects with other binary sections.
+Sections have a unique name and carry additional information about their type and the way they should be allocated in memory by the linker.
+This section describes all of this information and how it is used during linking.
+
+\subsection{Section Types}\label{sec:objsectiontypes}
+
+Each binary section is characterized by its \emph{section type}\index{Section types}.
+Section types distinguish between code and data as required by Harvard architectures and specify how the corresponding memory shall be allocated by the linker.
+The \ecs{} defines the following section types:
+
+\begin{itemize}
+
+\item Standard Code Sections\alignright\syntax{"code"}\nopagebreak
+
+Standard code sections are typically used to model functions which are usually called by other code sections.
+Standard code sections have no special requirements for their placement in memory other than an optional alignment.
+
+\item Initializing Code Sections\alignright\syntax{"initcode"}\nopagebreak
+
+Initializing code sections are placed by linkers in front of standard code sections.
+This guarantees that initializing code sections are executed automatically before any other code section.
+Unlike standard code sections, initializing code sections do not mimic functions as they are executed one after the other rather than being called.
+
+\item Data Initializing Code Sections\alignright\syntax{"initdata"}\nopagebreak
+
+This type of section is the same as initializing code sections except that they are executed at the very beginning of the program.
+They are placed by linkers in front of other initializing code sections.
+They therefore allow global data to be initialized upon the execution of other initializing code sections.
+Data initializing code sections are typically used to initialize global data in environments that do not allow automatic memory initializations of data sections.
+This explicitly includes writing data to constant data sections.
+
+\item Standard Data Sections\alignright\syntax{"data"}\nopagebreak
+
+Standard data sections provide the space and contents of global data.
+This data is usually modified during the execution of a program by the code within code sections.
+Data sections may contain predefined data that is initialized automatically by the linker.
+If there are environments that do not allow global data to be initialized this way, data initializing code sections have to be used instead.
+
+\item Constant Data Sections\alignright\syntax{"const"}\nopagebreak
+
+Constant data sections are data sections that are not supposed to change their contents during the execution of the program.
+Linkers may therefore place them in a special read-only memory if available.
+
+\item Metadata Sections\alignright\syntax{"header" $\mid$ "trailer"}\nopagebreak
+
+Metadata sections are constant data sections that contain metadata about a program.
+Linkers place heading metadata sections at the beginning and trailing metadata sections at the end of the resulting binary file.
+This allows mimicking the layout of some specific binary file format while linking several object files into a single binary file.
+
+\end{itemize}
+
+\subsection{Section Options}\label{sec:objsectionoptions}
+
+The \ecs{} defines three freely combinable \emph{section options}\index{Section options}\index{Options, of sections}.
+They describe how the linker shall treat sections that are never used or have the same name:
+
+\begin{itemize}
+
+\item Required Sections\alignright\syntax{"required"}\nopagebreak
+
+By default, the linker does not allocate space for binary sections that are never used.
+The required section option ensures that a section is always part of the binary program.
+All other sections are only used if referenced directly or indirectly by required sections.
+Standard code sections called \texttt{main} represent the \emph{entry point}\index{Entry points} of programs and are always implicitly required.
+They are placed right after initializing code sections and in front of all other standard code sections such that their code gets executed automatically.
+
+\item Duplicable Sections\alignright\syntax{"duplicable"}\nopagebreak
+
+By default, the linker diagnoses an error whenever it encounters two sections that have the same name.
+The duplicable section option specifies that two sections with the same name may be merged together if they are also equal otherwise.
+Binary sections are equal if not only their name is the same but also all other information they carry including the binary data.
+Whenever the linker encounters two sections that are equal and marked as duplicable, it discards one of them and redirects all references to the other one.
+Duplicable sections are typically used for global constants like strings that may be defined in several object files but do not actually need to be duplicated in memory.
+
+\item Replaceable Sections\alignright\syntax{"replaceable"}\nopagebreak
+
+The replaceable section option specifies that a section is only used as long as there is no other section with the same name.
+Whenever the linker encounters two sections that have the same name and one of them is marked as replaceable, it discards the replaceable one and redirects all references to the other one.
+
+\end{itemize}
+
+In addition to its name, a section may also have one or more so-called \emph{alias names} which allow referring to individual parts of its binary data by name.
+The semantics of duplicable and replaceable sections as described above also applies to all of their alias names.
+
+\subsection{Section Placement}\label{sec:objsectionplacement}
+
+Usually, code and data sections are placed by linkers anywhere in memory\index{Section placement}\index{Placement, of sections}.
+During the linking stage, linkers assign a unique memory address to every non-empty section that is actually used in the program.
+References of a section to other sections are later resolved by their name and yield the actual address of the named section.
+Referencing sections by name has the advantage that a programmer does not need to know or specify anything about the actual address of a section.
+
+Sometimes however, the target runtime environment or hardware architecture requires programmers to assign a predefined address to a section.
+The \ecs{} therefore allows programmers to define the address where a section has to be placed by the linker in the following two ways:
+
+\begin{itemize}
+
+\item Aligned Sections\alignright\syntax{"aligned" <Alignment>}\nopagebreak
+
+Aligned sections have an arbitrary address that is a multiple of a positive power of two called their \emph{alignment}.
+Usually, the underlying hardware imposes requirements on the alignment of data and code when they are referenced or called.
+The \ecs{} aligns the address of aligned sections according to their alignment expressed in multiples of octets.
+
+\item Fixed Sections\alignright\syntax{"fixed" <Origin>}\nopagebreak
+
+Fixed sections have a predefined address called their \emph{origin}.
+Before linkers layout any other section in memory, they place fixed sections at their origin expressed in octets.
+All others sections are then placed according to the semantics of their section type and alignment.
+
+\end{itemize}
+
+Sections that have the same section type and alignment may additionally be assigned to a so-called \emph{group}.
+This allows grouping otherwise unrelated sections together by forcing linkers to place them adjacent to each other.
+Each group can be referred to by name which yields a virtual section that contains all sections within that group.
+The groups themselves are placed consecutively in lexicographic order followed by all remaining sections of the same type.
+
+Apart from the configurable placement of sections as described above and in Section~\ref{sec:objsectiontypes}, sections are in general placed in order of occurrence.
+This allows initializing code sections to depend on the results of already executed code.
+The only exception are sections without binary data which always precede all other sections of the same type and group.
+
+\subsection{Section References}
+
+Code in code sections usually needs to call functions defined in other code sections or to refer to data stored in data sections.
+Data sections on the other hand are sometimes used to store the address of other data and code sections.
+In order to establish this interconnection, the \ecs{} defines \emph{section links}\index{Section links}.
+Section links allow a code or data section to refer to another section by name.
+Besides placing sections in memory, the main task of the linker is to resolve these references.
+
+Each binary section maintains a list of links where each link refers to a different section.
+In addition to the name of the referenced section, each link contains a list of so-called \emph{link patches}.
+A link patch defines where in the data of the binary section and how exactly linkers have to write the actual address of the referenced section.
+This information includes the offset within the data of the section the address has to be patched as well as a displacement that is added to the address beforehand.
+Additionally, the patch specifies whether the address is absolute or has to be relative to the actual memory address of the patch.
+The address can also be scaled according to potential alignment constraints.
+The \emph{patch pattern} finally specifies how the resulting address has to be written to memory in order to comply with predefined instruction encodings and endianness constraints.
+
+\section{Object File Format}
+
+Object files are stored as plain text files according to the complete syntax specification given in Figure~\ref{fig:objfileformat}.
+They consist of the textual representation of an arbitrary number of binary sections according to the following syntax:
+
+\begin{figure}
+\centering\ifbook\small\fi\setlength{\grammarparsep}{0ex}
+\begin{minipage}{32em}\begin{grammar}
+<Object-File> = <Sections>$\opt$ \par
+<Sections> = <Section> $\mid$ <Sections> <Section> \par
+<Section> = <Type> <Size> <Options>$\opt$ <Name> <Aliases>$\opt$ <Group>$\opt$ <Placement> \\ <Segments>$\opt$ <Links>$\opt$ \par
+<Type> = "code" $\mid$ "initcode" $\mid$ "initdata" $\mid$ \\ "data" $\mid$ "const" $\mid$ "header" $\mid$ "trailer" \par
+<Size> = decimal-integer \par
+<Options> = <Option> $\mid$ <Options> <Option> \par
+<Option> = "required" $\mid$ "duplicable" $\mid$ "replaceable" \par
+<Name> = double-quoted-string \par
+<Aliases> = <Alias> $\mid$ <Aliases> <Alias> \par
+<Alias> = <Offset> <Name> \par
+<Offset> = decimal-integer \par
+<Group> = <Name> \par
+<Placement> = "aligned" <Alignment> $\mid$ "fixed" <Origin> \par
+<Alignment> = decimal-integer \par
+<Origin> = decimal-integer \par
+<Segments> = <Segment> $\mid$ <Segments> <Segment> \par
+<Segment> = <Offset> <Octets> \par
+<Octets> = <Octet> $\mid$ <Octets><\ ><Octet> \par
+<Octet> = <High-Quartet><\ ><Low-Quartet> \par
+<High-Quartet> = hexadecimal-digit \par
+<Low-Quartet> = hexadecimal-digit \par
+<Links> = <Link> $\mid$ <Links> <Link> \par
+<Link> = <Name> <Patches>$\opt$ \par
+<Patches> = <Patch> $\mid$ <Patches> <Patch> \par
+<Patch> = <Offset> <Mode> <Displacement> <Scale> <Pattern> \par
+<Mode> = "abs" $\mid$ "rel" $\mid$ "siz" $\mid$ "ext" $\mid$ "pos" $\mid$ "idx" $\mid$ "cnt" \par
+<Displacement> = signed-decimal-integer \par
+<Scale> = decimal-integer \par
+<Pattern> = <Masks> $\mid$ <Flag><\ ><Size> \par
+<Masks> = <Mask> $\mid$ <Masks><\ ><Mask> \par
+<Mask> = <Offset><\ ><Bitmask> \par
+<Bitmask> = <Octet> \par
+<Flag> = "+" $\mid$ "-" \par
+\end{grammar}\end{minipage}
+\caption{Syntax of the object file format}
+\label{fig:objfileformat}
+\end{figure}
+
+\begin{quote}\begin{grammar}
+<Object-File> = <Sections>$\opt$ \par
+\end{grammar}\end{quote}
+
+\subsection{Binary Sections}
+
+Binary sections are represented in the object file as text according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Sections> = <Section> $\mid$ <Sections> <Section> \par
+<Section> = <Type> <Size> <Options>$\opt$ <Name> <Aliases>$\opt$ <Group>$\opt$ <Placement> \\ <Segments>$\opt$ <Links>$\opt$ \par
+<Type> = "code" $\mid$ "initcode" $\mid$ "initdata" $\mid$ \ifbook\\\fi "data" $\mid$ "const" $\mid$ "header" $\mid$ "trailer" \par
+<Size> = decimal-integer \par
+<Options> = <Option> $\mid$ <Options> <Option> \par
+<Option> = "required" $\mid$ "duplicable" $\mid$ "replaceable" \par
+<Name> = double-quoted-string \par
+<Group> = <Name> \par
+<Placement> = "aligned" <Alignment> $\mid$ "fixed" <Origin> \par
+<Alignment> = decimal-integer \par
+<Origin> = decimal-integer \par
+\end{grammar}\end{quote}
+
+The valid identifiers for the type of the binary section correspond to the types mentioned in Section~\ref{sec:objsectiontypes}.
+The section size specifies the total number of octets occupied by the binary data of the section.
+The valid identifiers for the options of the binary section correspond to the options mentioned in Section~\ref{sec:objsectionoptions}.
+The optional group name and the alignment or origin of an aligned or fixed section influence its placement as described in Section~\ref{sec:objsectionplacement}.
+
+\subsection{Alias Names}
+
+The alias names of binary sections are represented in the object file as text according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Aliases> = <Alias> $\mid$ <Aliases> <Alias> \par
+<Alias> = <Offset> <Name> \par
+<Offset> = decimal-integer \par
+<Name> = double-quoted-string \par
+\end{grammar}\end{quote}
+
+Alias names may not be duplicated and should differ from the name of the binary section.
+The offset of an alias allows referring to a specific octet within the data of the binary section using a different name.
+All names are represented using double-quoted strings and may contain standard escape sequences.
+
+\subsection{Binary Data}
+
+The data of a binary section is partitioned into segments which are represented in the object file as text according to the following syntax.
+There may not be any white-space character in-between the hexadecimal digits of octets:
+
+\begin{quote}\begin{grammar}
+<Segments> = <Segment> $\mid$ <Segments> <Segment> \par
+<Segment> = <Offset> <Octets> \par
+<Offset> = decimal-integer \par
+<Octets> = <Octet> $\mid$ <Octets><\ ><Octet> \par
+<Octet> = <High-Quartet><\ ><Low-Quartet> \par
+<High-Quartet> = hexadecimal-digit \par
+<Low-Quartet> = hexadecimal-digit \par
+\end{grammar}\end{quote}
+
+Each segment contains one or more octets that represent the binary data of the section starting at the corresponding offset.
+This offset plus the number of octets may not exceed the overall section size.
+Overlapping segments define the binary data of a section in order of occurrence.
+Binary data not covered by any segment is initialized to zero.
+
+\subsection{Section Links}
+
+The links of the binary sections are represented in the object file as text according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Links> = <Link> $\mid$ <Links> <Link> \par
+<Link> = <Name> <Patches>$\opt$ \par
+<Name> = double-quoted-string \par
+\end{grammar}\end{quote}
+
+The name of a link identifies the section that has to be referenced.
+If it contains question marks, the actual name of the referenced section begins behind the last question mark.
+If none of the sections named in front of a question mark are actually used, the referenced section evaluates either to zero or to the optional section named behind a colon following the referenced section.
+
+\subsection{Link Patches}
+
+The patches of section links are represented in the object file as text according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Patches> = <Patch> $\mid$ <Patches> <Patch> \par
+<Patch> = <Offset> <Mode> <Displacement> <Scale> <Pattern> \par
+<Offset> = decimal-integer \par
+<Mode> = "abs" $\mid$ "rel" $\mid$ "siz" $\mid$ "ext" $\mid$ "pos" $\mid$ "idx" $\mid$ "cnt" \par
+<Displacement> = signed-decimal-integer \par
+<Scale> = decimal-integer \par
+\end{grammar}\end{quote}
+
+The offset specifies the position of the octet within the current binary section where the referenced section has to be patched by linkers.
+The remainder of the patch specifies how the referenced section shall actually be evaluated.
+The patch mode \texttt{abs} specifies that the referenced section evaluates to its absolute address expressed in octets.
+The patch mode \texttt{rel} specifies that the absolute address of the referenced section shall be decremented by the target address of the patch in order to yield a relative address.
+If the patch mode \texttt{siz} is used, the referenced section evaluates to its binary size expressed in octets.
+The patch mode \texttt{ext} yields the absolute address of the referenced section plus its binary size.
+Using the patch mode \texttt{pos}, the referenced section evaluates to its position relative to the beginning of its associated group expressed in octets.
+The patch mode \texttt{idx} specifies that the referenced section evaluates to the index in the sequence of sections of its group.
+The patch mode \texttt{cnt} can be used to reference groups and evaluates to the number of sections contained therein.
+The evaluated value is then incremented or decremented by the optionally signed displacement and shifted to the right by the specified scale.
+Overlapping link patches are applied in order of occurrence.
+
+\subsection{Patch Patterns}
+
+The patterns of link patches are represented in the object file as text according to the following syntax.
+There may not be any white-space character in-between the elements of a pattern:
+
+\begin{quote}\begin{grammar}
+<Pattern> = <Masks> $\mid$ <Flag><\ ><Size> \par
+<Masks> = <Mask> $\mid$ <Masks><\ ><Mask> \par
+<Mask> = <Offset><\ ><Bitmask> \par
+<Offset> = decimal-integer \par
+<Bitmask> = <Octet> \par
+<Octet> = <High-Quartet><\ ><Low-Quartet> \par
+<High-Quartet> = hexadecimal-digit \par
+<Low-Quartet> = hexadecimal-digit \par
+<Flag> = "+" $\mid$ "-" \par
+<Size> = decimal-integer \par
+\end{grammar}\end{quote}
+
+A pattern consists of a list of one to eight masks which define how the actual address has to be written to binary data.
+Each mask contains an offset and the corresponding bitmask.
+The single-digit offset specifies the relative displacement of the mask with respect to the enclosing link patch which may not exceed the overall section size.
+The bitmask is given as the value of a single octet in hexadecimal form.
+It specifies the number of bits consecutively taken from the address, as well as the mask which is used to write that part of the address value to binary data.
+The pattern \texttt{5ff403} for example consists of two masks.
+The first mask \texttt{5ff} tells the linker to write the value of the first eight bits of the address to all bits of the octet at the target address displaced by five.
+The second mask \texttt{403} tells the linker to write the value of the ninth and tenth bit of the address to the lowest two bits of the octet at the target address displaced by four.
+Patterns which consist exclusively of full bitmasks with consecutive offsets can also be represented by a flag indicating ascending or descending offsets followed by the number of masks contained therein.
+The pattern \texttt{0ff1ff2ff} for example can be abbreviated by \texttt{+3}.
+
+\section{Linker Tools}
+
+Linkers process object files that were previously generated by the various compilers and assemblers of the \ecs{}.
+The task of a linker is to merge all object files given to it into an executable program and to store the resulting binary image using a specific file format.
+All of these linker tools accept command-line arguments which are taken as names of the actual object files.
+If no arguments are provided, object files are read from the standard input stream.
+Linkers create output files in the current working directory by reusing the name of the first object file whereas the filename extension gets replaced by an appropriate suffix.
+\seeinterface\seeguide
+
+\linklib
+\linkbin
+\linkmem
+\linkhex
+\linkprg
+\mapsearch
+
+\concludechapter

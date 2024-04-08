@@ -1,0 +1,83 @@
+// Standard C++ <iosfwd> header
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of the GNU General Public License version 3,
+// the copyright holder grants you additional permissions to use
+// this file as described in the ECS Runtime Support Exception.
+
+// You should have received a copy of the GNU General Public License
+// and a copy of the ECS Runtime Support Exception along with
+// the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef ECS_CPP_IOSFWD_HEADER_INCLUDED
+#define ECS_CPP_IOSFWD_HEADER_INCLUDED
+
+namespace std
+{
+	template <typename> struct allocator;
+	template <typename> struct char_traits;
+
+	template <typename C, typename = char_traits<C>> class basic_filebuf;
+	template <typename C, typename = char_traits<C>> class basic_fstream;
+	template <typename C, typename = char_traits<C>> class basic_ifstream;
+	template <typename C, typename = char_traits<C>> class basic_ios;
+	template <typename C, typename = char_traits<C>> class basic_iostream;
+	template <typename C, typename = char_traits<C>> class basic_istream;
+	template <typename C, typename = char_traits<C>> class basic_ofstream;
+	template <typename C, typename = char_traits<C>> class basic_ostream;
+	template <typename C, typename = char_traits<C>> class basic_streambuf;
+	template <typename C, typename = char_traits<C>> class istream_iterator;
+	template <typename C, typename = char_traits<C>> class ostream_iterator;
+
+	template <typename C, typename = char_traits<C>, typename = allocator<C>> class basic_iostringstream;
+	template <typename C, typename = char_traits<C>, typename = allocator<C>> class basic_istringstream;
+	template <typename C, typename = char_traits<C>, typename = allocator<C>> class basic_ostringstream;
+	template <typename C, typename = char_traits<C>, typename = allocator<C>> class basic_stringbuf;
+	template <typename C, typename = char_traits<C>, typename = allocator<C>> class basic_stringstream;
+
+	template <> struct char_traits<char>;
+	template <> struct char_traits<char16_t>;
+	template <> struct char_traits<char32_t>;
+	template <> struct char_traits<wchar_t>;
+
+	using filebuf = basic_filebuf<char>;
+	using fstream = basic_fstream<char>;
+	using ifstream = basic_ifstream<char>;
+	using ios = basic_ios<char>;
+	using iostream = basic_iostream<char>;
+	using istream = basic_istream<char>;
+	using istringstream = basic_istringstream<char>;
+	using ofstream = basic_ofstream<char>;
+	using ostream = basic_ostream<char>;
+	using ostringstream = basic_ostringstream<char>;
+	using streambuf = basic_streambuf<char>;
+	using stringbuf = basic_stringbuf<char>;
+	using stringstream = basic_stringstream<char>;
+	using wfilebuf = basic_filebuf<wchar_t>;
+	using wfstream = basic_fstream<wchar_t>;
+	using wifstream = basic_ifstream<wchar_t>;
+	using wios = basic_ios<wchar_t>;
+	using wiostream = basic_iostream<wchar_t>;
+	using wistream = basic_istream<wchar_t>;
+	using wistringstream = basic_istringstream<wchar_t>;
+	using wofstream = basic_ofstream<wchar_t>;
+	using wostream = basic_ostream<wchar_t>;
+	using wostringstream = basic_ostringstream<wchar_t>;
+	using wstreambuf = basic_streambuf<wchar_t>;
+	using wstringbuf = basic_stringbuf<wchar_t>;
+	using wstringstream = basic_stringstream<wchar_t>;
+}
+
+#endif // ECS_CPP_IOSFWD_HEADER_INCLUDED

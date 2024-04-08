@@ -1,0 +1,559 @@
+// M68000 instruction set definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef INSTR
+	#define INSTR(mnem, size, code, mask, type1, type2)
+#endif
+
+#ifndef MNEM
+	#define MNEM(name, mnem, ...)
+#endif
+
+#ifndef TYPE
+	#define TYPE(type)
+#endif
+
+// mnemonics
+
+MNEM (abcd,     ABCD,     Add Decimal with Extend)
+MNEM (add,      ADD,      Add)
+MNEM (adda,     ADDA,     Add Address)
+MNEM (addi,     ADDI,     Add Immediate)
+MNEM (addq,     ADDQ,     Add Quick)
+MNEM (addx,     ADDX,     Add Extended)
+MNEM (and,      AND,      AND Logical)
+MNEM (andi,     ANDI,     AND Immediate)
+MNEM (asl,      ASL,      Arithmetic Shift Left)
+MNEM (asr,      ASR,      Arithmetic Shift Right)
+MNEM (bcc,      BCC,      Branch if Carry Clear)
+MNEM (bchg,     BCHG,     Test a Bit and Change)
+MNEM (bclr,     BCLR,     Test a Bit and Clear)
+MNEM (bcs,      BCS,      Branch if Carry Set)
+MNEM (beq,      BEQ,      Branch if Equal)
+MNEM (bge,      BGE,      Branch if Greater or Equal)
+MNEM (bgt,      BGT,      Branch if Greater Than)
+MNEM (bhi,      BHI,      Branch if High)
+MNEM (bhs,      BHS,      Branch if High or Same)
+MNEM (ble,      BLE,      Branch if Less or Equal)
+MNEM (blo,      BLO,      Branch if Low)
+MNEM (bls,      BLS,      Branch if Low or Same)
+MNEM (blt,      BLT,      Branch if Less Than)
+MNEM (bmi,      BMI,      Branch if Minus)
+MNEM (bne,      BNE,      Branch if Not Equal)
+MNEM (bpl,      BPL,      Branch if Plus)
+MNEM (bra,      BRA,      Branch Always)
+MNEM (bset,     BSET,     Test a Bit and Set)
+MNEM (bsr,      BSR,      Branch to Subroutine)
+MNEM (btst,     BTST,     Test a Bit)
+MNEM (bvc,      BVC,      Branch if Overflow Clear)
+MNEM (bvs,      BVS,      Branch if Overflow Set)
+MNEM (chk,      CHK,      Check Register Against Bounds)
+MNEM (clr,      CLR,      Clear an Operand)
+MNEM (cmp,      CMP,      Compare)
+MNEM (cmpa,     CMPA,     Compare Address)
+MNEM (cmpi,     CMPI,     Compare Immediate)
+MNEM (cmpm,     CMPM,     Compare Memory)
+MNEM (dbcc,     DBCC,     Test Condition, Decrement, and Branch if Carry Clear)
+MNEM (dbcs,     DBCS,     Test Condition, Decrement, and Branch if Carry Set)
+MNEM (dbeq,     DBEQ,     Test Condition, Decrement, and Branch if Equal)
+MNEM (dbge,     DBGE,     Test Condition, Decrement, and Branch if Greater or Equal)
+MNEM (dbgt,     DBGT,     Test Condition, Decrement, and Branch if Greater Than)
+MNEM (dbhi,     DBHI,     Test Condition, Decrement, and Branch if High)
+MNEM (dbhs,     DBHS,     Test Condition, Decrement, and Branch if High or Same)
+MNEM (dble,     DBLE,     Test Condition, Decrement, and Branch if Less or Equal)
+MNEM (dblo,     DBLO,     Test Condition, Decrement, and Branch if Low)
+MNEM (dbls,     DBLS,     Test Condition, Decrement, and Branch if Low or Same)
+MNEM (dblt,     DBLT,     Test Condition, Decrement, and Branch if Less Than)
+MNEM (dbmi,     DBMI,     Test Condition, Decrement, and Branch if Minus)
+MNEM (dbne,     DBNE,     Test Condition, Decrement, and Branch if Not Equal)
+MNEM (dbpl,     DBPL,     Test Condition, Decrement, and Branch if Plus)
+MNEM (dbvc,     DBVC,     Test Condition, Decrement, and Branch if Overflow Clear)
+MNEM (dbvs,     DBVS,     Test Condition, Decrement, and Branch if Overflow Set)
+MNEM (divs,     DIVS,     Signed Divide)
+MNEM (divu,     DIVU,     Unsigned Divide)
+MNEM (eor,      EOR,      Exclusive-OR Logical)
+MNEM (eori,     EORI,     Exclusive-OR Immediate)
+MNEM (exg,      EXG,      Exchange Registers)
+MNEM (ext,      EXT,      Sign-Extend)
+MNEM (illegal,  ILLEGAL,  Take Illegal Instruction Trap)
+MNEM (jmp,      JMP,      Jump)
+MNEM (jsr,      JSR,      Jump to Subroutine)
+MNEM (lea,      LEA,      Load Effective Address)
+MNEM (link,     LINK,     Link and Allocate)
+MNEM (lsl,      LSL,      Logical Shift Left)
+MNEM (lsr,      LSR,      Logical Shift Right)
+MNEM (move,     MOVE,     Move Data from Source to Destination)
+MNEM (movea,    MOVEA,    Move Address)
+MNEM (movep,    MOVEP,    Move Peripheral Data)
+MNEM (moveq,    MOVEQ,    Move Quick)
+MNEM (muls,     MULS,     Signed Multiply)
+MNEM (mulu,     MULU,     Unsigned Multiply)
+MNEM (nbcd,     NBCD,     Negate Decimal with Extend)
+MNEM (neg,      NEG,      Negate)
+MNEM (negx,     NEGX,     Negate with Extend)
+MNEM (nop,      NOP,      No Operation)
+MNEM (not,      NOT,      Logical Complement)
+MNEM (or,       OR,       Inclusive-OR Logical)
+MNEM (ori,      ORI,      Inclusive-OR Immediate)
+MNEM (pea,      PEA,      Push Effective Address)
+MNEM (reset,    RESET,    Reset External Devices)
+MNEM (rol,      ROL,      Rotate Left (Without Extend))
+MNEM (ror,      ROR,      Rotate Right (Without Extend))
+MNEM (roxl,     ROXL,     Rotate Left with Extend)
+MNEM (roxr,     ROXR,     Rotate Right with Extend)
+MNEM (rte,      RTE,      Return from Exception)
+MNEM (rtr,      RTR,      Return and Restore Condition Codes)
+MNEM (rts,      RTS,      Return from Subroutine)
+MNEM (sbcd,     SBCD,     Subtract Decimal with Extend)
+MNEM (scc,      SCC,      Set if Carry Clear)
+MNEM (scs,      SCS,      Set if Carry Set)
+MNEM (seq,      SEQ,      Set if Equal)
+MNEM (sf,       SF,       Set if False)
+MNEM (sge,      SGE,      Set if Greater or Equal)
+MNEM (sgt,      SGT,      Set if Greater Than)
+MNEM (shi,      SHI,      Set if High)
+MNEM (shs,      SHS,      Set if High or Same)
+MNEM (sle,      SLE,      Set if Less or Equal)
+MNEM (slo,      SLO,      Set if Low)
+MNEM (sls,      SLS,      Set if Low or Same)
+MNEM (slt,      SLT,      Set if Less Than)
+MNEM (smi,      SMI,      Set if Minus)
+MNEM (sne,      SNE,      Set if Not Equal)
+MNEM (spl,      SPL,      Set if Plus)
+MNEM (st,       ST,       Set if True)
+MNEM (stop,     STOP,     Load Status Register and Stop)
+MNEM (sub,      SUB,      Subtract)
+MNEM (suba,     SUBA,     Subtract Address)
+MNEM (subi,     SUBI,     Subtract Immediate)
+MNEM (subq,     SUBQ,     Subtract Quick)
+MNEM (subx,     SUBX,     Subtract Extended)
+MNEM (svc,      SVC,      Set if Overflow Clear)
+MNEM (svs,      SVS,      Set if Overflow Set)
+MNEM (swap,     SWAP,     Swap Register Halves)
+MNEM (tas,      TAS,      Test and Set an Operand)
+MNEM (trap,     TRAP,     Trap)
+MNEM (trapv,    TRAPV,    Trap on Overflow)
+MNEM (tst,      TST,      Test an Operand)
+MNEM (unlk,     UNLK,     Unlink)
+
+// integer instructions
+
+INSTR (ABCD,     None,  0xc100,  0xf1f8,  RD0,     RD9)
+INSTR (ABCD,     None,  0xc108,  0xf1f8,  RA0d,    RA9d)
+
+INSTR (SBCD,     None,  0x8100,  0xf1f8,  RD0,     RD9)
+INSTR (SBCD,     None,  0x8108,  0xf1f8,  RA0d,    RA9d)
+
+INSTR (ADDX,     Byte,  0xd100,  0xf1f8,  RD0,     RD9)
+INSTR (ADDX,     Byte,  0xd108,  0xf1f8,  RA0d,    RA9d)
+INSTR (ADDX,     Word,  0xd140,  0xf1f8,  RD0,     RD9)
+INSTR (ADDX,     Word,  0xd148,  0xf1f8,  RA0d,    RA9d)
+INSTR (ADDX,     Long,  0xd180,  0xf1f8,  RD0,     RD9)
+INSTR (ADDX,     Long,  0xd188,  0xf1f8,  RA0d,    RA9d)
+
+INSTR (ADD,      Byte,  0xd000,  0xf1c0,  EA0B,    RD9)
+INSTR (ADD,      Byte,  0xd100,  0xf1c0,  RD9,     EA0Bma)
+INSTR (ADD,      Word,  0xd040,  0xf1c0,  EA0W,    RD9)
+INSTR (ADD,      Word,  0xd140,  0xf1c0,  RD9,     EA0Wma)
+INSTR (ADD,      Long,  0xd080,  0xf1c0,  EA0L,    RD9)
+INSTR (ADD,      Long,  0xd180,  0xf1c0,  RD9,     EA0Lma)
+
+INSTR (ADDA,     Word,  0xd0c0,  0xf1c0,  EA0W,    RA9)
+INSTR (ADDA,     Long,  0xd1c0,  0xf1c0,  EA0L,    RA9)
+
+INSTR (ADDI,     Byte,  0x0600,  0xffc0,  IB,      EA0Bda)
+INSTR (ADDI,     Word,  0x0640,  0xffc0,  IW,      EA0Wda)
+INSTR (ADDI,     Long,  0x0680,  0xffc0,  IL,      EA0Lda)
+
+INSTR (ADDQ,     Byte,  0x5000,  0xf1c0,  I9,      EA0Ba)
+INSTR (ADDQ,     Word,  0x5040,  0xf1c0,  I9,      EA0Wa)
+INSTR (ADDQ,     Long,  0x5080,  0xf1c0,  I9,      EA0La)
+
+INSTR (EXG,      None,  0xc140,  0xf1f8,  RD9,     RD0)
+INSTR (EXG,      None,  0xc148,  0xf1f8,  RA9,     RA0)
+INSTR (EXG,      None,  0xc188,  0xf1f8,  RD9,     RA0)
+
+INSTR (AND,      Byte,  0xc000,  0xf1c0,  EA0Bd,   RD9)
+INSTR (AND,      Byte,  0xc100,  0xf1c0,  RD9,     EA0Bma)
+INSTR (AND,      Word,  0xc040,  0xf1c0,  EA0Wd,   RD9)
+INSTR (AND,      Word,  0xc140,  0xf1c0,  RD9,     EA0Wma)
+INSTR (AND,      Long,  0xc080,  0xf1c0,  EA0Ld,   RD9)
+INSTR (AND,      Long,  0xc180,  0xf1c0,  RD9,     EA0Lma)
+
+INSTR (ANDI,     None,  0x023c,  0xffff,  IB,      CCR)
+INSTR (ANDI,     None,  0x027c,  0xffff,  IW,      SR)
+
+INSTR (ANDI,     Byte,  0x0200,  0xffc0,  IB,      EA0Bda)
+INSTR (ANDI,     Word,  0x0240,  0xffc0,  IW,      EA0Wda)
+INSTR (ANDI,     Long,  0x0280,  0xffc0,  IL,      EA0Lda)
+
+INSTR (ASL,      Byte,  0xe120,  0xf1f8,  RD9,     RD0)
+INSTR (ASL,      Byte,  0xe100,  0xf1f8,  I9,      RD0)
+INSTR (ASL,      Word,  0xe160,  0xf1f8,  RD9,     RD0)
+INSTR (ASL,      Word,  0xe140,  0xf1f8,  I9,      RD0)
+INSTR (ASL,      Word,  0xe1c0,  0xffc0,  EA0Wma,  Void)
+INSTR (ASL,      Long,  0xe1a0,  0xf1f8,  RD9,     RD0)
+INSTR (ASL,      Long,  0xe180,  0xf1f8,  I9,      RD0)
+
+INSTR (ASR,      Byte,  0xe020,  0xf1f8,  RD9,     RD0)
+INSTR (ASR,      Byte,  0xe000,  0xf1f8,  I9,      RD0)
+INSTR (ASR,      Word,  0xe060,  0xf1f8,  RD9,     RD0)
+INSTR (ASR,      Word,  0xe040,  0xf1f8,  I9,      RD0)
+INSTR (ASR,      Word,  0xe0c0,  0xffc0,  EA0Wma,  Void)
+INSTR (ASR,      Long,  0xe0a0,  0xf1f8,  RD9,     RD0)
+INSTR (ASR,      Long,  0xe080,  0xf1f8,  I9,      RD0)
+
+INSTR (BCC,      Word,  0x6400,  0xffff,  DW,      Void)
+INSTR (BCC,      Byte,  0x6400,  0xff00,  DB,      Void)
+INSTR (BCS,      Word,  0x6500,  0xffff,  DW,      Void)
+INSTR (BCS,      Byte,  0x6500,  0xff00,  DB,      Void)
+INSTR (BEQ,      Word,  0x6700,  0xffff,  DW,      Void)
+INSTR (BEQ,      Byte,  0x6700,  0xff00,  DB,      Void)
+INSTR (BGE,      Word,  0x6c00,  0xffff,  DW,      Void)
+INSTR (BGE,      Byte,  0x6c00,  0xff00,  DB,      Void)
+INSTR (BGT,      Word,  0x6e00,  0xffff,  DW,      Void)
+INSTR (BGT,      Byte,  0x6e00,  0xff00,  DB,      Void)
+INSTR (BHI,      Word,  0x6200,  0xffff,  DW,      Void)
+INSTR (BHI,      Byte,  0x6200,  0xff00,  DB,      Void)
+INSTR (BHS,      Word,  0x6400,  0xffff,  DW,      Void)
+INSTR (BHS,      Byte,  0x6400,  0xff00,  DB,      Void)
+INSTR (BLE,      Word,  0x6f00,  0xffff,  DW,      Void)
+INSTR (BLE,      Byte,  0x6f00,  0xff00,  DB,      Void)
+INSTR (BLO,      Word,  0x6500,  0xffff,  DW,      Void)
+INSTR (BLO,      Byte,  0x6500,  0xff00,  DB,      Void)
+INSTR (BLS,      Word,  0x6300,  0xffff,  DW,      Void)
+INSTR (BLS,      Byte,  0x6300,  0xff00,  DB,      Void)
+INSTR (BLT,      Word,  0x6d00,  0xffff,  DW,      Void)
+INSTR (BLT,      Byte,  0x6d00,  0xff00,  DB,      Void)
+INSTR (BMI,      Word,  0x6b00,  0xffff,  DW,      Void)
+INSTR (BMI,      Byte,  0x6b00,  0xff00,  DB,      Void)
+INSTR (BNE,      Word,  0x6600,  0xffff,  DW,      Void)
+INSTR (BNE,      Byte,  0x6600,  0xff00,  DB,      Void)
+INSTR (BPL,      Word,  0x6a00,  0xffff,  DW,      Void)
+INSTR (BPL,      Byte,  0x6a00,  0xff00,  DB,      Void)
+INSTR (BVC,      Word,  0x6800,  0xffff,  DW,      Void)
+INSTR (BVC,      Byte,  0x6800,  0xff00,  DB,      Void)
+INSTR (BVS,      Word,  0x6900,  0xffff,  DW,      Void)
+INSTR (BVS,      Byte,  0x6900,  0xff00,  DB,      Void)
+
+INSTR (MOVEP,    Word,  0x0188,  0xf1f8,  RD9,     RA0m)
+INSTR (MOVEP,    Word,  0x0108,  0xf1f8,  RA0m,    RD9)
+
+INSTR (MOVEP,    Long,  0x01c8,  0xf1f8,  RD9,     RA0m)
+INSTR (MOVEP,    Long,  0x0148,  0xf1f8,  RA0m,    RD9)
+
+INSTR (BCHG,     None,  0x0140,  0xf1c0,  RD9,     EA0Bda)
+INSTR (BCHG,     None,  0x0840,  0xffc0,  IB,      EA0Bda)
+
+INSTR (BCLR,     None,  0x0180,  0xf1c0,  RD9,     EA0Bda)
+INSTR (BCLR,     None,  0x0880,  0xffc0,  IB,      EA0Bda)
+
+INSTR (BRA,      Word,  0x6000,  0xffff,  DW,      Void)
+INSTR (BRA,      Byte,  0x6000,  0xff00,  DB,      Void)
+
+INSTR (BSET,     None,  0x01c0,  0xf1c0,  RD9,     EA0Bda)
+INSTR (BSET,     None,  0x08c0,  0xffc0,  IB,      EA0Bda)
+
+INSTR (BSR,      Word,  0x6100,  0xffff,  DW,      Void)
+INSTR (BSR,      Byte,  0x6100,  0xff00,  DB,      Void)
+
+INSTR (BTST,     None,  0x0100,  0xf1c0,  RD9,     EA0Bda)
+INSTR (BTST,     None,  0x0800,  0xffc0,  IB,      EA0Bda)
+
+INSTR (CHK,      None,  0x4180,  0xf1c0,  EA0Wd,   RD9)
+
+INSTR (CLR,      Byte,  0x4200,  0xffc0,  EA0Bda,  Void)
+INSTR (CLR,      Word,  0x4240,  0xffc0,  EA0Wda,  Void)
+INSTR (CLR,      Long,  0x4280,  0xffc0,  EA0Lda,  Void)
+
+INSTR (CMP,      Byte,  0xb000,  0xf1c0,  EA0B,    RD9)
+INSTR (CMP,      Word,  0xb040,  0xf1c0,  EA0W,    RD9)
+INSTR (CMP,      Long,  0xb080,  0xf1c0,  EA0L,    RD9)
+
+INSTR (CMPA,     Word,  0xb0c0,  0xf1c0,  EA0W,    RA9)
+INSTR (CMPA,     Long,  0xb1c0,  0xf1c0,  EA0L,    RA9)
+
+INSTR (CMPI,     Byte,  0x0c00,  0xffc0,  IB,      EA0Bd)
+INSTR (CMPI,     Word,  0x0c40,  0xffc0,  IW,      EA0Wd)
+INSTR (CMPI,     Long,  0x0c80,  0xffc0,  IL,      EA0Ld)
+
+INSTR (CMPM,     Byte,  0xb108,  0xf1f8,  RA0i,    RA9i)
+INSTR (CMPM,     Word,  0xb148,  0xf1f8,  RA0i,    RA9i)
+INSTR (CMPM,     Long,  0xb188,  0xf1f8,  RA0i,    RA9i)
+
+INSTR (DBCC,     None,  0x54c8,  0xfff8,  RD0,     DW)
+INSTR (DBCS,     None,  0x55c8,  0xfff8,  RD0,     DW)
+INSTR (DBEQ,     None,  0x57c8,  0xfff8,  RD0,     DW)
+INSTR (DBGE,     None,  0x5cc8,  0xfff8,  RD0,     DW)
+INSTR (DBGT,     None,  0x5ec8,  0xfff8,  RD0,     DW)
+INSTR (DBHI,     None,  0x52c8,  0xfff8,  RD0,     DW)
+INSTR (DBHS,     None,  0x54c8,  0xfff8,  RD0,     DW)
+INSTR (DBLE,     None,  0x5fc8,  0xfff8,  RD0,     DW)
+INSTR (DBLO,     None,  0x55c8,  0xfff8,  RD0,     DW)
+INSTR (DBLS,     None,  0x53c8,  0xfff8,  RD0,     DW)
+INSTR (DBLT,     None,  0x5dc8,  0xfff8,  RD0,     DW)
+INSTR (DBMI,     None,  0x5bc8,  0xfff8,  RD0,     DW)
+INSTR (DBNE,     None,  0x56c8,  0xfff8,  RD0,     DW)
+INSTR (DBPL,     None,  0x5ac8,  0xfff8,  RD0,     DW)
+INSTR (DBVC,     None,  0x58c8,  0xfff8,  RD0,     DW)
+INSTR (DBVS,     None,  0x59c8,  0xfff8,  RD0,     DW)
+
+INSTR (DIVS,     None,  0x81c0,  0xf1c0,  EA0Wd,   RD9)
+
+INSTR (DIVU,     None,  0x80c0,  0xf1c0,  EA0Wd,   RD9)
+
+INSTR (EOR,      Byte,  0xb100,  0xf1c0,  RD9,     EA0Bda)
+INSTR (EOR,      Word,  0xb140,  0xf1c0,  RD9,     EA0Wda)
+INSTR (EOR,      Long,  0xb180,  0xf1c0,  RD9,     EA0Lda)
+
+INSTR (EORI,     None,  0x0a3c,  0xffff,  IB,      CCR)
+INSTR (EORI,     None,  0x0a7c,  0xffff,  IW,      SR)
+
+INSTR (EORI,     Byte,  0x0a00,  0xffc0,  IB,      EA0Bda)
+INSTR (EORI,     Word,  0x0a40,  0xffc0,  IW,      EA0Wda)
+INSTR (EORI,     Long,  0x0a80,  0xffc0,  IL,      EA0Lda)
+
+INSTR (EXT,      Word,  0x4880,  0xfff8,  RD0,     Void)
+INSTR (EXT,      Long,  0x48c0,  0xfff8,  RD0,     Void)
+
+INSTR (ILLEGAL,  None,  0x4afc,  0xffff,  Void,    Void)
+
+INSTR (JMP,      None,  0x4ec0,  0xffc0,  EA0Lc,   Void)
+
+INSTR (JSR,      None,  0x4e80,  0xffc0,  EA0Lc,   Void)
+
+INSTR (LEA,      None,  0x41c0,  0xf1c0,  EA0Lc,   RA9)
+
+INSTR (LINK,     None,  0x4e50,  0xfff8,  RA0,     IW)
+
+INSTR (LSL,      Byte,  0xe128,  0xf1f8,  RD9,     RD0)
+INSTR (LSL,      Byte,  0xe108,  0xf1f8,  I9,      RD0)
+INSTR (LSL,      Word,  0xe168,  0xf1f8,  RD9,     RD0)
+INSTR (LSL,      Word,  0xe148,  0xf1f8,  I9,      RD0)
+INSTR (LSL,      Word,  0xe3c0,  0xffc0,  EA0Wma,  Void)
+INSTR (LSL,      Long,  0xe1a8,  0xf1f8,  RD9,     RD0)
+INSTR (LSL,      Long,  0xe188,  0xf1f8,  I9,      RD0)
+
+INSTR (LSR,      Byte,  0xe028,  0xf1f8,  RD9,     RD0)
+INSTR (LSR,      Byte,  0xe008,  0xf1f8,  I9,      RD0)
+INSTR (LSR,      Word,  0xe068,  0xf1f8,  RD9,     RD0)
+INSTR (LSR,      Word,  0xe048,  0xf1f8,  I9,      RD0)
+INSTR (LSR,      Word,  0xe2c0,  0xffc0,  EA0Wma,  Void)
+INSTR (LSR,      Long,  0xe0a8,  0xf1f8,  RD9,     RD0)
+INSTR (LSR,      Long,  0xe088,  0xf1f8,  I9,      RD0)
+
+INSTR (MOVEA,    Word,  0x3040,  0xf1c0,  EA0W,    RA9)
+INSTR (MOVEA,    Long,  0x2040,  0xf1c0,  EA0L,    RA9)
+
+INSTR (MOVE,     Byte,  0x1000,  0xf000,  EA0B,    EA6Bda)
+INSTR (MOVE,     Word,  0x3000,  0xf000,  EA0W,    EA6Wda)
+INSTR (MOVE,     Long,  0x2000,  0xf000,  EA0L,    EA6Lda)
+
+INSTR (MOVE,     None,  0x42c0,  0xffc0,  CCR,     EA0Wda)
+INSTR (MOVE,     None,  0x44c0,  0xffc0,  EA0Wd,   CCR)
+INSTR (MOVE,     None,  0x40c0,  0xffc0,  SR,      EA0Wda)
+INSTR (MOVE,     None,  0x46c0,  0xffc0,  EA0Wd,   SR)
+INSTR (MOVE,     None,  0x4e68,  0xfff8,  USP,     RA0)
+INSTR (MOVE,     None,  0x4e60,  0xfff8,  RA0,     USP)
+
+INSTR (MOVEQ,    None,  0x7000,  0xf100,  I08,     RD9)
+
+INSTR (MULS,     None,  0xc1c0,  0xf1c0,  EA0Wd,   RD9)
+
+INSTR (MULU,     None,  0xc0c0,  0xf1c0,  EA0Wd,   RD9)
+
+INSTR (NBCD,     None,  0x4800,  0xffc0,  EA0Bda,  Void)
+
+INSTR (NEG,      Byte,  0x4400,  0xffc0,  EA0Bda,  Void)
+INSTR (NEG,      Word,  0x4440,  0xffc0,  EA0Wda,  Void)
+INSTR (NEG,      Long,  0x4480,  0xffc0,  EA0Lda,  Void)
+
+INSTR (NEGX,     Byte,  0x4000,  0xffc0,  EA0Bda,  Void)
+INSTR (NEGX,     Word,  0x4040,  0xffc0,  EA0Wda,  Void)
+INSTR (NEGX,     Long,  0x4080,  0xffc0,  EA0Lda,  Void)
+
+INSTR (NOP,      None,  0x4e71,  0xffff,  Void,    Void)
+
+INSTR (NOT,      Byte,  0x4600,  0xffc0,  EA0Bda,  Void)
+INSTR (NOT,      Word,  0x4640,  0xffc0,  EA0Wda,  Void)
+INSTR (NOT,      Long,  0x4680,  0xffc0,  EA0Lda,  Void)
+
+INSTR (OR,       Byte,  0x8000,  0xf1c0,  EA0Bd,   RD9)
+INSTR (OR,       Byte,  0x8100,  0xf1c0,  RD9,     EA0Bma)
+INSTR (OR,       Word,  0x8040,  0xf1c0,  EA0Wd,   RD9)
+INSTR (OR,       Word,  0x8140,  0xf1c0,  RD9,     EA0Wma)
+INSTR (OR,       Long,  0x8080,  0xf1c0,  EA0Ld,   RD9)
+INSTR (OR,       Long,  0x8180,  0xf1c0,  RD9,     EA0Lma)
+
+INSTR (ORI,      None,  0x003c,  0xffff,  IB,      CCR)
+INSTR (ORI,      None,  0x007c,  0xffff,  IW,      SR)
+
+INSTR (ORI,      Byte,  0x0000,  0xffc0,  IB,      EA0Bda)
+INSTR (ORI,      Word,  0x0040,  0xffc0,  IW,      EA0Wda)
+INSTR (ORI,      Long,  0x0080,  0xffc0,  IL,      EA0Lda)
+
+INSTR (SWAP,     None,  0x4840,  0xfff8,  RD0,     Void)
+
+INSTR (PEA,      None,  0x4840,  0xffc0,  EA0Lc,   Void)
+
+INSTR (ROL,      Byte,  0xe138,  0xf1f8,  RD9,     RD0)
+INSTR (ROL,      Byte,  0xe118,  0xf1f8,  I9,      RD0)
+INSTR (ROL,      Word,  0xe178,  0xf1f8,  RD9,     RD0)
+INSTR (ROL,      Word,  0xe158,  0xf1f8,  I9,      RD0)
+INSTR (ROL,      Word,  0xe7c0,  0xffc0,  EA0Wma,  Void)
+INSTR (ROL,      Long,  0xe1b8,  0xf1f8,  RD9,     RD0)
+INSTR (ROL,      Long,  0xe198,  0xf1f8,  I9,      RD0)
+
+INSTR (ROR,      Byte,  0xe038,  0xf1f8,  RD9,     RD0)
+INSTR (ROR,      Byte,  0xe018,  0xf1f8,  I9,      RD0)
+INSTR (ROR,      Word,  0xe078,  0xf1f8,  RD9,     RD0)
+INSTR (ROR,      Word,  0xe058,  0xf1f8,  I9,      RD0)
+INSTR (ROR,      Word,  0xe6c0,  0xffc0,  EA0Wma,  Void)
+INSTR (ROR,      Long,  0xe0b8,  0xf1f8,  RD9,     RD0)
+INSTR (ROR,      Long,  0xe098,  0xf1f8,  I9,      RD0)
+
+INSTR (ROXL,     Byte,  0xe130,  0xf1f8,  RD9,     RD0)
+INSTR (ROXL,     Byte,  0xe110,  0xf1f8,  I9,      RD0)
+INSTR (ROXL,     Word,  0xe170,  0xf1f8,  RD9,     RD0)
+INSTR (ROXL,     Word,  0xe150,  0xf1f8,  I9,      RD0)
+INSTR (ROXL,     Word,  0xe5c0,  0xffc0,  EA0Wma,  Void)
+INSTR (ROXL,     Long,  0xe1b8,  0xf1f8,  RD9,     RD0)
+INSTR (ROXL,     Long,  0xe198,  0xf1f8,  I9,      RD0)
+
+INSTR (ROXR,     Byte,  0xe030,  0xf1f8,  RD9,     RD0)
+INSTR (ROXR,     Byte,  0xe010,  0xf1f8,  I9,      RD0)
+INSTR (ROXR,     Word,  0xe070,  0xf1f8,  RD9,     RD0)
+INSTR (ROXR,     Word,  0xe050,  0xf1f8,  I9,      RD0)
+INSTR (ROXR,     Word,  0xe4c0,  0xffc0,  EA0Wma,  Void)
+INSTR (ROXR,     Long,  0xe0b0,  0xf1f8,  RD9,     RD0)
+INSTR (ROXR,     Long,  0xe090,  0xf1f8,  I9,      RD0)
+
+INSTR (RTR,      None,  0x4e77,  0xffff,  Void,    Void)
+
+INSTR (RTS,      None,  0x4e75,  0xffff,  Void,    Void)
+
+INSTR (SCC,      None,  0x54c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SCS,      None,  0x55c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SEQ,      None,  0x57c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SF,       None,  0x51c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SGE,      None,  0x5cc0,  0xffc0,  EA0Bda,  Void)
+INSTR (SGT,      None,  0x5ec0,  0xffc0,  EA0Bda,  Void)
+INSTR (SHI,      None,  0x52c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SHS,      None,  0x54c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SLE,      None,  0x5fc0,  0xffc0,  EA0Bda,  Void)
+INSTR (SLO,      None,  0x55c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SLS,      None,  0x53c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SLT,      None,  0x5dc0,  0xffc0,  EA0Bda,  Void)
+INSTR (SMI,      None,  0x5bc0,  0xffc0,  EA0Bda,  Void)
+INSTR (SNE,      None,  0x56c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SPL,      None,  0x5ac0,  0xffc0,  EA0Bda,  Void)
+INSTR (ST,       None,  0x50c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SVC,      None,  0x58c0,  0xffc0,  EA0Bda,  Void)
+INSTR (SVS,      None,  0x59c0,  0xffc0,  EA0Bda,  Void)
+
+INSTR (SUBX,     Byte,  0x9100,  0xf1f8,  RD0,     RD9)
+INSTR (SUBX,     Byte,  0x9108,  0xf1f8,  RA0d,    RA9d)
+INSTR (SUBX,     Word,  0x9140,  0xf1f8,  RD0,     RD9)
+INSTR (SUBX,     Word,  0x9148,  0xf1f8,  RA0d,    RA9d)
+INSTR (SUBX,     Long,  0x9180,  0xf1f8,  RD0,     RD9)
+INSTR (SUBX,     Long,  0x9188,  0xf1f8,  RA0d,    RA9d)
+
+INSTR (SUB,      Byte,  0x9000,  0xf1c0,  EA0B,    RD9)
+INSTR (SUB,      Byte,  0x9100,  0xf1c0,  RD9,     EA0Bma)
+INSTR (SUB,      Word,  0x9040,  0xf1c0,  EA0W,    RD9)
+INSTR (SUB,      Word,  0x9140,  0xf1c0,  RD9,     EA0Wma)
+INSTR (SUB,      Long,  0x9080,  0xf1c0,  EA0L,    RD9)
+INSTR (SUB,      Long,  0x9180,  0xf1c0,  RD9,     EA0Lma)
+
+INSTR (SUBA,     Word,  0x90c0,  0xf1c0,  EA0W,    RA9)
+INSTR (SUBA,     Long,  0x91c0,  0xf1c0,  EA0L,    RA9)
+
+INSTR (SUBI,     Byte,  0x0400,  0xffc0,  IB,      EA0Bda)
+INSTR (SUBI,     Word,  0x0440,  0xffc0,  IW,      EA0Wda)
+INSTR (SUBI,     Long,  0x0480,  0xffc0,  IL,      EA0Lda)
+
+INSTR (SUBQ,     Byte,  0x5100,  0xf1c0,  I9,      EA0Ba)
+INSTR (SUBQ,     Word,  0x5140,  0xf1c0,  I9,      EA0Wa)
+INSTR (SUBQ,     Long,  0x5180,  0xf1c0,  I9,      EA0La)
+
+INSTR (TAS,      None,  0x4ac0,  0xffc0,  EA0Bda,  Void)
+
+INSTR (TRAP,     None,  0x4e40,  0xfff0,  I04,     Void)
+
+INSTR (TRAPV,    None,  0x4e76,  0xffff,  Void,    Void)
+
+INSTR (TST,      Byte,  0x4a00,  0xffc0,  EA0B,    Void)
+INSTR (TST,      Word,  0x4a40,  0xffc0,  EA0W,    Void)
+INSTR (TST,      Long,  0x4a80,  0xffc0,  EA0L,    Void)
+
+INSTR (UNLK,     None,  0x4e58,  0xfff8,  RA0,     Void)
+
+// supervisor instructions
+
+INSTR (RESET,    None,  0x4e70,  0xffff,  Void,    Void)
+
+INSTR (RTE,      None,  0x4e73,  0xffff,  Void,    Void)
+
+INSTR (STOP,     None,  0x4e72,  0xffff,  IW,      Void)
+
+// operand types
+
+TYPE (Void)
+TYPE (IB)
+TYPE (IW)
+TYPE (IL)
+TYPE (I04)
+TYPE (I08)
+TYPE (I9)
+TYPE (DB)
+TYPE (DW)
+TYPE (RD0)
+TYPE (RD9)
+TYPE (RA0)
+TYPE (RA9)
+TYPE (RA0d)
+TYPE (RA0i)
+TYPE (RA0m)
+TYPE (RA9d)
+TYPE (RA9i)
+TYPE (EA0B)
+TYPE (EA0W)
+TYPE (EA0L)
+TYPE (EA0Ba)
+TYPE (EA0Wa)
+TYPE (EA0La)
+TYPE (EA0Bd)
+TYPE (EA0Wd)
+TYPE (EA0Ld)
+TYPE (EA0Lc)
+TYPE (EA0Bda)
+TYPE (EA0Wda)
+TYPE (EA0Lda)
+TYPE (EA0Bma)
+TYPE (EA0Wma)
+TYPE (EA0Lma)
+TYPE (EA6Bda)
+TYPE (EA6Wda)
+TYPE (EA6Lda)
+TYPE (USP)
+TYPE (SR)
+TYPE (CCR)
+
+#undef INSTR
+#undef MNEM
+#undef TYPE

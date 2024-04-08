@@ -1,0 +1,466 @@
+<!--
+  C++ serializer definition
+  Copyright (C) Florian Negele
+
+  This file is part of the Eigen Compiler Suite.
+
+  The ECS is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  The ECS is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!-- [gram.lex] -->
+
+<!ELEMENT auto EMPTY>
+<!ELEMENT bool EMPTY>
+<!ELEMENT char16_t EMPTY>
+<!ELEMENT char32_t EMPTY>
+<!ELEMENT char EMPTY>
+<!ELEMENT class EMPTY>
+<!ELEMENT const EMPTY>
+<!ELEMENT constexpr EMPTY>
+<!ELEMENT default EMPTY>
+<!ELEMENT delete EMPTY>
+<!ELEMENT double EMPTY>
+<!ELEMENT ellipsis EMPTY>
+<!ELEMENT enum EMPTY>
+<!ELEMENT explicit EMPTY>
+<!ELEMENT extern EMPTY>
+<!ELEMENT final EMPTY>
+<!ELEMENT float EMPTY>
+<!ELEMENT friend EMPTY>
+<!ELEMENT global EMPTY>
+<!ELEMENT inline EMPTY>
+<!ELEMENT int EMPTY>
+<!ELEMENT long EMPTY>
+<!ELEMENT lvalue-reference EMPTY>
+<!ELEMENT mutable EMPTY>
+<!ELEMENT override EMPTY>
+<!ELEMENT pointer EMPTY>
+<!ELEMENT private EMPTY>
+<!ELEMENT protected EMPTY>
+<!ELEMENT public EMPTY>
+<!ELEMENT register EMPTY>
+<!ELEMENT rvalue-reference EMPTY>
+<!ELEMENT short EMPTY>
+<!ELEMENT signed EMPTY>
+<!ELEMENT static EMPTY>
+<!ELEMENT struct EMPTY>
+<!ELEMENT template EMPTY>
+<!ELEMENT thread_local EMPTY>
+<!ELEMENT throw EMPTY>
+<!ELEMENT typedef EMPTY>
+<!ELEMENT typename EMPTY>
+<!ELEMENT union EMPTY>
+<!ELEMENT unsigned EMPTY>
+<!ELEMENT virtual EMPTY>
+<!ELEMENT void EMPTY>
+<!ELEMENT volatile EMPTY>
+<!ELEMENT wchar_t EMPTY>
+
+<!ELEMENT token (#PCDATA)>
+<!ATTLIST token source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT identifier (#PCDATA)>
+<!ATTLIST identifier source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT string-literal (#PCDATA)>
+<!ATTLIST string-literal source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!-- [gram.basic] -->
+
+<!ELEMENT translation-unit (declaration-seq?)>
+<!ATTLIST translation-unit source CDATA #REQUIRED>
+
+<!-- [gram.expr] -->
+
+<!ELEMENT expression (literal | string-literal+ | this | parenthesized-expression | id-expression | lambda-expression | subscript-expression | function-call | constructor-call |
+	braced-constructor-call | member-access | postfix-expression | dynamic-cast-expression | static-cast-expression | reinterpret-cast-expression | const-cast-expression |
+	typeid-expression | prefix-expression | unary-expression | sizeof-expression | alignof-expression | noexcept-expression | new-expression | delete-expression |
+	cast-expression | pm-expression | binary-expression | conditional-expression | throw-expression | conversion-expression | typetrait-expression)>
+<!ATTLIST expression source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED type CDATA #REQUIRED category CDATA #REQUIRED value CDATA #IMPLIED>
+
+<!ELEMENT literal (#PCDATA)>
+<!ATTLIST literal suffix CDATA #IMPLIED>
+
+<!ELEMENT this EMPTY>
+
+<!ELEMENT parenthesized-expression (expression)>
+
+<!ELEMENT id-expression (nested-name-specifier?, template?, (identifier | operator-function-id | conversion-function-id | literal-operator-id | destructor-id | template-id))>
+<!ATTLIST id-expression entity CDATA #REQUIRED>
+
+<!ELEMENT destructor-id (type-specifier)>
+<!ATTLIST destructor-id type CDATA #REQUIRED>
+
+<!ELEMENT nested-name-specifier (global | (nested-name-specifier?, template?, identifier))>
+<!ATTLIST nested-name-specifier scope CDATA #IMPLIED source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT lambda-expression (lambda-capture?, lambda-declarator?, compound-statement)>
+
+<!ELEMENT lambda-capture (capture-default?, capture-list?)>
+
+<!ELEMENT capture-default (#PCDATA)>
+
+<!ELEMENT capture-list ((capture, ellipsis?)+)>
+
+<!ELEMENT capture ((lvalue-reference?, identifier, initializer?) | this)>
+
+<!ELEMENT lambda-declarator (parameter-declaration-clause, declaration-seq?, noexcept-specifier?, attribute-specifier-seq?, trailing-return-type?)>
+
+<!ELEMENT subscript-expression (expression, expression)>
+
+<!ELEMENT function-call (expression, expression-list?)>
+<!ATTLIST function-call entity CDATA #IMPLIED>
+
+<!ELEMENT constructor-call (type-specifier, expression-list?)>
+
+<!ELEMENT member-access (expression, operator, template?, identifier)>
+<!ATTLIST member-access entity CDATA #REQUIRED>
+
+<!ELEMENT postfix-expression (expression, operator)>
+
+<!ELEMENT dynamic-cast-expression (type-id, expression)>
+
+<!ELEMENT static-cast-expression (type-id, expression)>
+
+<!ELEMENT reinterpret-cast-expression (type-id, expression)>
+
+<!ELEMENT const-cast-expression (type-id, expression)>
+
+<!ELEMENT typeid-expression (expression | type-id)>
+
+<!ELEMENT expression-list (expression+)>
+
+<!ELEMENT prefix-expression (operator, expression)>
+
+<!ELEMENT unary-expression (operator, expression)>
+
+<!ELEMENT addressof-expression (expression)>
+
+<!ELEMENT sizeof-expression (expression | type-id | identifier)>
+
+<!ELEMENT alignof-expression (type-id)>
+
+<!ELEMENT new-expression (global?, expression-list?, type-id, initializer?)>
+
+<!ELEMENT delete-expression (global?, expression)>
+
+<!ELEMENT noexcept-expression (expression)>
+
+<!ELEMENT cast-expression (type-id, expression)>
+
+<!ELEMENT pm-expression (expression, operator, expression)>
+
+<!ELEMENT binary-expression (expression, operator, expression)>
+
+<!ELEMENT conditional-expression (expression, expression, expression)>
+
+<!ELEMENT conversion-expression (expression)>
+<!ATTLIST conversion-expression conversion CDATA #REQUIRED>
+
+<!ELEMENT typetrait-expression (string-literal+, type-id)>
+
+<!-- [gram.stmt] -->
+
+<!ELEMENT statement (attribute-specifier-seq?, (labeled-statement | case-statement | default-statement | expression-statement | compound-statement | if-statement | switch-statement |
+	while-statement | do-statement | for-statement | break-statement | continue-statement | return-statement | coroutine-return-statement | goto-statement | declaration-statement | try-block))>
+<!ATTLIST statement source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED likelihood (likely|unlikely) #IMPLIED>
+
+<!ELEMENT labeled-statement (identifier, statement)>
+
+<!ELEMENT case-statement (expression, statement)>
+
+<!ELEMENT default-statement (statement)>
+
+<!ELEMENT expression-statement (expression?)>
+
+<!ELEMENT compound-statement (statement-seq?)>
+
+<!ELEMENT statement-seq (statement+)>
+
+<!ELEMENT if-statement (constexpr?, condition, statement, statement?)>
+
+<!ELEMENT switch-statement (condition, statement)>
+
+<!ELEMENT condition (expression | declaration)>
+
+<!ELEMENT condition-declaration (attribute-specifier-seq?, decl-specifier-seq, declarator, initializer)>
+
+<!ELEMENT while-statement (condition, statement)>
+
+<!ELEMENT do-statement (statement, expression)>
+
+<!ELEMENT for-statement (statement, condition?, expression?, statement)>
+
+<!ELEMENT break-statement EMPTY>
+
+<!ELEMENT continue-statement EMPTY>
+
+<!ELEMENT return-statement (expression?)>
+
+<!ELEMENT coroutine-return-statement (expression?)>
+
+<!ELEMENT goto-statement (identifier)>
+
+<!ELEMENT declaration-statement (declaration)>
+
+<!-- [gram.dcl] -->
+
+<!ELEMENT declaration-seq (declaration+)>
+
+<!ELEMENT declaration (function-definition | template-declaration | explicit-instantiation | explicit-specialization | linkage-specification | namespace-definition | empty-declaration |
+	attribute-declaration | simple-declaration | asm-definition | namespace-alias-definition | using-declaration | using-directive | static_assert-declaration | alias-declaration |
+	opaque-enum-declaration | condition-declaration | member-specification | member-declaration)>
+<!ATTLIST declaration source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT alias-declaration (identifier, attribute-specifier-seq?, type-id)>
+<!ATTLIST alias-declaration entity CDATA #REQUIRED type CDATA #REQUIRED>
+
+<!ELEMENT simple-declaration (attribute-specifier-seq?, decl-specifier-seq?, init-declarator-list?)>
+
+<!ELEMENT static_assert-declaration (expression, string-literal*)>
+
+<!ELEMENT empty-declaration EMPTY>
+
+<!ELEMENT attribute-declaration (attribute-specifier-seq)>
+
+<!ELEMENT decl-specifier (storage-class-specifier | type-specifier | function-specifier | friend | typedef | constexpr | inline)>
+<!ATTLIST decl-specifier source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT decl-specifier-seq (decl-specifier+)>
+<!ATTLIST decl-specifier-seq type CDATA #REQUIRED>
+
+<!ELEMENT storage-class-specifier (register | static | thread_local | extern | mutable)>
+
+<!ELEMENT function-specifier (virtual | explicit)>
+
+<!ELEMENT type-specifier (class-specifier | enum-specifier | simple-type-specifier | elaborated-type-specifier | typename-specifier | cv-qualifier)>
+<!ATTLIST type-specifier source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT type-specifier-seq (type-specifier+, attribute-specifier-seq?)>
+<!ATTLIST type-specifier-seq type CDATA #IMPLIED>
+
+<!ELEMENT simple-type-specifier (type-name | char | char16_t | char32_t | wchar_t | bool | short | int | long | signed | unsigned | float | double | void | auto | decltype-specifier)>
+
+<!ELEMENT type-name (nested-name-specifier?, template?, (identifier | template-id))>
+
+<!ELEMENT decltype-specifier (expression | auto)>
+
+<!ELEMENT enum-specifier (enum-head, enumerator-list?)>
+<!ATTLIST enum-specifier elaborated (true|false) #REQUIRED>
+
+<!ELEMENT enum-head (enum-key, attribute-specifier-seq?, nested-name-specifier?, identifier?, enum-base?)>
+
+<!ELEMENT opaque-enum-declaration (enum-key, attribute-specifier-seq?, identifier, enum-base?)>
+<!ATTLIST opaque-enum-declaration entity CDATA #REQUIRED>
+
+<!ELEMENT enum-key (enum | class | struct)>
+<!ATTLIST enum-key scoped (true|false) #REQUIRED>
+
+<!ELEMENT enum-base (type-specifier-seq)>
+<!ATTLIST enum-base type CDATA #REQUIRED>
+
+<!ELEMENT enumerator-list (enumerator-definition+)>
+
+<!ELEMENT enumerator-definition (identifier, attribute-specifier-seq?, expression?)>
+<!ATTLIST enumerator-definition entity CDATA #REQUIRED value CDATA #REQUIRED>
+
+<!ELEMENT namespace-definition (inline?, attribute-specifier-seq?, identifier?, declaration-seq?)>
+<!ATTLIST namespace-definition entity CDATA #IMPLIED>
+
+<!ELEMENT namespace-alias-definition (identifier, nested-name-specifier?, identifier)>
+<!ATTLIST namespace-alias-definition entity CDATA #REQUIRED>
+
+<!ELEMENT using-declaration (using-declarator-list)>
+
+<!ELEMENT using-declarator-list ((using-declarator, ellipsis?)+)>
+
+<!ELEMENT using-declarator (typename?, nested-name-specifier?, identifier)>
+
+<!ELEMENT using-directive (attribute-specifier-seq?, nested-name-specifier?, identifier)>
+<!ATTLIST using-directive entity CDATA #REQUIRED>
+
+<!ELEMENT asm-definition (attribute-specifier-seq?, string-literal+)>
+
+<!ELEMENT linkage-specification (string-literal+, (declaration | declaration-seq?))>
+
+<!ELEMENT attribute-specifier-seq (attribute-specifier+)>
+
+<!ELEMENT attribute-specifier ((attribute-using-prefix?, attribute-list) | alignment-specifier)>
+<!ATTLIST attribute-specifier source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT alignment-specifier ((type-id | expression), ellipsis?)>
+<!ATTLIST alignment-specifier alignment CDATA #REQUIRED>
+
+<!ELEMENT attribute-using-prefix (identifier)>
+
+<!ELEMENT attribute-list ((attribute, ellipsis?)*)>
+
+<!ELEMENT attribute ((attribute-token | attribute-scoped-token), attribute-argument-clause?)>
+
+<!ELEMENT attribute-token (identifier)>
+
+<!ELEMENT attribute-scoped-token (identifier, identifier)>
+
+<!ELEMENT attribute-argument-clause (token* | string-literal+ | expression)>
+
+<!-- [gram.decl] -->
+
+<!ELEMENT init-declarator-list (init-declarator+)>
+
+<!ELEMENT init-declarator (declarator, initializer?)>
+<!ATTLIST init-declarator entity CDATA #IMPLIED>
+
+<!ELEMENT declarator (ptr-declarator | declarator-id | function-declarator | array-declarator | parenthesized-declarator)>
+<!ATTLIST declarator source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED type CDATA #REQUIRED>
+
+<!ELEMENT ptr-declarator (ptr-operator, declarator?)>
+
+<!ELEMENT function-declarator (declarator?, parameters-and-qualifiers, trailing-return-type?)>
+
+<!ELEMENT array-declarator (declarator?, expression?)>
+
+<!ELEMENT parenthesized-declarator (declarator)>
+
+<!ELEMENT parameters-and-qualifiers (parameter-declaration-clause, cv-qualifier-seq?, ref-qualifier?, noexcept-specifier?, attribute-specifier-seq?)>
+
+<!ELEMENT trailing-return-type (type-id)>
+
+<!ELEMENT ptr-operator (nested-name-specifier?, (pointer | lvalue-reference | rvalue-reference), attribute-specifier-seq?, cv-qualifier-seq?)>
+
+<!ELEMENT cv-qualifier-seq (cv-qualifier+)>
+
+<!ELEMENT cv-qualifier (const | volatile)>
+
+<!ELEMENT ref-qualifier (lvalue-reference | rvalue-reference)>
+
+<!ELEMENT declarator-id (ellipsis?, id-expression?, attribute-specifier-seq?)>
+
+<!ELEMENT type-id (type-specifier-seq, declarator?)>
+<!ATTLIST type-id type CDATA #IMPLIED>
+
+<!ELEMENT parameter-declaration-clause (parameter-declaration-list?, ellipsis?)>
+
+<!ELEMENT parameter-declaration-list (parameter-declaration+)>
+
+<!ELEMENT parameter-declaration (attribute-specifier-seq?, decl-specifier-seq, declarator?, expression?)>
+<!ATTLIST parameter-declaration source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED type CDATA #REQUIRED entity CDATA #IMPLIED>
+
+<!ELEMENT function-definition (attribute-specifier-seq?, decl-specifier-seq?, declarator, virt-specifier-seq?, function-body)>
+<!ATTLIST function-definition entity CDATA #REQUIRED>
+
+<!ELEMENT function-body ((ctor-initializer?, compound-statement) | function-try-block | default | delete)>
+<!ATTLIST function-body source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT initializer (equal-initializer | braced-initializer | parenthesized-initializer)>
+<!ATTLIST initializer source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT parenthesized-initializer (expression-list?)>
+
+<!ELEMENT equal-initializer (expression)>
+
+<!ELEMENT initializer-clause (expression+)>
+
+<!-- [gram.class] -->
+
+<!ELEMENT class-specifier (class-head, declaration-seq?)>
+<!ATTLIST class-specifier elaborated (true|false) #REQUIRED>
+
+<!ELEMENT class-head (class-key, attribute-specifier-seq?, nested-name-specifier?, (identifier | template-id)?, class-virt-specifier?, base-clause?)>
+
+<!ELEMENT class-virt-specifier (final)>
+
+<!ELEMENT class-key (class | struct | union)>
+
+<!ELEMENT member-specification (access-specifier)>
+
+<!ELEMENT member-declaration (attribute-specifier-seq?, decl-specifier-seq?, member-declarator-list?)>
+
+<!ELEMENT member-declarator-list (member-declarator+)>
+
+<!ELEMENT member-declarator (declarator?, virt-specifier-seq?, initializer?, expression?)>
+
+<!ELEMENT virt-specifier-seq (virt-specifier+)>
+
+<!ELEMENT virt-specifier (override | final)>
+
+<!-- [gram.derived] -->
+
+<!ELEMENT base-clause (base-specifier-list)>
+
+<!ELEMENT base-specifier-list ((base-specifier, ellipsis?)+)>
+
+<!ELEMENT base-specifier (attribute-specifier-seq?, virtual?, access-specifier?, type-specifier)>
+
+<!ELEMENT access-specifier (private | protected | public)>
+
+<!-- [gram.special] -->
+
+<!ELEMENT conversion-function-id (type-id)>
+
+<!ELEMENT ctor-initializer (mem-initializer-list)>
+
+<!ELEMENT mem-initializer-list (mem-initializer+)>
+
+<!ELEMENT mem-initializer (type-specifier, initializer)>
+
+<!-- [gram.over] -->
+
+<!ELEMENT operator-function-id (operator)>
+
+<!ELEMENT operator (#PCDATA)>
+
+<!ELEMENT literal-operator-id (identifier)>
+
+<!-- [gram.temp] -->
+
+<!ELEMENT template-declaration (template-parameter-list, declaration)>
+
+<!ELEMENT template-parameter-list (template-parameter+)>
+
+<!ELEMENT template-parameter (type-parameter | parameter-declaration)>
+<!ATTLIST template-parameter source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT type-parameter ((type-parameter-key | (template, template-parameter-list, type-parameter-key)), ellipsis?, identifier?, type-id?)>
+
+<!ELEMENT type-parameter-key (class | typename)>
+
+<!ELEMENT template-id ((identifier | operator-function-id | conversion-function-id | literal-operator-id), template-argument-list?)>
+
+<!ELEMENT template-argument-list ((template-argument, Ellipsis?)+)>
+
+<!ELEMENT template-argument (expression | type-id)>
+<!ATTLIST template-argument source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>
+
+<!ELEMENT typename-specifier (nested-name-specifier, (identifier, template-id))>
+
+<!ELEMENT explicit-instantiation (extern?, declaration)>
+
+<!ELEMENT explicit-specialization (declaration)>
+
+<!-- [gram.except] -->
+
+<!ELEMENT try-block (compound-statement, handler-seq)>
+
+<!ELEMENT function-try-block (ctor-initializer?, compound-statement, handler-seq)>
+
+<!ELEMENT handler-seq (handler+)>
+
+<!ELEMENT handler (exception-declaration, compound-statement)>
+
+<!ELEMENT exception-declaration (ellipsis | (attribute-specifier-seq?, type-specifier-seq, declarator?))>
+
+<!ELEMENT throw-expression (expression?)>
+
+<!ELEMENT noexcept-specifier (expression?, throw?)>
+<!ATTLIST noexcept-specifier source CDATA #IMPLIED line CDATA #REQUIRED column CDATA #REQUIRED>

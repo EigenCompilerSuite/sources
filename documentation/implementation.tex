@@ -1,0 +1,196 @@
+% Implementation details of the Eigen Compiler Suite
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startpresentation{Implementation Details}{implementation}
+
+\section{Overall Design}
+
+\begin{frame}{Overall Design}{\ecs{}}\nocite{cpp}
+\begin{columns}[T]
+\column{12em}
+\begin{block}{Implementation:}
+\begin{itemize}
+\item Standard \cpp{} \bigskip
+\item Portable \& Maintainable \bigskip
+\item Self-Documenting Code \bigskip
+\end{itemize}
+\end{block}
+\column{9em}
+\begin{block}{Project:}
+\begin{itemize}
+\item Simple Structure \bigskip
+\item Version Control \bigskip
+\item Issue Tracking \bigskip
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+\section{Code Structure}
+
+\begin{frame}{Code Structure}{Physical Structure}
+\begin{block}{Major Components:}
+\begin{description}[Programming Languages:]
+\item[Programming Languages:] Syntax Tree, Lexer, Parser, Semantic Checker, Interpreter, Intermediate Code Emitter
+\item[Hardware Architectures:] Instruction Set, Assembler, Disassembler, Code Generator
+\item[Abstractions:] Intermediate Code, Object \\ Files, Debugging Information
+\end{description}
+\begin{description}[Examples:]
+\item[Examples:] cppparser.cpp/.hpp, avrassembler.cpp/.hpp, \\ code.cpp/.hpp, object.cpp/.hpp
+\end{description}
+\end{block}
+\end{frame}
+
+\begin{frame}{Code Structure}{Physical Structure}
+\begin{block}{Drivers:}
+Pretty Printers, Semantic Checkers, Interpreters, Compilers, Assemblers, Disassemblers, Linkers
+\begin{description}[Examples:]
+\item[Examples:] printer.cpp, compiler.cpp, linker.cpp
+\end{description}
+\end{block}
+\begin{block}{Utilities:}
+Drivers, Diagnostics, String Formatting, Character Sets, String Pools, Structure Pools
+\begin{description}[Examples:]
+\item[Examples:] driver.hpp, diagnostics.hpp, stringpool.hpp
+\end{description}
+\end{block}
+\end{frame}
+
+\begin{frame}{Code Structure}{Logical Structure}
+\begin{center}
+\begin{description}[\quad]
+\item[namespace] ECS
+\begin{multicols}{2}
+\begin{description}[\quad]
+\item[namespace] AMD64
+\begin{description}[\quad]
+\item[class] Assembler
+\item[class] Disassembler
+\item[class] Generator
+\item[class] Instruction
+\end{description}
+\item[class] Charset
+\item[class] Diagnostics
+\item[class] StringPool
+\item[namespace] Oberon
+\begin{description}[\quad]
+\item[class] Checker
+\item[class] Emitter
+\item[class] Interpreter
+\item[class] Lexer
+\item[class] Parser
+\item[class] Printer
+\item[struct] Module
+\end{description}
+\end{description}
+\end{multicols}
+\end{description}
+\end{center}
+\end{frame}
+
+\section{Macro Definition Files}
+
+\begin{frame}[fragile]{Macro Definition Files}{Typical Programming Language Definitions}
+\begin{small}\begin{center}\begin{minipage}{16em}\begin{verbatim}
+#ifndef SYMBOL
+  #define SYMBOL(symbol, name)
+#endif
+
+SYMBOL (False, "false")
+SYMBOL (For,   "for")
+SYMBOL (If,    "if")
+SYMBOL (True,  "true")
+SYMBOL (While, "while")
+
+#undef SYMBOL
+\end{verbatim}\end{minipage}\end{center}\end{small}
+\end{frame}
+
+\begin{frame}[fragile]{Macro Definition Files}{Typical Usage}\nocite{assembly}
+\begin{small}\begin{center}\begin{minipage}{20em}\begin{verbatim}
+enum Symbol {
+  #define SYMBOL(symbol, name) symbol,
+  #include "language.def"
+};
+
+const char*const symbols[] {
+  #define SYMBOL(symbol, name) name,
+  #include "language.def"
+};
+\end{verbatim}\end{minipage}\end{center}\end{small}
+\end{frame}
+
+\section{Context Classes}
+
+\begin{frame}[fragile]{Context Classes}{Light-Weight Interface in Header File}
+\begin{small}\begin{center}\begin{minipage}{20em}\begin{verbatim}
+namespace ECS {
+  namespace Oberon {
+    class Parser;
+    struct Module;
+  }
+}
+
+class ECS::Oberon::Parser {
+  class Context;
+public:
+  void Parse (std::istream&, Module&);
+};
+\end{verbatim}\end{minipage}\end{center}\end{small}
+\end{frame}
+
+\begin{frame}[fragile]{Context Classes}{Forwarded Implementation in Source File}
+\begin{small}\begin{center}\begin{minipage}{21em}\begin{verbatim}
+class ECS::Oberon::Parser::Context {
+  ...
+public:
+  Context (std::istream&);
+  Parse (Module&);
+};
+
+void ECS::Oberon::Parser::Parse
+    (std::istream& is, Module& module) {
+  Context context {is}.Parse (module);
+}
+\end{verbatim}\end{minipage}\end{center}\end{small}
+\end{frame}
+
+\section{Error Handling}
+
+\begin{frame}{Error Handling}{Reporting Diagnostic Messages}
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule Type & Indication & Resolution \\ \midrule
+Errors & Failure & Abort \\
+Fatal Errors & Failure & Abort \\ \midrule
+Warnings & Information & Proceed \\
+Notes & Information & Proceed \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{columns}[T]
+\column{10em}
+\begin{enumerate}
+\item Report message
+\item Abort with exception
+\end{enumerate}
+\column{8em}
+\begin{itemize}
+\item[$+$] Assert semantics
+\item[$-$] No recovery
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\concludepresentation

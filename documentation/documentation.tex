@@ -1,0 +1,394 @@
+% Generic documentation generation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seedocumentation}{}
+
+\startchapter{Generic Documentation}{Generic Documentation Generation}{documentation}
+{This \documentation{} describes the generic documentation facility used by the \ecs{} in order
+to automatically generate consistent documentations from source code written in different programming languages.}
+
+\epigraph{Learn as much by writing as by reading.}{John Dalberg-Acton}
+
+\section{Introduction}
+
+Almost all programming languages allow programmers to annotate their code with additional notes and comments.
+Oftentimes these annotations are part of the interface exposed to users of libraries or applications.
+The \ecs{} provides a facility for extracting this information in order to automatically generate detailed and appealing documentations about this interface.
+This framework is called \emph{generic documentation generation}\index{Generic documentation generation}\index{Documentation generation}\index{Generation of documentation}.
+
+The core of this framework consists of a generic representation of the program interface as well as the source code annotations provided by the programmer.
+The \ecs{} provides so-called \emph{documentation extractors}\index{Documentation extractors}\index{Extractors} for some of the supported programming languages.
+They extract the structure and comments of source code and create a consistent documentation of it using the generic documentation representation.
+So called \emph{documentation formatters}\index{Documentation formatters}\index{Formatters} on the other hand are able to transform the generic representation of this documentation into documents of different formats.
+Figure~\ref{fig:docdataflow} visualizes the role and data flow of the generic documentation representation in-between extractors and formatters.
+
+\begin{figure}
+\flowgraph{
+\resource{source code} \ar[d] & \resource{source code} \ar[d] & \resource{source code} \ar[d] \\
+\converter{Documentation\\Extractor\\for programming\\language \textit{A}} \ar[rd] & \converter{Documentation\\Extractor\\for programming\\language \textit{B}} \ar[d] & \converter{Documentation\\Extractor\\for programming\\language \textit{C}} \ar[ld] \\
+& \resource{generic\\documentation\\representation} \ar[ld] \ar[d] \ar[rd] \\
+\converter{Documentation\\Formatter\\for document\\format \textit{X}} \ar[d] & \converter{Documentation\\Formatter\\for document\\format \textit{Y}} \ar[d] & \converter{Documentation\\Formatter\\for document\\format \textit{Z}} \ar[d] \\
+\resource{formatted\\document} & \resource{formatted\\document} & \resource{formatted\\document} \\
+}\caption{Extracting and formatting generic documentation}
+\label{fig:docdataflow}
+\end{figure}
+
+In addition to the automatically extracted information, the framework is also able to format the annotations given by the programmer.
+For this purpose, the framework defines a lightweight markup language which is an extension of the Creole markup language used for formatting wikis~\cite{sauer2007}.
+Table~\ref{tab:docmarkup} summarizes all elements of this markup language and shows how they are formatted.
+
+\markuptable
+
+\section{Generic Documentation Representation}
+
+Generic documentations are represented using a hierarchical structure of \emph{documents}\index{Documents}, \emph{articles}\index{Articles}, \emph{paragraphs}\index{Paragraphs}, and \emph{texts}\index{Texts}.
+Figure~\ref{fig:docstructure} visualizes this hierarchy.
+
+\begin{figure}
+\flowgraph{
+& & \resource{generic\\documentation} \ar[ld] \ar[d] \ar[rd] \\
+\cdots & \resource{document} & \resource{document} \ar[ld] \ar[d] \ar[rd] & \resource{document} & \cdots \\
+\cdots & \resource{article} & \resource{article} \ar[ld] \ar[d] \ar[rd] & \resource{article} & \cdots \\
+\cdots & \resource{paragraph} & \resource{paragraph} \ar[ld] \ar[d] \ar[rd] & \resource{paragraph} & \cdots \\
+\cdots & \resource{text} & \resource{text} & \resource{text} & \cdots \\
+}\caption{Structure of generic documentations}
+\label{fig:docstructure}
+\end{figure}
+
+The remainder of this section describes the syntax of the markup language that is used to represent generic documentations.
+The complete syntax specification is given in Figure~\ref{fig:docmarkupsyntax}.
+
+\begin{figure}
+\centering\ifbook\small\fi\setlength{\grammarparsep}{0ex}
+\begin{minipage}{34em}\begin{grammar}
+<Documentation> = <Documents>$\opt$ \par
+<Documents> = <Document> $\mid$ <Documents> <Document> \par
+<Document> = <Description> <Articles>$\opt$ \par
+<Description> = <Paragraphs>$\opt$ \par
+<Articles> = <Article> $\mid$ <Articles> <Article> \par
+<Article> = <Article-Marker> <Title> <Paragraphs>$\opt$ \par
+<Article-Marker> = "@" $\mid$ "@@" $\mid$ "@@@" $\mid$ "@@@@" $\mid$ \ldots \par
+<Title> = <Text> \par
+<Paragraph> = <Text-Block> $\mid$ <Heading> $\mid$ <List-Item> $\mid$ <Code-Block> $\mid$ <Table> $\mid$ <Line> \par
+<Text-Block> = <Text> \par
+<Heading> = <Heading-Marker> <Text> \par
+<Heading-Marker> = "=" $\mid$ "==" $\mid$ "===" \par
+<List-Item> = <Item-Marker> <Text> \par
+<Item-Marker> = <Number-Marker> $\mid$ <Bullet-Marker> \par
+<Number-Marker> = "#" $\mid$ "##" $\mid$ "###" \par
+<Bullet-Marker> = "*" $\mid$ "**" $\mid$ "***" \par
+<Code-Block> = "{{{" any text "}}}" \par
+<Table> = <Rows> \par
+<Rows> = <Row> $\mid$ <Rows> <Row> \par
+<Row> = <Cells> \par
+<Cells> = <Cell> $\mid$ <Cells> <Cell> \par
+<Cell> = <Cell-Marker> <Text> \par
+<Cell-Marker> = "|" $\mid$ "|=" \par
+<Line> = "--------" \par
+<Text> = <Text-Elements>$\opt$ \par
+<Text-Elements> = <Text-Element> $\mid$ <Text-Elements> <Text-Element> \par
+<Text-Element> = <Default> $\mid$ <Italic> $\mid$ <Bold> $\mid$ <Link> $\mid$ <URL> $\mid$ <Label> $\mid$ <Code> $\mid$ <Line-Break> \par
+<Default> = word \par
+<Italic> = "//" <Text> "//" \par
+<Bold> = "**" <Text> "**" \par
+<Link> = "[[" <Target> "]]" $\mid$ "[[" <Target> "|" <Text> "]]" \par
+<Target> = word \par
+<URL> = "[[" url "]]" $\mid$ "[[" url "|" <Text> "]]" \par
+<Label> = "<""<" <Target> ">"">" \par
+<Code> = "{{{" <Text> "}}}" \par
+<Line-Break> = "\\\\" \par
+\end{grammar}\end{minipage}
+\caption{Syntax of the generic documentation markup language}
+\label{fig:docmarkupsyntax}
+\end{figure}
+
+\subsection{Documents}
+
+Each document consists of a general description of its contents and a list of articles.
+Documents are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Documentation> = <Documents>$\opt$ \par
+<Documents> = <Document> $\mid$ <Documents> <Document> \par
+<Document> = <Description> <Articles>$\opt$ \par
+<Description> = <Paragraphs>$\opt$ \par
+\end{grammar}\end{quote}
+
+If the documentation consists of several documents, the paragraphs of their descriptions are merged and placed at the beginning of the generated documentation.
+
+\subsection{Articles}
+
+Articles allow giving more detailed information and correspond to structured sections in traditional documents.
+They are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Articles> = <Article> $\mid$ <Articles> <Article> \par
+<Article> = <Article-Marker> <Title> <Paragraphs>$\opt$ \par
+<Article-Marker> = "@" $\mid$ "@@" $\mid$ "@@@" $\mid$ "@@@@" $\mid$ \ldots \par
+<Title> = <Text> \par
+\end{grammar}\end{quote}
+
+The title of an article corresponds to the caption of a section within a traditional document.
+In generated documentations, they are additionally listed in the table of contents.
+The number of at signs in the marker of an article specifies the corresponding nesting level of the article.
+The difference of the nesting levels of two consecutive articles within the same document may not be higher than one.
+
+\subsection{Paragraphs}
+
+Paragraphs are text blocks that have a specific type which specifies how the text is formatted.
+They are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Paragraph> = <Text-Block> $\mid$ <Heading> $\mid$ <List-Item> $\mid$ <Code-Block> $\mid$ <Table> $\mid$ <Line> \par
+\end{grammar}\end{quote}
+
+The type of a paragraph affects the formatting of its contents and may be one of the following:
+
+\begin{itemize}
+
+\item Text Block\nopagebreak
+
+Plain text blocks are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Text-Block> = <Text> \par
+\end{grammar}\end{quote}
+
+\item Heading\nopagebreak
+
+Headings allow authors of an article to logically structure its contents.
+They are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Heading> = <Heading-Marker> <Text> \par
+<Heading-Marker> = "=" $\mid$ "==" $\mid$ "===" \par
+\end{grammar}\end{quote}
+
+The number of equal signs in the marker of a heading specifies the corresponding nesting level of the heading.
+The difference of the nesting levels of two consecutive headings within the same article may not be higher than one.
+
+\item List Item\nopagebreak
+
+List items may be ordered or unordered and are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<List-Item> = <Item-Marker> <Text> \par
+<Item-Marker> = <Number-Marker> $\mid$ <Bullet-Marker> \par
+<Number-Marker> = "#" $\mid$ "##" $\mid$ "###" \par
+<Bullet-Marker> = "*" $\mid$ "**" $\mid$ "***" \par
+\end{grammar}\end{quote}
+
+The number of symbols in the marker of a list item specifies the corresponding nesting level of the item within a list.
+The difference of the nesting levels of two consecutive items within the same list may not be higher than one.
+
+\item Code Blocks\nopagebreak
+
+Code text blocks allow marking passages of source code within the documentation.
+They are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Code-Block> = "{{{" any text "}}}" \par
+\end{grammar}\end{quote}
+
+The code in-between the two markers is not subject to any further processing and is always formatted as is.
+
+\item Table\nopagebreak
+
+Tables consist of cell rows and are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Table> = <Rows> \par
+<Rows> = <Row> $\mid$ <Rows> <Row> \par
+<Row> = <Cells> \par
+<Cells> = <Cell> $\mid$ <Cells> <Cell> \par
+<Cell> = <Cell-Marker> <Text> \par
+<Cell-Marker> = "|" $\mid$ "|=" \par
+\end{grammar}\end{quote}
+
+An equal sign immediately following a pipe symbol in the marker of a cell turns the cell into a header.
+
+\item Line\nopagebreak
+
+Lines are formatted as horizontal rules and are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Line> = "--------" \par
+\end{grammar}\end{quote}
+
+\end{itemize}
+
+Paragraphs and articles may be separated by any number of new-line characters.
+A single new-line character between two text lines of the same paragraph is considered as a white-space character.
+
+\subsection{Texts}
+
+The contents of most paragraphs as well as the title of an article consist of text.
+A text is a list of so-called \emph{text elements}\index{Text elements} which specify the formatting of the text.
+Text elements may also contain text themselves according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Text> = <Text-Elements>$\opt$ \par
+<Text-Elements> = <Text-Element> $\mid$ <Text-Elements> <Text-Element> \par
+<Text-Element> = <Default> $\mid$ <Italic> $\mid$ <Bold> $\mid$ <Link> $\mid$ <URL> $\mid$ <Label> $\mid$ <Code> $\mid$ <Line-Break> \par
+\end{grammar}\end{quote}
+
+The formatting style of a text element may be one of the following:
+
+\begin{itemize}
+
+\item Default\nopagebreak
+
+The default style does not change the current formatting.
+Default text elements are just strings according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Default> = word \par
+\end{grammar}\end{quote}
+
+\item Italic\nopagebreak
+
+Italic text passages are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Italic> = "//" <Text> "//" \par
+\end{grammar}\end{quote}
+
+\item Bold\nopagebreak
+
+Bold text passages are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Bold> = "**" <Text> "**" \par
+\end{grammar}\end{quote}
+
+\item Link\nopagebreak
+
+Internal links point to a label defined elsewhere in the generic documentation and are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Link> = "[[" <Target> "]]" $\mid$ "[[" <Target> "|" <Text> "]]" \par
+<Target> = word \par
+\end{grammar}\end{quote}
+
+The formatted text of an internal link equals its target if the alternative text is not given.
+A link is only valid, if the target names a label that was actually defined in one of the documents of a generic documentation.
+
+\item URL\nopagebreak
+
+External links are URLs that point to external resources.
+They are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<URL> = "[[" url "]]" $\mid$ "[[" url "|" <Text> "]]" \par
+\end{grammar}\end{quote}
+
+The formatted text of an external link equals its target if the alternative text is not given.
+Currently, only the URL schemes "http:" and "https:" are recognized.
+Freestanding URLs are automatically turned into external links.
+
+\item Label\nopagebreak
+
+Labels name targets for internal links and are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Label> = "<""<" <Target> ">"">" \par
+<Target> = word \par
+\end{grammar}\end{quote}
+
+\item Code\nopagebreak
+
+Code text passages are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Code> = "{{{" <Text> "}}}" \par
+\end{grammar}\end{quote}
+
+\item Line Breaks\nopagebreak
+
+Line breaks request the beginning of a new line.
+They are represented according to the following syntax:
+
+\begin{quote}\begin{grammar}
+<Line-Break> = "\\\\" \par
+\end{grammar}\end{quote}
+
+\end{itemize}
+
+\section{Documentation Formatters}
+
+This section lists all document formats supported by the \ecs{} and describes how the corresponding documentation formatters process generic documentations.
+
+\subsection{HTML Documentations}
+
+The HTML documentation formatter merges several generic documentations into a single HTML document.
+This file consists of a merged description of all documentations and all of their articles.
+In addition, it inserts a linked table of contents using the titles and hierarchical structure of all articles.
+All articles are formatted the same way and begin with a horizontal rule.
+At the end of each article, a link to the top of the HTML page is inserted.
+
+\subsection{Latex Documentations}
+
+The Latex documentation formatter merges several generic documentations into a single Latex document.
+It uses the article document style and uses all flavors of the section and paragraph commands to map the structure of all articles.
+Headings are formatted using the starred versions of these commands.
+After the merged description of all generic documentations, the formatter issues a table of contents command.
+Internal and external links are formatted using the \texttt{hyperref} package.
+
+The generated Latex code does not use built-in commands directly but defines and calls wrappers for most of them instead.
+This allows including the file in larger documents which may provide user-defined versions of these commands beforehand.
+
+\section{Generic Documentation Tools}
+
+The \ecs{} provides several different tools that generate or process generic documentations.
+While real documentation generators use generic documentations just as an internal and therefore inaccessible representation,
+these tools allow inspecting and modifying the actual documentation that is processed for debugging purposes.
+\interface\renewcommand{\debuggingtool}{}
+
+\docprint
+\doccheck
+\dochtml
+\doclatex
+
+\section{Documentation Generation Tools}
+
+The \ecs{} provides several different documentation generators that process commented source code files
+written in miscellaneous programming languages in order to automatically extract documentations like user guides or reference manuals out of them.
+Figure~\ref{fig:docgendataflow} shows the typical data flow within these documentation generators.
+For concrete information about how these tools extract the structure of the source code, users have to refer to the documentation of the corresponding programming language.
+\interface
+
+\begin{figure}
+\flowgraph{
+\resource{source code} \ar[d] \\
+\converter{Lexer} \ar[d] \\
+\resource{tokens} \ar[d] \\
+\converter{Parser} \ar[d] \\
+\resource{abstract\\syntax tree} \ar[d] \\
+\converter{Semantic\\Checker} \ar[d] \\
+\resource{attributed\\syntax tree} \ar[d] \\
+\converter{Documentation\\Extractor} \ar[d] \\
+\resource{generic\\documentation} \ar[d] \\
+\converter{Documentation\\Formatter} \ar[d] \\
+\resource{formatted\\document} \\
+}\caption{Data flow within a typical documentation generator}
+\label{fig:docgendataflow}
+\end{figure}
+
+\cppdoc
+\cpphtml
+\cpplatex
+\obdoc
+\obhtml
+\oblatex
+
+\concludechapter

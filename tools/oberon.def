@@ -1,0 +1,245 @@
+// Oberon language definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef CONSTANT
+	#define CONSTANT(scope, constant, name, type, value) DECLARATION (Constant, scope, constant, name)
+#endif
+
+#ifndef DECLARATION
+	#define DECLARATION(model, scope, declaration, name)
+#endif
+
+#ifndef DEFINITION
+	#define DEFINITION(definition, name, result, first, second)
+#endif
+
+#ifndef FUNCTION
+	#define FUNCTION(scope, function, name) PROCEDURE (scope, function, name)
+#endif
+
+#ifndef PROCEDURE
+	#define PROCEDURE(scope, procedure, name) DECLARATION (Procedure, scope, procedure, name)
+#endif
+
+#ifndef SYMBOL
+	#define SYMBOL(symbol, name)
+#endif
+
+#ifndef TYPE
+	#define TYPE(scope, type, name, model, size) DECLARATION (Type, scope, type, name)
+#endif
+
+// keywords
+
+SYMBOL (Array,      "ARRAY")
+SYMBOL (Begin,      "BEGIN")
+SYMBOL (By,         "BY")
+SYMBOL (Case,       "CASE")
+SYMBOL (Const,      "CONST")
+SYMBOL (Div,        "DIV")
+SYMBOL (Do,         "DO")
+SYMBOL (Else,       "ELSE")
+SYMBOL (Elsif,      "ELSIF")
+SYMBOL (End,        "END")
+SYMBOL (Exit,       "EXIT")
+SYMBOL (For,        "FOR")
+SYMBOL (If,         "IF")
+SYMBOL (Import,     "IMPORT")
+SYMBOL (In,         "IN")
+SYMBOL (Is,         "IS")
+SYMBOL (Loop,       "LOOP")
+SYMBOL (Mod,        "MOD")
+SYMBOL (Module,     "MODULE")
+SYMBOL (Nil,        "NIL")
+SYMBOL (Of,         "OF")
+SYMBOL (Or,         "OR")
+SYMBOL (Pointer,    "POINTER")
+SYMBOL (Procedure,  "PROCEDURE")
+SYMBOL (Record,     "RECORD")
+SYMBOL (Repeat,     "REPEAT")
+SYMBOL (Return,     "RETURN")
+SYMBOL (Then,       "THEN")
+SYMBOL (To,         "TO")
+SYMBOL (Type,       "TYPE")
+SYMBOL (Until,      "UNTIL")
+SYMBOL (Var,        "VAR")
+SYMBOL (While,      "WHILE")
+SYMBOL (With,       "WITH")
+
+// operators
+
+SYMBOL (Plus,          "+")
+SYMBOL (Minus,         "-")
+SYMBOL (Asterisk,      "*")
+SYMBOL (Slash,         "/")
+SYMBOL (Not,           "~")
+SYMBOL (And,           "&")
+SYMBOL (Assign,        ":=")
+SYMBOL (Arrow,         "^")
+SYMBOL (Equal,         "=")
+SYMBOL (Unequal,       "#")
+SYMBOL (Less,          "<")
+SYMBOL (Greater,       ">")
+SYMBOL (LessEqual,     "<=")
+SYMBOL (GreaterEqual,  ">=")
+SYMBOL (Range,         "..")
+
+// delimiters
+
+SYMBOL (Bar,           "|")
+SYMBOL (Colon,         ":")
+SYMBOL (Comma,         ",")
+SYMBOL (Dot,           ".")
+SYMBOL (LeftBrace,     "{")
+SYMBOL (LeftBracket,   "[")
+SYMBOL (LeftParen,     "(")
+SYMBOL (RightBrace,    "}")
+SYMBOL (RightBracket,  "]")
+SYMBOL (RightParen,    ")")
+SYMBOL (Semicolon,     ";")
+
+// literals
+
+SYMBOL (Identifier,          "identifier")
+SYMBOL (Integer,             "integer constant")
+SYMBOL (BinaryInteger,       "binary integer constant")
+SYMBOL (HexadecimalInteger,  "hexadecimal integer constant")
+SYMBOL (Real,                "real constant")
+SYMBOL (Character,           "character constant")
+SYMBOL (SingleQuotedString,  "string")
+SYMBOL (DoubleQuotedString,  "string")
+
+// constants
+
+CONSTANT (global,  False,  "FALSE",  Boolean,  false)
+CONSTANT (global,  I,      "I",      Complex,  (Complex {0, 1}))
+CONSTANT (global,  Inf,    "INF",    Real,     INFINITY)
+CONSTANT (global,  Nan,    "NAN",    Real,     NAN)
+CONSTANT (global,  True,   "TRUE",   Boolean,  true)
+
+// types
+
+TYPE (global,  Boolean,        "BOOLEAN",       Boolean,    1)
+TYPE (global,  Cardinal,       "CARDINAL",      Unsigned,   layout.integer.size)
+TYPE (global,  Character,      "CHAR",          Character,  1)
+TYPE (global,  Complex,        "COMPLEX",       Complex,    layout.float_.size)
+TYPE (global,  Complex32,      "COMPLEX32",     Complex,    4)
+TYPE (global,  Complex64,      "COMPLEX64",     Complex,    8)
+TYPE (global,  Generic,        "GENERIC",       Generic,    0)
+TYPE (global,  HugeCardinal,   "HUGECARD",      Unsigned,   8)
+TYPE (global,  HugeInteger,    "HUGEINT",       Signed,     8)
+TYPE (global,  HugeSet,        "HUGESET",       Set,        8)
+TYPE (global,  Integer,        "INTEGER",       Signed,     layout.integer.size)
+TYPE (global,  Length,         "LENGTH",        Signed,     layout.pointer.size)
+TYPE (global,  LongCardinal,   "LONGCARD",      Unsigned,   4)
+TYPE (global,  LongComplex,    "LONGCOMPLEX",   Complex,    8)
+TYPE (global,  LongInteger,    "LONGINT",       Signed,     4)
+TYPE (global,  LongReal,       "LONGREAL",      Real,       8)
+TYPE (global,  LongSet,        "LONGSET",       Set,        4)
+TYPE (global,  Module,         "MODULE",        Module,     0)
+TYPE (global,  Nil,            "NIL",           Nil,        0)
+TYPE (global,  Procedure,      "PROCEDURE",     Procedure,  layout.function.size)
+TYPE (global,  Real,           "REAL",          Real,       layout.float_.size)
+TYPE (global,  Real32,         "REAL32",        Real,       4)
+TYPE (global,  Real64,         "REAL64",        Real,       8)
+TYPE (global,  Set,            "SET",           Set,        layout.integer.size)
+TYPE (global,  Set16,          "SET16",         Set,        2)
+TYPE (global,  Set32,          "SET32",         Set,        4)
+TYPE (global,  Set64,          "SET64",         Set,        8)
+TYPE (global,  Set8,           "SET8",          Set,        1)
+TYPE (global,  ShortCardinal,  "SHORTCARD",     Unsigned,   2)
+TYPE (global,  ShortComplex,   "SHORTCOMPLEX",  Complex,    4)
+TYPE (global,  ShortInteger,   "SHORTINT",      Signed,     2)
+TYPE (global,  ShortReal,      "SHORTREAL",     Real,       4)
+TYPE (global,  ShortSet,       "SHORTSET",      Set,        2)
+TYPE (global,  Signed16,       "SIGNED16",      Signed,     2)
+TYPE (global,  Signed32,       "SIGNED32",      Signed,     4)
+TYPE (global,  Signed64,       "SIGNED64",      Signed,     8)
+TYPE (global,  Signed8,        "SIGNED8",       Signed,     1)
+TYPE (global,  String,         "STRING",        String,     0)
+TYPE (global,  Unsigned16,     "UNSIGNED16",    Unsigned,   2)
+TYPE (global,  Unsigned32,     "UNSIGNED32",    Unsigned,   4)
+TYPE (global,  Unsigned64,     "UNSIGNED64",    Unsigned,   8)
+TYPE (global,  Unsigned8,      "UNSIGNED8",     Unsigned,   1)
+TYPE (global,  Void,           "VOID",          Void,       0)
+
+TYPE (system,  Address,    "ADDRESS",  Unsigned,  layout.pointer.size)
+TYPE (system,  Byte,       "BYTE",     Byte,      1)
+TYPE (system,  Pointer,    "PTR",      Any,       layout.pointer.size)
+TYPE (system,  SystemSet,  "SET",      Set,       layout.pointer.size)
+
+// function procedures
+
+FUNCTION (global,  Abs,     "ABS")
+FUNCTION (global,  Ash,     "ASH")
+FUNCTION (global,  Cap,     "CAP")
+FUNCTION (global,  Chr,     "CHR")
+FUNCTION (global,  Entier,  "ENTIER")
+FUNCTION (global,  Im,      "IM")
+FUNCTION (global,  Len,     "LEN")
+FUNCTION (global,  Long,    "LONG")
+FUNCTION (global,  Max,     "MAX")
+FUNCTION (global,  Min,     "MIN")
+FUNCTION (global,  Odd,     "ODD")
+FUNCTION (global,  Ord,     "ORD")
+FUNCTION (global,  Ptr,     "PTR")
+FUNCTION (global,  Re,      "RE")
+FUNCTION (global,  Sel,     "SEL")
+FUNCTION (global,  Short,   "SHORT")
+FUNCTION (global,  Size,    "SIZE")
+
+FUNCTION (system,  Adr,  "ADR")
+FUNCTION (system,  Bit,  "BIT")
+FUNCTION (system,  Lsh,  "LSH")
+FUNCTION (system,  Rot,  "ROT")
+FUNCTION (system,  Val,  "VAL")
+
+// proper procedures
+
+PROCEDURE (global,  Assert,   "ASSERT")
+PROCEDURE (global,  Copy,     "COPY")
+PROCEDURE (global,  Dec,      "DEC")
+PROCEDURE (global,  Dispose,  "DISPOSE")
+PROCEDURE (global,  Excl,     "EXCL")
+PROCEDURE (global,  Halt,     "HALT")
+PROCEDURE (global,  Ignore,   "IGNORE")
+PROCEDURE (global,  Inc,      "INC")
+PROCEDURE (global,  Incl,     "INCL")
+PROCEDURE (global,  New,      "NEW")
+PROCEDURE (global,  Trace,    "TRACE")
+
+PROCEDURE (system,  Asm,            "ASM")
+PROCEDURE (system,  Code,           "CODE")
+PROCEDURE (system,  Get,            "GET")
+PROCEDURE (system,  Move,           "MOVE")
+PROCEDURE (system,  Put,            "PUT")
+PROCEDURE (system,  SystemDispose,  "DISPOSE")
+PROCEDURE (system,  SystemNew,      "NEW")
+
+// external definitions
+
+DEFINITION (Getchar,  "getchar",  globalIntegerType,  globalVoidType,     globalVoidType)
+DEFINITION (Putchar,  "putchar",  globalIntegerType,  globalIntegerType,  globalVoidType)
+
+#undef CONSTANT
+#undef DECLARATION
+#undef DEFINITION
+#undef FUNCTION
+#undef PROCEDURE
+#undef SYMBOL
+#undef TYPE

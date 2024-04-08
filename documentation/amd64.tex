@@ -1,0 +1,238 @@
+% AMD64 architecture documentation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seeamd}{}
+
+\startchapter{AMD64}{AMD64 Hardware Architecture Support}{amd64}
+{This \documentation{} describes how the \ecs{} supports the AMD64 hardware architecture.
+This includes information about the assemblers, disassemblers, and the various compilers featured by the \ecs{} as well as the interoperability between these tools.}
+
+\section{Introduction}
+
+The \ecs{} features various compilers, assemblers, and disassemblers that target the AMD64 hardware architecture by AMD\@.
+Figure~\ref{fig:amd64dataflow} shows the data flow in-between these tools.
+
+\begin{figure}
+\flowgraph{
+\resource{intermediate\\code} \ar[d] & & \resource{assembly\\source code} \ar[d] \\
+\converter{AMD64\\Generator} \ar[r] \ar[rd] \ar[d] & \resource{assembly\\listing} \ar[r] & \converter{AMD64\\Assembler} \ar[ld] \\
+\resource{debugging\\information} & \resource{object file} \ar[d] \\
+& \converter{AMD64\\Disassembler} \ar[d] \\
+& \resource{disassembly\\listing} \\
+}\caption{Data flow within the tools targeting the AMD64 architecture}
+\label{fig:amd64dataflow}
+\end{figure}
+
+All compilers targeting the AMD64 architecture translate their programs using an intermediate code representation.
+The AMD64 generator is able to translate the intermediate code representation of a program into machine code for AMD64 processors.
+It stores the resulting binary code and data in so-called object files.
+Additionally, the generator is able to create an assembly code listing of the machine code for debugging purposes.
+This assembly code listing can also be processed by the assemblers yielding exactly the same object file.
+The disassemblers are able to open object files and print a human-readable disassembly listing of their contents.
+\seeobject\seecode
+
+\section{Instruction Set}
+
+Tools targeting the AMD64 architecture support the instruction set listed in Table~\ref{tab:amd64set} and use the same assembly syntax as predefined by AMD~\cite{amd64:volume3,amd64:volume4,amd64:volume5}.
+The only exception are instructions for far procedure calls and far jumps which take the selector and offset of the immediate far pointer as two separate operands.
+The tools support all different modes of operation defined by the AMD64 architecture as described in Section~\ref{sec:amd64operatingmodes}.
+The actual set of supported instructions depends on the operating mode that is used.
+If there are two or more possible encodings of an instruction, the shortest one is used by default.
+In order to specify the encoding of an instruction explicitly, the size of its operands can be overridden by prefixing them with one of the following identifiers:
+\texttt{byte} for 8-bit, \texttt{word} for 16-bit, \texttt{dword} for 32-bit, \texttt{qword} for 64-bit, \texttt{oword} for 128-bit, and \texttt{hword} for 256-bit.
+\seeassembly
+
+\instructionset{amd64}{Supported AMD64 instruction set}{5}{6}
+
+\section{Operating Modes}\index{Operating modes}\label{sec:amd64operatingmodes}
+
+The AMD64 architecture defines several different operating modes which imply different operand and address sizes~\cite{amd64:volume1}.
+Table~\ref{tab:amd64operatingmodes} summarizes the main differences between these operating modes.
+All assemblers and compilers that target the AMD64 architecture support the following operating modes:
+
+\begin{table}
+\centering
+\begin{tabular}{@{}llcc@{}}
+\toprule
+& & Default & Default \\
+\multicolumn{2}{@{}c}{Operating Modes} & Address & Operand \\
+& & Size & Size \\
+\midrule & 64-bit Mode & 64 & 32 \\
+\cmidrule(l){2-4} Long Mode & Compatibility Mode & 32 & 32 \\
+\cmidrule(l){3-4} & (Legacy Modes) & 16 & 16 \\
+\midrule & Protected Mode & 32 & 32 \\
+\cmidrule(l){2-4} Legacy Mode & Virtual-8086 Mode & 16 & 16 \\
+\cmidrule(l){2-4} & Real Mode & 16 & 16 \\
+\bottomrule
+\end{tabular}
+\caption{AMD64 operating modes with default address and operand sizes}
+\label{tab:amd64operatingmodes}
+\end{table}
+
+\begin{itemize}
+
+\item Real Mode, Virtual 8086 Mode\index{Real mode}\alignright 16-bit\nopagebreak
+
+In 16-bit mode, addresses and operands have a default size of 16~bits.
+
+\item Protected Mode\index{Protected mode}\alignright 32-bit\nopagebreak
+
+In 32-bit mode, addresses and operands have a default size of 32~bits.
+
+\item 64-Bit Mode\alignright 64-bit\nopagebreak
+
+In 64-bit mode, addresses have a default size of 64~bits, whereas the size of operands usually remains 32~bits.
+There are more and wider registers available in this mode.
+Additionally, instructions implementing the 128-bit media programming model are available by design.
+
+\end{itemize}
+
+The actual operating mode the compilers and assemblers generate machine code for by default, is indicated by the number in the suffix of their names.
+The assemblers allow users to temporarily switch between the supported operating modes by passing 16, 32 or 64 as operand to the bit mode directive.
+
+\section{Calling Convention}\index{Calling convention!of AMD64}
+
+The machine code generator and runtime support for the AMD64 architecture as provided by the \ecs{} use the following calling convention in order to enable interoperability.
+
+\subsection{Stack Operations}
+
+Arguments for functions are in general passed using the stack according to the intermediate code specification.
+See \Documentation{}~\documentationref{code}{Intermediate Code Representation} for more information about the role of the stack.
+Function arguments are pushed on the stack in reverse order and cleaned by the caller.
+If the AMD64 machine code generator runs out of physical registers, previously mapped registers are spilled on the stack.
+
+\subsection{Floating-Point Support}
+
+The AMD64 architecture natively supports floating-point operations by providing two different floating-point programming models.
+The first is the x87 floating-point programming model which is used as a fallback for the newer 128-bit media programming model.
+Compilers for the 64-bit mode use the 128-bit media programming model by default.
+Other tools use the standard x87 floating-point programming model.
+
+\subsection{Register Mapping}
+
+The special-purpose registers defined by the intermediate code representation are mapped to their corresponding physical registers in the following way:
+
+\begin{itemize}
+
+\item Result Register\alignright\texttt{\$res}\nopagebreak
+
+The intermediate code result register \texttt{\$res} is mapped to AMD64 registers \texttt{al}, \texttt{ax}, \texttt{eax}, depending on the size of the actual result value.
+64-bit wide results are stored in registers \texttt{eax} and \texttt{edx}, or only in register \texttt{rax} in 64-bit mode.
+Floating-point results are stored in registers \texttt{st0} or \texttt{xmm0} depending on the floating-point programming model.
+
+\item Stack Pointer Register\alignright\texttt{\$sp}\nopagebreak
+
+The intermediate code stack pointer register \texttt{\$sp} is mapped to AMD64 registers \texttt{sp}, \texttt{esp},
+or \texttt{rsp} depending on the target operating mode.
+
+\item Frame Pointer Register\alignright\texttt{\$fp}\nopagebreak
+
+The intermediate code frame pointer register \texttt{\$fp} is mapped to AMD64 registers \texttt{bp}, \texttt{ebp},
+or \texttt{rbp} depending on the target operating mode.
+
+\item Link Register\alignright\texttt{\$lnk}\nopagebreak
+
+The intermediate code link register \texttt{\$lnk} is not supported.
+
+\end{itemize}
+
+All other intermediate code registers are mapped as needed to the remaining physical registers.
+Their contents and mapping are therefore considered volatile across function calls.
+Registers holding integer and address values are mapped to the general-purpose registers.
+Registers holding floating-point values are either mapped to the physical registers of the 128-bit media programming model,
+or stored on the floating-point stack provided by the x87 floating-point programming model.
+
+\section{Runtime Support}\index{Runtime support!for AMD64}
+
+The \ecs{} provides runtime support for the AMD64 architecture and runtime environments based on this hardware architecture in object files.
+Users targeting a specific runtime environment have to use an appropriate linker together with these object files in order create an executable program.
+This section gives information about all supported runtime environments based on the AMD64 hardware architecture as well as the required combination of linker and object files.
+
+Basic architectural runtime support is provided by the object files \objfile{amd16\-run}, \objfile{amd32\-run}, and \objfile{amd64\-run}.
+Users should always include one of these object files during linking regardless of the actual target runtime environment.
+All other object files given to the linker should target the same hardware architecture.
+
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-amd16\-run}, \libfile{cpp\-amd32\-run}, and \libfile{cpp\-amd64\-run} library files respectively.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-amd16\-run}, \libfile{ob\-amd32\-run}, and \libfile{ob\-amd64\-run} library files respectively.
+\seecpp\seeoberon
+
+\subsection{BIOS}
+
+The \ecs{} provides basic runtime support for a native PC environment partially established by the BIOS\@.
+The actual runtime support is written in assembly language and stored in the object files \objfile{bios16\-run}, \objfile{bios32\-run}, and \objfile{bios64\-run}.
+Users creating their own systems may use the \tool{link\-bin} linker together with one of these object files in order create an executable bootloader.
+Calling the \tool{ecsd} utility tool using the \environment{bios16}, \environment{bios32} or \environment{bios64} target environment achieves the same result.
+
+\subsection{DOS}
+
+Programs targeting the DOS operating system are created using the \tool{link\-bin} linker tool.
+It creates 16-bit COM files if provided with the runtime support stored in the \objfile{dos\-run} object file.
+Calling the \tool{ecsd} utility tool using the \environment{dos} target environment achieves the same result.
+
+\subsection{EFI}
+
+Programs targeting the Extensible Firmware Interface are created using the \tool{link\-bin} linker tool.
+It creates either 32-bit or 64-bit EFI images~\cite{exefile} if provided with the runtime support stored in the \objfile{efi32\-run} and \objfile{efi64\-run} object files respectively.
+Calling the \tool{ecsd} utility tool using the \environment{efi32} or \environment{efi64} target environment achieves the same result.
+
+\subsection{Linux}
+
+Programs targeting Linux-based operating systems are created using the \tool{link\-bin} linker tool.
+It creates either 32-bit or 64-bit Executable and Linking Format (ELF) files~\cite{elffile} if provided with the runtime support stored in the \objfile{amd32\-linux\-run} and \objfile{amd64\-linux\-run} object files respectively.
+Calling the \tool{ecsd} utility tool using the \environment{amd32\-linux} or \environment{amd64\-linux} target environment achieves the same result.
+External libraries are available using additional runtime support stored in the following object files: \objfile{amd32\-libdl}, \objfile{amd32\-libpthread}, \objfile{amd32\-libsdl}, \objfile{amd64\-libdl}, \objfile{amd64\-libpthread}, and \objfile{amd64\-libsdl}.
+
+\subsection{OS~X}
+
+Programs targeting the OS~X operating system are created using the \tool{link\-bin} linker tool.
+It creates either 32-bit or 64-bit Mach-O files~\cite{machofile} if provided with the runtime support stored in the \objfile{osx32\-run} and \objfile{osx64\-run} object files respectively.
+Calling the \tool{ecsd} utility tool using the \environment{osx32} or \environment{osx64} target environment achieves the same result.
+
+\subsection{Windows}
+
+The \ecs{} provides runtime support for 32-bit and 64-bit Windows applications.
+Programs targeting both flavors of this operating system are created using the \tool{link\-bin} linker tool.
+It creates either 32-bit or 64-bit Portable Executable (EXE) files~\cite{exefile} if provided with the runtime support stored in the \objfile{win32\-run} and \objfile{win64\-run} object files respectively.
+Calling the \tool{ecsd} utility tool using the \environment{win32} or \environment{win64} target environment achieves the same result.
+Programs run either in the graphical user interface or the character-mode user interface subsystem of Windows.
+A program runs as a graphical user interface application if it does neither use the standard streams nor the functions \texttt{abort} or \texttt{\_Exit}.
+Functions of the Windows API are available using additional runtime support stored in the \objfile{win32\-api} and \objfile{win64\-api} object files.
+External libraries are available using additional runtime support stored in the following object files: \objfile{win32\-sdl} and \objfile{win64\-sdl}.
+
+\section{AMD64 Tools}
+
+The \ecs{} provides the following tools that are able to process object files targeting the AMD64 hardware architecture.
+The number in the name of compilers, assemblers, and disassemblers specifies which operating mode defined by the AMD64 architecture is used by default, see Section~\ref{sec:amd64operatingmodes}.
+\interface\seeguide
+
+\cdamda
+\cdamdb
+\cdamdc
+\cppamda
+\cppamdb
+\cppamdc
+\falamda
+\falamdb
+\falamdc
+\obamda
+\obamdb
+\obamdc
+\amdaasm
+\amdbasm
+\amdcasm
+\amdadism
+\amdbdism
+\amdcdism
+\linkbin
+
+\concludechapter

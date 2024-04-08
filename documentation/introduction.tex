@@ -1,0 +1,305 @@
+% Introduction to the Eigen Compiler Suite
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+
+\startchapter{Introduction}{Introduction to the \ecs{}}{introduction}
+{\emph{\ecs{}}\index{Eigen Compiler Suite} is the name of a free software collection of development tools like
+compilers, assemblers, and linkers targeting different programming languages and different hardware architectures.
+This \documentation{} gives a general overview over the \ecs{} and describes its features and design in detail.}
+
+\epigraph{I will not follow where the path may lead, \\ instead I will go where there is no path \\ and leave a trail.}{Muriel Strode}
+
+\section{Features}\index{Features, of the Eigen Compiler Suite}\index{Eigen Compiler Suite!Features}
+
+The \ecs{} is a software development toolchain.
+It contains tools like compilers, pretty printers, interpreters, assemblers, and linkers targeting a variety of programming languages and hardware architectures.
+The \ecs{} features pretty printers, interpreters, and compilers for the following programming languages:
+
+\begin{center}\cpplogo{1em}\fallogo{1em}\oblogo{2em}\end{center}
+
+\begin{itemize}
+
+\item \cpp{}\nopagebreak
+
+\cpp{} is a general-purpose programming language with a bias toward systems programming.
+\seecpp
+
+\item FALSE\nopagebreak
+
+FALSE is an esoteric stack-oriented programming language that provides lambda abstractions and is quite powerful for its size.
+\seefalse
+
+\item Oberon\nopagebreak
+
+Oberon is a general-purpose programming language that supports type extension with type-bound procedures which makes it an object-oriented language.
+\seeoberon
+
+\end{itemize}
+
+Besides the support for these programming languages, the \ecs{} also features assemblers, disassemblers, and compilers targeting the following hardware architectures:
+
+\begin{itemize}
+
+\item AMD64\nopagebreak
+
+AMD64 is a 64-bit instruction set architecture developed by AMD\@.
+\seeamd
+
+\item ARM\nopagebreak
+
+ARM is a 32-bit and 64-bit instruction set architecture developed by ARM Holdings.
+\seearm
+
+\item AVR\nopagebreak
+
+AVR is the name of an 8-bit microcontroller architecture developed by Atmel.
+\seeavr
+
+\item AVR32\nopagebreak
+
+AVR32 is the name of an 32-bit microcontroller architecture developed by Atmel.
+\seeavrtt
+
+\item M68000\nopagebreak
+
+M68000 is a 16/32-bit instruction set architecture developed by Motorola.
+\seemabk
+
+\item MicroBlaze\nopagebreak
+
+MicroBlaze is a 32-bit instruction set architecture developed by Xilinx.
+\seemibl
+
+\item MIPS\nopagebreak
+
+MIPS32 and MIPS64 are 32-bit and 64-bit instruction set architectures developed by MIPS Technologies.
+\seemips
+
+\item MMIX\nopagebreak
+
+MMIX is a 64-bit instruction set architecture designed by Donald~E.\ Knuth.
+\seemmix
+
+\item OpenRISC 1000\nopagebreak
+
+OpenRISC 1000 is a 32/64-bit instruction set architecture developed by OpenCores.
+\seeorok
+
+\item PowerPC\nopagebreak
+
+PowerPC is 32-bit and 64-bit instruction set architecture developed by AIM\@.
+\seeppc
+
+\item RISC\nopagebreak
+
+RISC is a 32-bit instruction set architecture designed by Niklaus Wirth.
+\seerisc
+
+\item WebAssembly\nopagebreak
+
+WebAssembly is a 32-bit instruction set architecture designed by the World Wide Web Consortium (W3C).
+\seewasm
+
+\end{itemize}
+
+Finally, the \ecs{} features various linkers and runtime support\index{Runtime support} for the following runtime environments:
+
+\begin{itemize}
+
+\item Atari TOS\nopagebreak
+
+The \ecs{} provides runtime support and a linker for programs that can be executed under Atari TOS\@.
+
+\item AVR Microcontrollers\nopagebreak
+
+The \ecs{} provides runtime support for AVR microcontrollers.
+Additionally, it features a linker that generates Intel HEX files that can be used to program these microcontrollers.
+
+\item BIOS\nopagebreak
+
+The \ecs{} provides runtime support and a linker for bootloaders executed by the BIOS\@.
+
+\item DOS\nopagebreak
+
+The \ecs{} features runtime support and a linker for programs that are executed under DOS\@.
+
+\item EFI\nopagebreak
+
+The \ecs{} provides runtime support and a linker for 32-bit as well as 64-bit EFI applications that can be executed in an EFI boot console.
+
+\item Linux\nopagebreak
+
+The \ecs{} features runtime support and a linker for programs that can be executed under Linux-based operating systems.
+
+\item MMIX Simulator\nopagebreak
+
+The \ecs{} provides runtime support and a linker for object files that are executed within the MMIX simulator.
+
+\item OpenRISC 1000 Simulator\nopagebreak
+
+The \ecs{} provides runtime support and a linker for object files that are executed within the OpenRISC 1000 simulator.
+
+\item OS~X\nopagebreak
+
+The \ecs{} provides runtime support and a linker for 32-bit as well as 64-bit programs that can be executed under OS~X\@.
+
+\item Raspberry Pi\nopagebreak
+
+The \ecs{} provides runtime support and a linker for bootloaders running on the Raspberry Pi~2 Model~B.
+
+\item RISC Microcontrollers\nopagebreak
+
+The \ecs{} provides runtime support for RISC microcontrollers.
+
+\item WebAssembly Environments\nopagebreak
+
+The \ecs{} provides runtime support and a linker for WebAssembly modules that can be executed in corresponding web environments.
+
+\item Windows\nopagebreak
+
+The \ecs{} provides runtime support and a linker for 32-bit as well as 64-bit programs that can be executed under Windows.
+
+\end{itemize}
+
+The \ecs{} features additional linkers that are not mentioned above.
+See \Documentation{}~\documentationref{object}{Object File Representation} for a list of all linkers provided by the \ecs{}.
+
+\section{Design}\index{Design, of the Eigen Compiler Suite}\index{Eigen Compiler Suite!Design}
+
+The \ecs{} was designed to be a simple and minimalistic but complete and self-contained toolchain for several different programming languages and hardware architectures.
+While the main objective of the \ecs{} is to be self-hosting, its design strives for the following goals:
+
+\begin{itemize}
+
+\item Usability\index{Usability}\nopagebreak
+
+All tools featured by the \ecs{} shall be easy to use and should not require complex installations or other prerequisites.
+Their user-friendliness shall be enabled by a common basic user interface which does not demand any options or configurations of the user.
+This design enforces stability and reproducibility because the result of executing any tool depends solely on the contents of its input files.
+
+\item Reliability\index{Reliability}\nopagebreak
+
+All programming tools of the \ecs{} shall be reliable and produce correct results as well as comprehensive diagnostic messages.
+For this purpose, the \ecs{} contains several test and validation suites that enable automatic regression testing of its various tools.
+In general, the implementation of the \ecs{} is mainly driven by correctness, robustness, and simplicity.
+Therefore, optimizations and performance are explicitly secondary.
+
+\item Portability\index{Portability}\nopagebreak
+
+The \ecs{} is completely written using standard and portable programming language features in order to guarantee the portability of its source code.
+All tools of the \ecs{} are therefore compilable and executable within different runtime environments.
+Thus, all compilers featured by the \ecs{} are cross compilers by design.
+
+\item Interoperability\index{Interoperability}\nopagebreak
+
+Tools like compilers and assemblers shall enable interoperability in-between all programming languages supported by the \ecs{}.
+Usually, programs are written using a single programming language.
+Interoperability in this case means, that some parts of the program can also be implemented using a different programming language or with the help of an assembler.
+In the end, all these parts work seamlessly together and constitute the complete program.
+
+\item Textual Intermediate Representations\index{Intermediate representations}\nopagebreak
+
+The various tools of the \ecs{} are typically used in a chain, such that the output of one tool becomes the input of the next one.
+However, all data that is transported this way should be represented using a human-readable and machine-independent text format.
+This design enables programmers and maintainers to view, modify and even manually create all kinds of intermediate data.
+In addition to the tools themselves, also the temporary data they generate is therefore portable across different runtime environments.
+
+\item Reuse of Generic Abstractions\index{Generic abstractions}\nopagebreak
+
+The implementation of the \ecs{} shall provide generic abstractions that help to achieve all goals mentioned above.
+Additionally, the abstractions shall enable a good code reuse within the implementation itself.
+The most important abstractions provided by the \ecs{} are described in Section~\ref{sec:introabstractions}.
+
+\item Complete and Consistent Documentation\nopagebreak
+
+All features of the \ecs{} and especially the usage of its toolchain shall be documented in detail.
+For all major components like implementations of a programming language or supported hardware architectures, there are consistent documentations available which describe the usage of the corresponding component and its implementation by the \ecs{}.
+This user manual merges all of these documentations into a single document.
+
+\end{itemize}
+
+Some design guidelines like reliability and interoperability have also been incoorporated into the logo of the \ecs{} which combines the three self-contained letters of its abbreviation into a robust three-dimensional structure as shown in Figure~\ref{fig:intrologo}.
+
+\begin{figure}
+\centering\ecslogo{5em}
+\caption{The logo of the \ecs{}}
+\label{fig:intrologo}
+\end{figure}
+
+\section{Abstractions}\index{Abstractions}\label{sec:introabstractions}
+
+The \ecs{} supports several different programming languages as well as several different target hardware architectures.
+One goal of the \ecs{} is to provide compilers, assemblers, and linkers for all possible combinations of programming languages and target architectures.
+For this reason, the \ecs{} defines the following generic abstractions:
+
+\begin{itemize}
+
+\item Object Files\nopagebreak
+
+Object files are the key abstraction in order to enable interoperability between all compilers and assemblers of the \ecs{}.
+All these tools generate the same kind of output called object files which can be processed by all linkers and disassemblers of the \ecs{}.
+Figure~\ref{fig:introobject} shows how object files are used in-between some compilers, assemblers, linkers, and disassemblers for the AMD64 hardware architecture.
+\seeobject
+
+\begin{figure}
+\flowgraph{
+\resource{\cpp{}\\source code} \ar[d] & \resource{assembly\\source code} \ar[d] & \resource{Oberon\\source code} \ar[d] \\
+\converter{cppamd64} \ar[rd] & \converter{amd64asm} \ar[d] & \converter{obamd64} \ar[ld] \\
+& \resource{object files} \ar[ld] \ar[d] \ar[rd] \\
+\converter{linkbin} \ar[d] & \converter{amd64dism} \ar[d] & \converter{linklib} \ar[d] \\
+\resource{binary file} & \resource{disassembly\\listing} & \resource{library file} \\
+}\caption{Some tools of the \ecs{} that process object files}
+\label{fig:introobject}
+\end{figure}
+
+\item Intermediate Code\nopagebreak
+
+Intermediate code is the generic abstraction in-between \emph{front-ends} implementing programming languages and \emph{back-ends} targeting hardware architectures.
+Front-ends implement the actual translation of source code into intermediate code, whereas back-ends translate intermediate code into machine code for the respective architecture.
+Figure~\ref{fig:introcode} shows some front-ends and back-ends supported by the \ecs{}.
+Each data flow within this diagram depicts the input and output of a single compiler for a particular programming language targeting a particular hardware architecture.
+As a consequence, programmers only have to provide a single front-end or back-end in order to establish all possible combinations with existing implementations of programming languages and target architectures.
+\seecode
+
+\begin{figure}
+\flowgraph{
+\resource{\cpp{}\\source code} \ar[d] & \resource{Oberon\\source code} \ar[d] & \resource{FALSE\\source code} \ar[d] \\
+\converter{Front-End\\for \cpp{}} \ar[rd] & \converter{Front-End for\\Oberon} \ar[d] & \converter{Front-End\\for FALSE} \ar[ld] \\
+& \resource{intermediate\\code} \ar[ld] \ar[d] \ar[rd] \\
+\converter{Back-End\\for AVR} \ar[d] & \converter{Back-End\\for M68000} \ar[d] & \converter{Back-End\\for AMD64} \ar[d] \\
+\resource{AVR\\machine code} & \resource{M68000\\machine code} & \resource{AMD64\\machine code} \\
+}\caption{Some front-ends and back-ends provided by the \ecs{}}
+\label{fig:introcode}
+\end{figure}
+
+\item Generic Assembly Language\nopagebreak
+
+The generic assembly language is an abstraction for the common features of all assemblers provided by the \ecs{}.
+It is capable of representing complete assembly programs including all the different instruction sets supported by the \ecs{}.
+Concrete assembler tools only have to implement the translation of architecture specific instructions into their binary representation.
+Everything else that is actually not dependent on the actual hardware architecture can therefore be translated separately.
+\seeassembly
+
+\item Debugging Information\nopagebreak
+
+Debugging information is a generic abstraction of symbolic metadata about a program generated by compilers.
+It represents all programming language constructs like functions, variables, data types, and statements compiled into an object file.
+Converter tools convert debugging information into a binary debugging data format which decouples compilers from the debugger of the target runtime environment.
+\seedebugging
+
+\end{itemize}
+
+Concrete information about how programmers can make use of these abstractions in order to extend the \ecs{} with additional support
+for programming languages and hardware architectures is given in \Documentation{}~\documentationref{extensions}{Extensions to the \ecs{}}.
+
+\concludechapter

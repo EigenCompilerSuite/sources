@@ -1,0 +1,34 @@
+(* Generic iterators
+Copyright (C) Florian Negele
+
+This file is part of the Eigen Compiler Suite.
+
+The ECS is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+The ECS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Under Section 7 of the GNU General Public License version 3,
+the copyright holder grants you additional permissions to use
+this file as described in the ECS Runtime Support Exception.
+
+You should have received a copy of the GNU General Public License
+and a copy of the ECS Runtime Support Exception along with
+the ECS.  If not, see <https://www.gnu.org/licenses/>. *)
+
+(** The generic module {{{Iterators}}} provides an abstract type for iterating over containers that store elements of type {{{[[OBL:Iterators.Element|Element]]}}}. *)
+(** @@Element The type of an element returned by an iterator. *)
+MODULE Iterators (Element*) IN OBL;
+
+(** Represents an iteration over a container. *)
+TYPE Iterator* = RECORD* END;
+
+(** Returns the next element in the iteration if available as indicated by the boolean result. *)
+PROCEDURE* (VAR iterator: Iterator) GetNext* (VAR element: Element): BOOLEAN;
+
+END Iterators.

@@ -1,0 +1,75 @@
+// FALSE language definitions
+// Copyright (C) Florian Negele
+
+// This file is part of the Eigen Compiler Suite.
+
+// The ECS is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// The ECS is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+#ifndef SYMBOL
+	#define SYMBOL(symbol, character)
+#endif
+
+// statements
+
+SYMBOL (Assign,         ':')
+SYMBOL (Call,           '!')
+SYMBOL (If,             '?')
+SYMBOL (While,          '#')
+SYMBOL (Write,          '.')
+SYMBOL (Put,            ',')
+SYMBOL (Get,            '^')
+SYMBOL (Flush,          '\xdf')
+SYMBOL (Dereference,    ';')
+SYMBOL (BeginFunction,  '[')
+SYMBOL (EndFunction,    ']')
+
+// arithmetic operations
+
+SYMBOL (Negate,    '_')
+SYMBOL (Add,       '+')
+SYMBOL (Subtract,  '-')
+SYMBOL (Multiply,  '*')
+SYMBOL (Divide,    '/')
+
+// logical operations
+
+SYMBOL (Not,  '~')
+SYMBOL (And,  '&')
+SYMBOL (Or,   '|')
+
+// comparison operations
+
+SYMBOL (Equal,    '=')
+SYMBOL (Greater,  '>')
+
+// stack operations
+
+SYMBOL (Duplicate,  '$')
+SYMBOL (Delete,     '%')
+SYMBOL (Swap,       '\\')
+SYMBOL (Rotate,     '@')
+SYMBOL (Select,     '\xf8')
+
+// symbols
+
+SYMBOL (Invalid,           '\0')
+SYMBOL (Integer,           '\0')
+SYMBOL (Character,         '\'')
+SYMBOL (Variable,          '\0')
+SYMBOL (String,            '"')
+SYMBOL (ExternalVariable,  'V')
+SYMBOL (ExternalFunction,  'F')
+SYMBOL (Assembly,          '`')
+
+#undef SYMBOL

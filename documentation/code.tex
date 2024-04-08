@@ -1,0 +1,827 @@
+% Intermediate code representation
+% Copyright (C) Florian Negele
+
+% This file is part of the Eigen Compiler Suite.
+
+% Permission is granted to copy, distribute and/or modify this document
+% under the terms of the GNU Free Documentation License, Version 1.3
+% or any later version published by the Free Software Foundation.
+
+% You should have received a copy of the GNU Free Documentation License
+% along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
+
+\input{utilities}
+\renewcommand{\seecode}{}
+
+\startchapter{Intermediate Code}{Intermediate Code Representation}{code}
+{This \documentation{} describes the intermediate code representation used by the \ecs{} as the
+common interface between the various programming languages and hardware architectures it supports.}
+
+\epigraph{Unsere Eigenschaften m\"ussen wir kultivieren, \\ nicht unsere Eigenheiten.}{Johann Wolfgang von Goethe}
+
+\section{Introduction}
+
+Rather than compiling source code directly into machine code, the \ecs{} makes use of a so-called \emph{intermediate code representation}.
+For each programming language supported by the \ecs{}, there is a so-called \emph{front-end}\index{Front-ends} which translates source code into intermediate code.
+This abstract representation of the original program is then passed to a so-called \emph{back-end}\index{Back-ends} which in turn transforms it into machine code and debugging information.
+Figure~\ref{fig:cddataflow} visualizes the role and data flow of the intermediate code representation in-between front-ends and back-ends.
+
+\begin{figure}
+\flowgraph{
+\resource{source code} \ar[d] & \resource{source code} \ar[d] & \resource{source code} \ar[d] \\
+\converter{Front-End\\for programming\\language \textit{A}} \ar[rd] & \converter{Front-End\\for programming\\language \textit{B}} \ar[d] & \converter{Front-End\\for programming\\language \textit{C}} \ar[ld] \\
+& \resource{intermediate\\code} \ar[ld] \ar[d] \ar[rd] \\
+\converter{Back-End\\for hardware\\architecture \textit{X}} \ar[d] & \converter{Back-End\\for hardware\\architecture \textit{Y}} \ar[d] & \converter{Intermediate\\Code\\Interpreter} \ar[d] \\
+\resource{machine code/\\debugging information} & \resource{machine code/\\debugging information} & \resource{input/\\output} \\
+}\caption[Intermediate code representation of programs]{Intermediate code representation of programs in-between front-ends and back-ends}
+\label{fig:cddataflow}
+\end{figure}
+
+The advantage of this design is a clear separation between the various front-ends for the programming languages and the back-ends for the hardware architectures.
+Since the intermediate code representation is the only interface between these parts of a compiler, they are completely independent from each other and may therefore be freely combined.
+Implementing a new programming language for all supported hardware architectures and vice versa can thus be achieved by just adding one other front-end or back-end to the \ecs{}.
+Furthermore, examining the output of front-ends and providing intermediate code as input to back-ends allows their respective implementations to be validated in isolation.
+Using an interpreter for intermediate code that emulates its underlying abstract machine, front-end implementations can additionally be tested by executing programs directly without having to target and rely on actual hardware architectures or runtime environments.
+
+The following sections describe the semantics of the intermediate code representation alongside the syntax of its textual representation using the generic assembly language.
+\seeassembly\seedebugging
+
+\section{Programming Model}\index{Programming model, of Intermediate Code}\label{sec:cdprogrammingmodel}
+
+The underlying programming model of the intermediate code representation is based on the execution of instructions grouped into \emph{sections}\index{Sections}.
+Each section has a unique identifier that allows it to be referenced by instructions from other sections.
+Additionally, each section has a specific \emph{type}\index{Section types}\index{Types, of sections}, that allows distinct classes of instructions to be used.
+The following sections describe these section types and the overall execution environment defined by the programming model.
+
+\subsection{Code Sections}\index{Code sections}
+
+A code section stores the actual instructions that have to be executed at runtime.
+Each functional unit of a programming language is typically mapped to a single code section.
+Instructions in code sections can reference other sections by either calling them or accessing the data stored in them.
+The following kinds of code sections define when and how code is executed:
+
+\begin{itemize}
+
+\item Standard Code Sections\index{Standard code sections}\alignright\syntax{".code" <Identifier>}\nopagebreak
+
+Standard code sections model standard functions and are typically called by instructions of other code sections.
+Functions often create stack frames and have to return the control to their caller at the end of their execution.
+
+\item Initializing Code Sections\index{Initializing code sections}\alignright\syntax{".initcode" <Identifier>}\nopagebreak
+
+Initializing code sections are executed automatically at the start of the program and allow its state to be initialized.
+Since these code sections are just executed in sequence as opposed to being explicitly called, there is no need to return from initializing code sections because there is no caller.
+
+\item Data Initializing Code Sections\index{Data initializing code sections}\alignright\syntax{".initdata" <Identifier>}\nopagebreak
+
+Data initializing code sections are executed automatically at the very beginning of a program and allow initializing data sections that are required in all other code sections.
+This does explicitly include constant data sections because there are architectures for which all data sections have to be initialized by code sections at runtime.
+
+\item Assembly Code Sections\index{Assembly code sections}\alignright\syntax{".assembly"}\nopagebreak
+
+Assembly code sections are nameless pseudo sections for representing arbitrary assembly code that defines its own code and data sections.
+The actual assembly code consists of one or more inline assembly instructions as described in Section~\ref{sec:cdasm}.
+Each instruction invokes the underlying assembler once and has unrestricted access to all of its features.
+
+\end{itemize}
+
+\subsection{Data Sections}\index{Data sections}
+
+A data section stores instructions that describe the contents and the layout of some memory region.
+This memory can be accessed by the instructions of a code section.
+There are two kinds of data sections which specify the access rights to the contents of the memory region:
+
+\begin{itemize}
+
+\item Standard Data Sections\index{Standard data sections}\alignright\syntax{".data" <Identifier>}\nopagebreak
+
+Standard data sections model standard memory regions with read and write access.
+They are typically used to represent global variables.
+
+\item Constant Data Sections\index{Constant data sections}\alignright\syntax{".const" <Identifier>}\nopagebreak
+
+Constant data sections model memory regions with read-only access.
+Since these data sections are not supposed to change their contents, they are typically used to represent constants and strings.
+
+\end{itemize}
+
+\subsection{Type Sections}\index{Type sections}
+
+A type section stores instructions that describe the type system of the programming language for debugging purposes.
+The following kind of type section declares the layout and representation of user-defined and predefined types:
+
+\begin{itemize}
+
+\item Standard Type Sections\index{Standard type sections}\alignright\syntax{".type" <Identifier>}\nopagebreak
+
+Standard type sections contain a single type declaration and define a new name for that type.
+They are typically used to represent type definitions of the programming language.
+
+\end{itemize}
+
+Since type sections contain only metadata about the types used by a program, they have no machine code representation.
+They do however contribute to the debugging information generated by the back-end, see Section~\ref{sec:cddebugging}.
+
+\subsection{Order of Execution}\index{Order of execution}\index{Execution order}
+
+Code sections are executed automatically by the runtime system according to their type as described above.
+The concrete order of execution is as follows:
+
+\begin{enumerate}
+
+\item
+All data initializing code sections are executed in order of occurrence.
+They may only depend on the results of already executed data initializing code sections.
+
+\item
+All remaining initializing code sections are executed in order of occurrence.
+They may only depend on the results of already executed initializing code sections.
+
+\item
+A standard code section called \texttt{main} is executed.
+This section represents the actual entry point of a program and is therefore always implicitly required.
+It may depend on the results of both previous execution steps but has to eventually return the control of execution to the host environment.
+
+\end{enumerate}
+
+All remaining code sections are called depending on the actual code executed in these three execution steps.
+They may only depend on results that are also guaranteed for the code sections they were called from.
+
+\subsection{Stack Operations}\index{Stack operations}\label{sec:cdstackoperations}
+
+The programming model of the intermediate code defines local memory for every thread of execution called the \emph{stack} as exemplified in Figure~\ref{fig:cdstackframe}.
+The stack is represented by two special registers called the \emph{stack pointer} and the \emph{frame pointer}, see Section~\ref{sec:cdregisters}.
+Although they allow direct access to the stack memory, there are some intermediate code instructions that modify the contents of these registers as well as the stack memory itself.
+These instructions are \texttt{push}, \texttt{pop}, \texttt{call}, and \texttt{ret}.
+See the instruction reference in Section~\ref{sec:cdreference} for detailed information about the operation of these instructions.
+
+\begin{figure}
+\centering
+\sffamily\begin{tabular}{r|c|l}
+& $\downarrow$ & \multirow{2}{*}{highest address} \\
+\cline{2-2} & last argument \\ & $\vdots$ \\ & first argument \\
+\cline{2-2} & return address \\
+\cline{2-2} \multirow{2}{*}{frame pointer $\rightarrow$} & previous frame \\
+\cline{2-2} & first variable \\ & $\vdots$ \\ & last variable \\
+\cline{2-2} \multirow{2}{*}{stack pointer $\rightarrow$} & local data & \multirow{2}{*}{lowest address} \\
+\cline{2-2} & $\downarrow$ \\
+\end{tabular}\normalfont
+\caption{Typical intermediate code stack layout}
+\label{fig:cdstackframe}
+\end{figure}
+
+The stack pointer always points to the topmost element on the stack.
+Operations like pushing and popping data to or from the stack access the topmost element and implicitly modify the stack pointer accordingly.
+The stack memory grows from top to bottom such that the topmost element on the stack has the lowermost address.
+By pushing data on the stack, the stack pointer is therefore first decremented and afterward used to store the data at the decremented memory address.
+The actual size of this decrement depends on the target hardware architecture.
+There are architectures that require the stack pointer address to conform to some alignment constraints.
+The underlying machine code generator of a back-end provides platform-specific information that includes alignment requirements like this.
+
+The stack memory is generally used to store arbitrary local data or to pass arguments to another code section involved in a function call\index{Calling convention}.
+The virtual general-purpose registers of the intermediate code are in general mapped arbitrarily to the physical registers of the underlying hardware architecture.
+For this reason, they cannot be used in general to pass arguments to other code sections.
+Likewise, their contents may be invalidated in-between function calls.
+Arguments and values of registers that are still in use afterward the function call, have therefore to be stored on the stack.
+
+Functions may maintain their own local memory by creating so-called \emph{stack frames}\index{Stack frames}.
+Stack frames allow reserving a certain amount of memory on the stack that is especially useful for local variables or recursive functions.
+A stack frame is represented by the frame pointer and created by the instruction \texttt{enter}, see Section~\ref{sec:cdenter}.
+By creating a new stack frame, the value of the frame pointer is saved on the stack and afterward set to the current value of the stack pointer.
+The stack pointer is then decremented by the size of the stack frame.
+Since the stack pointer may be modified again afterward, it is best to access the local data using the frame pointer.
+A stack frame is deleted using the instruction \texttt{leave}, see Section~\ref{sec:cdleave}.
+It just restores the previous values of the frame and stack pointer.
+
+\section{Intermediate Code Representation}\index{Intermediate code representation}
+
+The intermediate representation of all code and global data is based on instructions within code or data sections.
+Instructions themselves have operands of different models which may be constants, registers, or memory operands.
+This section describes how these components of the intermediate code are represented within the \ecs{}.
+
+\subsection{Types}\label{sec:cdtypes}
+
+The intermediate code representation defines a set of several basic \emph{types}.
+These types specify the way how data that is stored in memory or registers shall be interpreted by an instruction.
+They consist of one of the following \emph{type models}\index{Type models} and an additional \emph{type size}\index{Type sizes} expressed in octets:
+
+\begin{itemize}
+
+\item Signed Integers\alignright\syntax{"s1" $\mid$ "s2" $\mid$ "s4" $\mid$ "s8"}\nopagebreak
+
+The type model for signed integers allows accessing data of signed integral data type.
+There are four different type sizes available: 1, 2, 4, and 8.
+For the type size $n$ all valid integers lie within the range $-2^{8n-1}$ to $+2^{8n-1}-1$.
+The result of arithmetic operations causing integer overflows is undefined.
+
+\item Unsigned Integers\alignright\syntax{"u1" $\mid$ "u2" $\mid$ "u4" $\mid$ "u8"}\nopagebreak
+
+The type model for unsigned integers allows accessing data of unsigned integral data type.
+There are four different type sizes available: 1, 2, 4, and 8.
+For the type size $n$ all valid integers lie within the range $0$ to $2^{8n}-1$.
+Arithmetic operations on unsigned integers obey the laws of arithmetic modulo $2^{8n}$ and do therefore not overflow.
+
+\item Floating-Point Numbers\alignright\syntax{"f4" $\mid$ "f8"}\nopagebreak
+
+The type model for floating-point numbers allows accessing data stored according to formats defined in the IEEE standard for floating-point arithmetic~\cite{ieee1985}.
+There are two different type sizes available: 4 and 8.
+Floating-point numbers of size four are stored using the single precision format,
+and floating-point numbers of size eight are stored using the double precision format.
+
+\item Data Pointers\alignright\syntax{"ptr"}\nopagebreak
+
+The type model for data pointers allows accessing data that represents the address of a datum within a data section.
+There is only one type size available and it is predefined by the target platform.
+
+\item Function Pointers\alignright\syntax{"fun"}\nopagebreak
+
+The type model for function pointers allows accessing data that represents the address of an instruction within a code section.
+There is only one type size available and it is predefined by the target platform.
+
+\end{itemize}
+
+For some hardware architectures, the representation of data with the same value but different types may also be equal physically.
+But in order to ensure a consistent virtual representation, all data shall be read using the same type it was written beforehand.
+If the representation of the data type has to be explicitly changed, the \ecs{} provides a special conversion instruction.
+This operation shall also be used even if the types in question differ only with respect to their size.
+
+\subsection{Registers}\label{sec:cdregisters}
+
+The abstract intermediate code representation defines the following set of virtual general-purpose and special-purpose registers:
+
+\begin{itemize}
+
+\item Eight General-Purpose Registers\index{General-purpose register}\alignright\syntax{"$0" $\mid$ "$1" $\mid$ \ldots $\mid$ "$7"}\nopagebreak
+
+These general-purpose registers can be freely used to store and restore intermediate results evaluated in expressions.
+Their actual values depend on the type used to access the registers and are invalidated across function calls.
+Before calling a function, it is therefore important to save the value of a register onto the stack in order to safely restore it afterward.
+
+\item The Result Register\index{Result register}\alignright\syntax{"$res"}\nopagebreak
+
+The result register can be used to store and restore the result of a function call.
+Its value depends on the type used to access the register and is not invalidated across function calls.
+
+\item The Stack Pointer\index{Stack pointer register}\alignright\syntax{"$sp"}\nopagebreak
+
+The stack pointer stores an address that points to the current top of the stack.
+Several instructions implicitly change the stack pointer by pushing or popping values to or from the stack, see Section~\ref{sec:cdstackoperations}.
+The address stored in the stack pointer has to be aligned according to the stack alignment of the target platform.
+
+\item The Frame Pointer\index{Frame pointer register}\alignright\syntax{"$fp"}\nopagebreak
+
+The frame pointer stores an address that points to the beginning of the current stack frame.
+This register can therefore be used to access the local variables of a function or the arguments passed to it.
+
+\item The Link Register\index{Link register}\alignright\syntax{"$lnk"}\nopagebreak
+
+The link register stores the address of the instruction following a \texttt{call} instruction, see Section~\ref{sec:cdcall}.
+This allows function calls on architectures that support this register to bypass the stack when storing the return address.
+
+\end{itemize}
+
+\subsection{Operands}\label{sec:cdoperands}
+
+The intermediate code representation defines several different instructions that can take up to three operands.
+Each operand is an instance of one of the following \emph{operand models}\index{Operand models}:
+
+\newcommand{\cdoperand}[1]{\hypertarget{cd:#1}{#1}}
+\newcommand{\cdoperandref}[1]{\hyperlink{cd:#1}{\textit{#1}}}
+
+\begin{itemize}
+
+\item\cdoperand{Size}\alignright\syntax{<Number>}\nopagebreak
+
+The size operand model is used to express a non-negative integer number.
+It generally denotes a number of octets but can also refer to some other quantity.
+
+\item\cdoperand{Offset}\alignright\syntax{$\pm$<Number>}\nopagebreak
+
+The offset operand model represents relative offsets with respect to the instruction directly following the current one.
+The sequential program flow of a program is altered by branching to the specified instruction within the current code section.
+Offsets are only used as first operand of an instruction.
+
+\item\cdoperand{String}\alignright\syntax{<String>}\nopagebreak
+
+The string operand model stores character sequences of arbitrary length.
+It is used to carry metadata from the front-end to the back-end.
+Strings can contain standard escape sequences to carry special characters.
+
+\item\cdoperand{Type}\alignright\syntax{<Type>}\nopagebreak
+
+The type operand model specifies a single type as defined in Section~\ref{sec:cdtypes}.
+
+\item\cdoperand{Immediate} Value\alignright\syntax{<Type> <Number> $\mid$ <Type> $\pm$<Number>}\nopagebreak
+
+The immediate value operand model is used to store a constant numeric value.
+The range and format of the valid values is predefined by the given type.
+
+\item\cdoperand{Register}\alignright\syntax{<Type> <Register> $\mid$ <Type> <Register> $\pm$ <Number>}\nopagebreak
+
+The register operand model can be used to access the values of one of the registers defined in Section~\ref{sec:cdregisters}.
+The given type specifies the representation of the value of the register and has to be of type model data pointer for the special-purpose pointer registers.
+If a register is accessed using type model data pointer and is not used as destination operand of an instruction,
+its evaluated address can be incremented or decremented by an optional constant displacement.
+
+\item\cdoperand{Address}\alignright\syntax{<Type> "@"<Identifier> $\mid$ <Type> "@"<Identifier> $\pm$ <Number>}\\
+\alignright\syntax{$\mid$ <Type> "@"<Identifier> $+$ <Register> $\mid$ <Type> "@"<Identifier> $+$ <Register> $\pm$ <Number>}\nopagebreak
+
+The address operand model represents the address of a code or data section named by the identifier.
+If this identifier contains question marks, the actual name of the section begins behind the last question mark.
+If none of the sections named in front of a question mark are used, the actual address evaluates either to zero or to the section named behind an optional colon.
+If the address names a code section, its type has to be a function pointer.
+Otherwise its type has to be a data pointer and the resulting address can be incremented by an optional constant displacement.
+If the operand is used within an instruction of a code section, this address can additionally be incremented by the value of a register that stores a data pointer.
+
+\item\cdoperand{Memory}\alignright\syntax{<Type> "[" <Number> "]"}\\
+\alignright\syntax{$\mid$ <Type> "[" <Register> "]" $\mid$ <Type> "[" <Register> $\pm$ <Number> "]"}\\
+\alignright\syntax{$\mid$ <Type> "[" "@"<Identifier> "]" $\mid$ <Type> "[" "@"<Identifier> $\pm$ <Number> "]"}\\
+\alignright\syntax{$\mid$ <Type> "[" "@"<Identifier> $+$ <Register> "]" $\mid$ <Type> "[" "@"<Identifier> $+$ <Register> $\pm$ <Number> "]"}\nopagebreak
+
+The memory operand model allows accessing the data value stored at a specified address using the representation of the given type.
+The actual address can either be an immediate address, a register that stores a data pointer, the name of a data section, or any combination thereof.
+The evaluation of the address of a section is the same as for sections named in the address operand model.
+
+\end{itemize}
+
+\subsection{Instructions}
+
+Instructions are composed of one of the mnemonics listed in Table~\ref{tab:codeset} followed by up to three operands.
+If the instruction generates a result, it is generally stored in the first register or memory operand.
+Except where otherwise noted, the types of all typed operands have to match.
+Operands and their different models are described in Section~\ref{sec:cdoperands}.
+
+\instructionset{code}{Intermediate code instruction set}{5}{6}
+
+The operation of these instructions as well as all valid combinations of their operands are specified in the instruction reference in Section~\ref{sec:cdreference}.
+The instructions themselves are grouped together in code, data, or type sections as described in Section~\ref{sec:cdprogrammingmodel}.
+The actual section type defines which instruction subset is available for use.
+Table~\ref{tab:cdinstructions} classifies the instructions pairwise according to their operation and lists the section types they are available in.
+A machine code generator is only required to implement instructions for data management, arithmetics, bit manipulations, function calls, and branching.
+
+\newcommand{\cdinstructionref}[3]{& #1 & \texttt{#2} & \ref{sec:cd#2} & \ifx#3\empty\else\texttt{#3} & \ref{sec:cd#3}\fi \\}
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lllrlr@{}}
+\toprule Instruction & Section & \multicolumn{2}{l}{Mnemonic} & \multicolumn{2}{l@{}}{Mnemonic} \\
+Category & Types & \multicolumn{2}{r}{See Section} & \multicolumn{2}{r@{}}{See Section} \\
+\midrule Memory Layout
+\cdinstructionref{all}{alias}{req}
+\cdinstructionref{data}{def}{res}
+\midrule Data Management
+\cdinstructionref{code}{mov}{conv}
+\cdinstructionref{code}{copy}{fill}
+\midrule Arithmetic
+\cdinstructionref{code}{add}{sub}
+\cdinstructionref{code}{mul}{div}
+\cdinstructionref{code}{mod}{neg}
+\midrule Bit Manipulation
+\cdinstructionref{code}{and}{or}
+\cdinstructionref{code}{xor}{not}
+\cdinstructionref{code}{lsh}{rsh}
+\midrule Function Call
+\cdinstructionref{code}{push}{pop}
+\cdinstructionref{code}{call}{ret}
+\cdinstructionref{code}{enter}{leave}
+\midrule Branching
+\cdinstructionref{code}{br}{jump}
+\cdinstructionref{code}{breq}{brne}
+\cdinstructionref{code}{brlt}{brge}
+\midrule Special Purpose
+\cdinstructionref{code}{nop}{asm}
+\cdinstructionref{code}{fix}{unfix}
+\midrule Debugging
+\cdinstructionref{all}{loc}{}
+\cdinstructionref{code}{break}{trap}
+\midrule Symbol Declaration
+\cdinstructionref{code}{sym}{}
+\cdinstructionref{all}{field}{value}
+\midrule Type Declaration
+\cdinstructionref{all}{void}{type}
+\cdinstructionref{all}{array}{rec}
+\cdinstructionref{all}{ptr}{ref}
+\cdinstructionref{all}{func}{enum}
+\bottomrule
+\end{tabular}
+\caption{Intermediate code instruction set classification}
+\label{tab:cdinstructions}
+\end{table}
+
+Instructions and sections are textually represented using the generic assembly language.
+Tools like \tool{cpp\-code} or \tool{ob\-code}, see Section~\ref{sec:cdtools}, translate programs into intermediate code and generate an assembly code listing thereof.
+Other tools like \tool{cd\-check} or \tool{cd\-run} are able to read and process assembly files written using intermediate code.
+These tools predefine some constant definitions whose actual values depend on the target hardware architecture.
+The definitions \texttt{int}, \texttt{intsize}, and \texttt{intalign} evaluate to the name, size, and stack alignment of the default signed integer type,
+while \texttt{flt}, \texttt{fltsize}, and \texttt{fltalign} evaluate to the name, size, and stack alignment of the default floating-point type.
+The sizes and stack alignments of data pointers, function pointers, return addresses and the link register are available using the definitions \texttt{ptrsize}, \texttt{ptralign}, \texttt{funsize}, \texttt{funalign}, \texttt{retsize}, \texttt{retalign}, and \texttt{lnksize} respectively.
+The definition \texttt{stackdisp} evaluates to the architecture-dependent stack pointer displacement that has to be added to every memory access on the stack.
+The filename of the source code and current position therein are available using the definitions \texttt{file} and \texttt{line}.
+\seeassembly
+Since intermediate code is an abstract representation however, all assembly language features which define, align, or otherwise refer to binary data are not available.
+
+\subsection{Debugging Information}\label{sec:cddebugging}
+
+Several intermediate code instructions contain metadata about the program for debugging purposes.
+They do not generate any machine code but contribute to the debugging information generated by the back-end.
+This debugging information consists of the following metadata for debuggers capable of program animation and memory inspection:
+
+\begin{itemize}
+
+\item Breakpoints\index{Breakpoints}\nopagebreak
+
+Breakpoints map machine code addresses to their corresponding source code locations and vice versa.
+They enable user requests to suspend the program execution at predefined statement units of the programming language.
+
+\item Symbol Declarations\index{Symbol declarations}\nopagebreak
+
+Symbol declarations map memory addresses to their corresponding symbolic names and vice versa.
+They are typically used to represent storage objects like variables and parameters of the programming language.
+
+\item Type Declarations\index{Type declarations}\nopagebreak
+
+Type declarations describe the layout and data representation of memory regions occupied by storage objects.
+They are used to represent data types of the programming language and its user-defined data structures for memory inspection.
+
+\end{itemize}
+
+Type declarations are represented by an arbitrary set of consecutive type declaration instructions.
+This allows describing complex compound types involving pointers and arrays in order of occurrence.
+All type declarations in code sections or type sections refer to the type of the preceding symbol, field, or enumerator declaration.
+Otherwise they declare the type of the result returned by the code section, or the type of the data or type section itself.
+\seedebugging
+
+\section{Instruction Set Reference}\label{sec:cdreference}
+
+This section describes the operation of all instructions available in intermediate code.
+Every instruction has one mnemonic and up to three operands.
+The valid combinations of mnemonics and operand models is given in the syntax definition for every instruction.
+The syntax definition uses either an operand model as described in Section~\ref{sec:cdoperands} or an operand class as shown in Table~\ref{tab:cdoperandclasses}.
+An operand class consists of several different operand models.
+The model of the actual operand has to be one of the models named in the operand class.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule Name & Description \\ \midrule
+\cdoperand{Pointer} & Any operand model of type data pointer \\
+\cdoperand{Function} & Any operand model of type function pointer \\
+\cdoperand{StrTyp} & \cdoperandref{String} or \cdoperandref{Type} \\
+\cdoperand{ImmAdr} & \cdoperandref{Immediate} or \cdoperandref{Address} \\
+\cdoperand{RegMem} & \cdoperandref{Register} or \cdoperandref{Memory} \\
+\cdoperand{ImmRegMem} & \cdoperandref{Immediate}, \cdoperandref{Register}, or \cdoperandref{Memory} \\
+\cdoperand{ImmRegAdrMem} & \cdoperandref{Immediate}, \cdoperandref{Register}, \cdoperandref{Address}, or \cdoperandref{Memory} \\
+\bottomrule
+\end{tabular}
+\caption{Intermediate code operand classes}
+\label{tab:cdoperandclasses}
+\end{table}
+
+\newcommand{\cdinstruction}[5]{\subsection[#1]{\texttt{#1}\enskip\textnormal{\ifx#2\empty\else\cdoperandref{#2}\ifx#3\empty\else\texttt{,} \cdoperandref{#3}\ifx#4\empty\else\texttt{,} \cdoperandref{#4}\fi\fi\fi}\enskip\alignright\mbox{#5}}\label{sec:cd#1}}
+
+\cdinstruction{add}{RegMem}{ImmRegAdrMem}{ImmRegAdrMem}{Addition}
+
+Adds the value of the second operand to the value of the third operand and stores the result in the first register or memory operand.
+This operation is not available for function pointers.
+
+\cdinstruction{alias}{String}{}{}{Alias Name Definition}
+
+Defines an alias name for the code or data following the current instruction.
+The address of the alias name equals to the name of the section plus the corresponding displacement.
+The operand specifies the name of the alias which may not be duplicated and should differ from the name of the section.
+
+\cdinstruction{and}{RegMem}{ImmRegMem}{ImmRegMem}{Logical AND}
+
+Performs a logical AND operation on the bits of the values of the second and third operand and stores the result in the first register or memory operand.
+This operation is not available for function pointers and floating-point numbers.
+
+\cdinstruction{array}{Size}{Size}{}{Array Type Declaration}
+
+Declares an array type which represents a collection of consecutive storage objects with the same element type that can be accessed by indexing.
+The first operand specifies the index of the first element of the array and the second operand the number of elements contained therein.
+This compound type declaration requires a subsequent declaration for its element type.
+
+\cdinstruction{asm}{String}{Size}{String}{Inline Assembly}
+
+Passes inline assembly code to the underlying assembler of the back-end.
+The \texttt{asm} instruction itself is then replaced by the generated machine code.
+The first operand names the source file and the second operand a line within that file.
+This information is needed for diagnostic messages of the assembler.
+The third operand contains the actual assembly code in one string.
+\seeassembly
+
+\cdinstruction{br}{Offset}{}{}{Unconditional Branch}
+
+Continues execution at the instruction specified by the relative instruction offset.
+Indirect branches or branches into other code sections can be performed using the \texttt{jump} instruction, see Section~\ref{sec:cdjump}.
+
+\cdinstruction{break}{}{}{}{Breakpoint}
+
+Identifies the beginning of a suspendable statement unit of the programming language.
+Breakpoints require subsequent source code locations, see Section~\ref{sec:cdloc}.
+
+\cdinstruction{breq}{Offset}{ImmRegAdrMem}{ImmRegAdrMem}{Branch if Equal}
+
+Continues execution at the instruction specified by the relative instruction offset if the values of the second and third operand match.
+
+\cdinstruction{brge}{Offset}{ImmRegAdrMem}{ImmRegAdrMem}{Branch if Greater Than or Equal}
+
+Continues execution at the instruction specified by the relative instruction offset if the value of the second operand is greater than or equal to the value of the third operand.
+
+\cdinstruction{brlt}{Offset}{ImmRegAdrMem}{ImmRegAdrMem}{Branch if Less Than}
+
+Continues execution at the instruction specified by the relative instruction offset if the value of the second operand is less than the value of the third operand.
+
+\cdinstruction{brne}{Offset}{ImmRegAdrMem}{ImmRegAdrMem}{Branch if Not Equal}
+
+Continues execution at the instruction specified by the relative instruction offset if the values of the second and third operand do not match.
+
+\cdinstruction{call}{Function}{Size}{}{Function Call}
+
+Continues execution in the code section specified by the function pointer of the first operand and stores the address of the immediately following instruction in order to resume its execution after returning from the function.
+The address of the next instruction is either stored in the link register or pushed onto the stack if the architecture does not support the link register.
+The second operand specifies the amount of octets to be additionally popped from the stack upon returning from a function that needed arguments.
+This number has to be aligned according to the stack alignment of the target platform.
+For more information about stack operations, see Section~\ref{sec:cdstackoperations}.
+
+\cdinstruction{conv}{RegMem}{ImmRegAdrMem}{}{Datum Conversion}
+
+Converts the value of the second operand into the type specified by the first register or memory operand and stores the result there.
+Converting two non-floating-point values yields the least integer congruent to the source operand modulo $2^{8n}$ where $n$ is the size of the destination type.
+This operation is not available for conversions between pointers and floating-point numbers.
+
+\cdinstruction{copy}{Pointer}{Pointer}{ImmRegMem}{Data Copy}
+
+Copies data from the memory address named in the second operand to the memory address named in the first operand.
+The third operand specifies the amount of octets to be copied.
+
+\cdinstruction{def}{ImmAdr}{}{}{Datum Definition}
+
+Enlarges the current data section by a single datum and initializes the resulting memory with the binary representation of the specified value.
+The datum has to be aligned according to the data alignment of the target platform.
+If the operand is an address, it may not be incremented by a register, since registers are only available in code sections.
+
+\cdinstruction{div}{RegMem}{ImmRegMem}{ImmRegMem}{Division}
+
+Divides the value of the second operand by the value of the third operand and stores the result in the first register or memory operand.
+For signed and unsigned integers, the fractional part of the quotient is discarded.
+This operation is undefined if the third operand evaluates to zero, and is not available for pointers.
+
+\cdinstruction{enter}{Size}{}{}{Stack Frame Creation}
+
+Pushes the value of the frame pointer onto the stack and replaces it with the stack pointer.
+The stack pointer is then decremented by the amount of octets specified by the operand.
+This number has to be aligned according to the stack alignment of the target platform.
+For more information about stack frames, see Section~\ref{sec:cdstackoperations}.
+
+\cdinstruction{enum}{Offset}{}{}{Enumeration Type Declaration}
+
+Declares an enumeration type that stores a single integer value from a predefined set of named constants called enumerators.
+The operand defines the extent of the declaration in terms of the instruction range given by the relative instruction offset.
+All enumerators declared within this extent belong to the most current enumeration declaration, see Section~\ref{sec:cdvalue}.
+This compound type declaration requires a subsequent declaration for its underlying integer type.
+
+\cdinstruction{field}{String}{Size}{Immediate}{Field Declaration}
+
+Declares a field which associates the symbolic name of a storage object with its offset in the most current record declaration, see Section~\ref{sec:cdrec}.
+The first operand specifies the name of the field where an empty name conventionally denotes inheritance rather than composition.
+The second operand defines the offset of the field while the third stores the occupied bits in case it is a bit field.
+Field declarations require subsequent source code locations and type declarations.
+
+\cdinstruction{fill}{Pointer}{Pointer}{ImmRegAdrMem}{Data Initialization}
+
+Initializes a memory region starting from the address named in first operand with the value of the third operand.
+The second operand specifies the number of data values to be initialized.
+The type of the third operand does not have to be a pointer.
+
+\cdinstruction{fix}{Register}{}{}{Fix Register Mapping}
+
+Fixes the current mapping of an unfixed general-purpose register given by the operand to its corresponding physical register.
+This mapping stays fixed until the next occurrence of a corresponding \texttt{unfix} instruction in the instruction sequence, see Section~\ref{sec:cdunfix}.
+A fixed mapping is required whenever an instruction sequence needs to refer to the same physical register before and after overwriting the value of a general-purpose register.
+
+\cdinstruction{func}{Offset}{}{}{Function Type Declaration}
+
+Declares a function type which represents the type of a functional unit of the programming language.
+The operand defines the extent of the declaration in terms of the instruction range given by the relative instruction offset.
+All freestanding types declared within this extent belong to the most current function type declaration and correspond to its parameters in order of occurrence.
+This compound type declaration requires a subsequent type declaration for the type of the returned result.
+
+\cdinstruction{jump}{Function}{}{}{Indirect Branch}
+
+Continues execution in the code section specified by the function pointer of the operand.
+This instruction is useful for branching into other code sections or indirect branches like returning from a function using the link register.
+Direct branches within the same code section can be performed using the \texttt{br} instruction, see Section~\ref{sec:cdbr}.
+
+\cdinstruction{leave}{}{}{}{Stack Frame Deletion}
+
+Sets the stack pointer to the value of the frame pointer and pops the previous value of the frame pointer from the stack.
+For more information about stack frames, see Section~\ref{sec:cdstackoperations}.
+
+\cdinstruction{loc}{String}{Size}{Size}{Source Code Location}
+
+Maps the current section or a preceding breakpoint, symbol declaration, or type declaration to its source code location.
+The first operand names the source file and the second and thirds operands a line and column within that file.
+
+\cdinstruction{lsh}{RegMem}{ImmRegMem}{ImmRegMem}{Left Shift}
+
+Performs a left shift on the bits of the value of the second operand by the amount specified by the third operand and stores the result in the first register or memory operand.
+This operation is undefined if the third operand is negative or greater than or equal to its size in bits, and is not available for pointers and floating-point numbers.
+
+\cdinstruction{mod}{RegMem}{ImmRegMem}{ImmRegMem}{Modulo}
+
+Divides the value of the second operand by the value of the third operand and stores the remainder in the first register or memory operand.
+For signed integers, the remainder has the same sign as the dividend.
+This operation is undefined if the third operand evaluates to zero, and is not available for pointers and floating-point numbers.
+
+\cdinstruction{mov}{RegMem}{ImmRegAdrMem}{}{Datum Copy}
+
+Copies the value of the second operand to the first register or memory operand.
+
+\cdinstruction{mul}{RegMem}{ImmRegMem}{ImmRegMem}{Multiplication}
+
+Multiplies the value of the second operand by the value of the third operand and stores the result in the first register or memory operand.
+This operation is not available for function pointers.
+
+\cdinstruction{neg}{RegMem}{ImmRegMem}{}{Negation}
+
+Negates the value of the second operand and stores the result in the first register or memory operand.
+This operation is not available for pointers.
+
+\cdinstruction{nop}{}{}{}{No Operation}
+
+Performs no operation.
+This instruction allows an optimizer to elide unnecessary instructions as it is completely ignored by machine code generators.
+
+\cdinstruction{not}{RegMem}{ImmRegMem}{}{Logical NOT}
+
+Performs a one's complement negation on the bits of the value of the second operand and stores the result in the first register or memory operand.
+This operation is not available for pointers and floating-point numbers.
+
+\cdinstruction{or}{RegMem}{ImmRegMem}{ImmRegMem}{Logical OR}
+
+Performs a logical OR operation on the bits of the values of the second and third operand and stores the result in the first register or memory operand.
+This operation is not available for pointers and floating-point numbers.
+
+\cdinstruction{pop}{RegMem}{}{}{Pop from Stack}
+
+Stores the value pointed to by the stack pointer register into the first register or memory operand and increments the stack pointer register by the aligned size of that value.
+For more information about stack operations, see Section~\ref{sec:cdstackoperations}.
+
+\cdinstruction{ptr}{}{}{}{Pointer Type Declaration}
+
+Declares a pointer type which may represent the address of a storage object that can be dereferenced.
+This compound type declaration requires a subsequent declaration for the type of the referenced storage object.
+
+\cdinstruction{push}{ImmRegAdrMem}{}{}{Push onto Stack}
+
+Decrements the stack pointer register by the aligned size of the value of the operand and stores that value to the memory pointed to by the stack pointer.
+For more information about stack operations, see Section~\ref{sec:cdstackoperations}.
+
+\cdinstruction{rec}{Offset}{Size}{}{Record Type Declaration}
+
+Declares a record type which represents a compound data structure with an arbitrary number of elements called fields.
+The first operand defines the extent of the declaration in terms of the instruction range given by the relative instruction offset.
+All fields declared within this extent belong to the most current record declaration, see Section~\ref{sec:cdfield}.
+The second operand defines the overall size of the data structure.
+
+\cdinstruction{ref}{}{}{}{Reference Type Declaration}
+
+Declares a reference type which represents the address of a storage object that can be dereferenced.
+This compound type declaration requires a subsequent declaration for the type of the referenced storage object.
+
+\cdinstruction{req}{String}{}{}{Name Requirement}
+
+Adds a dependency on a data or code section that is not explicitly referenced by any other instruction of the current section.
+The operand specifies the name of the required section.
+
+\cdinstruction{res}{Size}{}{}{Space Reservation}
+
+Enlarges the current data section by the specified amount without initializing the resulting memory.
+
+\cdinstruction{ret}{}{}{}{Return from Function}
+
+Pops the function pointer from the stack and resumes the execution of the calling code section.
+For more information about stack operations, see Section~\ref{sec:cdstackoperations}.
+
+\cdinstruction{rsh}{RegMem}{ImmRegMem}{ImmRegMem}{Right Shift}
+
+Performs a right shift on the bits of the value of the second operand by the amount specified by the third operand and stores the result in the first register or memory operand.
+The shift operation is arithmetic for signed integers and logical otherwise.
+This operation is undefined if the third operand is negative or greater than or equal to its size in bits, and is not available for pointers and floating-point numbers.
+
+\cdinstruction{sub}{RegMem}{ImmRegAdrMem}{ImmRegAdrMem}{Subtraction}
+
+Subtracts the value of the third operand from the value of the second operand and stores the result in the first register or memory operand.
+This operation is not available for function pointers.
+
+\cdinstruction{sym}{Offset}{String}{ImmRegMem}{Symbol Declaration}
+
+Declares a symbol which associates the symbolic name of a storage object with its value or memory address.
+The first operand defines the lifetime of the symbol in terms of the instruction range given by the relative instruction offset.
+The second operand specifies the name of the symbol where an empty name conventionally denotes the result of the code section rather than a local variable or parameter.
+The model of the third operand describes the kind of the symbol:
+
+\begin{itemize}
+\item An immediate value operand denotes a constant with the value of the operand.
+\item A register operand declares an alias name for the currently mapped physical register of the operand and automatically fixes its mapping during the lifetime of the symbol.
+\item A memory operand denotes a storage object at the address of the operand.
+\end{itemize}
+
+In all three cases the symbol declaration is also available as an additional constant definition in the assembly code of all \texttt{asm} instructions occuring within the lifetime of the symbol.
+Symbol declarations require subsequent source code locations and type declarations.
+
+\cdinstruction{trap}{Size}{}{}{Abnormal Program Termination}
+
+Terminates the program abnormally due to an exceptional condition like an unsatisfied runtime check.
+The operand provides implementation-defined information for a debugger in cases where its value can be encoded in the generated machine code.
+
+\cdinstruction{type}{StrTyp}{}{}{Basic Type Declaration}
+
+Declares a basic type which corresponds to the type of the named type section or the operand itself.
+
+\cdinstruction{unfix}{Register}{}{}{Unfix Register Mapping}
+
+Unfixes the current mapping of a general-purpose register which was previously fixed by a corresponding \texttt{fix} instruction, see Section~\ref{sec:cdfix}.
+
+\cdinstruction{value}{String}{Imm}{}{Enumerator Declaration}
+
+Declares an enumerator with a symbolic name and a constant integer value for the most current enumeration declaration, see Section~\ref{sec:cdenum}.
+The first operand specifies the name of the enumerator and the second operand its value.
+Enumerator declarations require subsequent source code locations.
+
+\cdinstruction{void}{}{}{}{Void Type Declaration}
+
+Declares a void type which represents an unspecified, ambiguous, or nonexistent type of the programming language.
+
+\cdinstruction{xor}{RegMem}{ImmRegMem}{ImmRegMem}{Logical Exclusive OR}
+
+Performs a logical exclusive OR operation on the bits of the values of the second and third operand and stores the result in the first register or memory operand.
+This operation is not available for pointers and floating-point numbers.
+
+\section{Code Optimizations}\index{Optimizations}\label{sec:cdoptimizations}
+
+The \ecs{} features an optimizer that is able to improve programs represented using intermediate code.
+This section describes all improvements and modifications on programs performed by the optimizer.
+Since the intermediate code representation of a program is the only interface between the various front-ends and back-ends,
+all compilers of the \ecs{} benefit from these optimizations by design.
+Figure~\ref{fig:cdoptdataflow} shows the typical data flow within an optimizing compiler.
+
+\begin{figure}
+\flowgraph{
+\resource{source code} \ar[d] \\
+\converter{Front-End} \ar[d] \\
+\resource{intermediate\\code} \ar[d] \ar@/u/[rr]^{\txt{code sections}} & \txt{\hphantom{code sections}} & \converter{Optimizer} \ar@/d/[ll]^{\txt{optimized sections}} \\
+\converter{Back-End} \ar[d] \\
+\resource{machine code} \\
+}\caption{Data flow within an optimizing compiler}
+\label{fig:cdoptdataflow}
+\end{figure}
+
+Memory operands followed by an exclamation point denote strict data accesses which are not subject to code optimizations.
+This ensures accesses to memory that is considered volatile because it is shared with peripheral devices, signal handlers, or other threads of execution.
+In general however, memory accesses are neither atomic nor ordered and should therefore never be used as a synchronization mechanism.
+
+\section{Runtime Support}\index{Runtime support!for Intermediate Code}
+
+The \ecs{} provides an interpreter called \tool{cd\-run} which executes programs written in intermediate code.
+Basic runtime support for the emulated runtime environment is provided by the object file \objfile{code\-run}.
+Programs written in \cpp{} need additional runtime support stored in the \libfile{cpp\-code\-run} library file.
+Programs written in Oberon need additional runtime support stored in the \libfile{ob\-code\-run} library file.
+\seecpp\seeoberon
+
+\section{Intermediate Code Tools}\label{sec:cdtools}
+
+The \ecs{} provides several different tools that generate or process files written in intermediate code.
+While real compilers use intermediate code just as an internal and therefore inaccessible representation of the code to be compiled,
+these tools allow exposing and modifying the actual intermediate code for debugging purposes.
+For this reason, all optimizations mentioned in Section~\ref{sec:cdoptimizations} are disabled by default.
+\interface\renewcommand{\debuggingtool}{}
+
+\cdcheck
+\cdopt
+\cdrun
+\cdamda
+\cdamdb
+\cdamdc
+\cdarma
+\cdarmb
+\cdarmc
+\cdarmcfpe
+\cdavr
+\cdavrtt
+\cdmabk
+\cdmibl
+\cdmipsa
+\cdmipsb
+\cdmmix
+\cdorok
+\cdppca
+\cdppcb
+\cdrisc
+\cdwasm
+\cppcode
+\falcode
+\obcode
+
+\concludechapter
