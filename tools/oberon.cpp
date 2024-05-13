@@ -565,10 +565,8 @@ bool Expression::IsAssignmentCompatibleWith (const Type& other) const
 	switch (type->model)
 	{
 	case Type::Void:
-	case Type::Boolean:
 	case Type::Real:
 	case Type::Complex:
-	case Type::Set:
 	case Type::Byte:
 	case Type::Any:
 	case Type::Nil:
@@ -576,9 +574,11 @@ bool Expression::IsAssignmentCompatibleWith (const Type& other) const
 	case Type::Module:
 	case Type::Identifier:
 		return IsExpressionCompatibleWith (other);
+	case Type::Boolean:
 	case Type::Character:
 	case Type::Signed:
 	case Type::Unsigned:
+	case Type::Set:
 		return IsByte (other) && type->basic.size == other.byte.size || IsExpressionCompatibleWith (other);
 	case Type::String:
 		return (IsCharacter (other) || IsByte (other)) && value.string->size () == 1 || IsCharacterArray (other) && !IsOpenArray (other) && value.string->size () < Oberon::Unsigned (other.array.length->value.signed_);
@@ -599,6 +599,7 @@ bool Expression::IsParameterCompatibleWith (const Declaration& declaration) cons
 	if (IsVariableParameter (declaration) && !IsReadOnlyParameter (declaration) && IsReadOnly (*this)) return false;
 	if (IsOpenArray (*declaration.parameter.type)) return type->IsArrayCompatibleWith (*declaration.parameter.type) || IsVariableOpenByteArrayParameter (declaration) && IsVariable (*this) || !IsVariableParameter (declaration) && IsCharacterArray (*declaration.parameter.type) && IsString (*type);
 	if (!IsVariableParameter (declaration)) return IsAssignmentCompatibleWith (*declaration.parameter.type) && (!IsString (*type) || !IsReadOnlyParameter (declaration) || !IsCharacterArray (*declaration.parameter.type) || IsOpenArray (*declaration.parameter.type) || value.string->size () == Oberon::Unsigned (declaration.parameter.type->array.length->value.signed_)); else if (!IsVariable (*this)) return false;
+	if (IsByte (*declaration.parameter.type)) return IsAssignmentCompatibleWith (*declaration.parameter.type);
 	if (IsRecord (*type)) return type->Extends (*declaration.parameter.type);
 	return type->IsSameAs (*declaration.parameter.type);
 }
@@ -909,7 +910,7 @@ void Platform::InitializeConstant (Declaration& declaration, Expression& express
 void Platform::InitializeType (Declaration& declaration, Type& type)
 {
 	assert (IsType (declaration)); assert (IsAlias (type));
-	declaration.type = &type; type.identifier = GetCanonical (type).identifier;
+	declaration.type = &GetCanonical (type); type.identifier->declaration = &declaration;
 }
 
 void Platform::InitializeProcedure (Declaration& declaration)
@@ -1070,6 +1071,40 @@ Type& Platform::GetCanonical (Type& type)
 	if (IsComplex (type)) return GetComplex (type.complex.size);
 	if (IsSet (type)) return GetSet (type.set.size);
 	return type;
+}
+
+Type& Platform::GetComplex (const Type& type)
+{
+	assert (IsReal (type)); assert (IsAlias (type));
+	return GetComplex (*type.identifier->declaration);
+}
+
+Type& Platform::GetComplex (const Declaration& declaration)
+{
+	assert (IsType (declaration));
+	if (&declaration == &globalReal) return globalComplexType;
+	if (&declaration == &globalShortReal) return globalShortComplexType;
+	if (&declaration == &globalLongReal) return globalLongComplexType;
+	if (&declaration == &globalReal32) return globalComplex32Type;
+	if (&declaration == &globalReal64) return globalComplex64Type;
+	return GetComplex (*declaration.type);
+}
+
+Type& Platform::GetReal (const Type& type)
+{
+	assert (IsComplex (type)); assert (IsAlias (type));
+	return GetReal (*type.identifier->declaration);
+}
+
+Type& Platform::GetReal (const Declaration& declaration)
+{
+	assert (IsType (declaration));
+	if (&declaration == &globalComplex) return globalRealType;
+	if (&declaration == &globalShortComplex) return globalShortRealType;
+	if (&declaration == &globalLongComplex) return globalLongRealType;
+	if (&declaration == &globalComplex32) return globalReal32Type;
+	if (&declaration == &globalComplex64) return globalReal64Type;
+	return GetReal (*declaration.type);
 }
 
 Type& Platform::GetType (const Signed value)
@@ -1420,7 +1455,7 @@ bool Oberon::IsLocal (const Scope& scope)
 
 bool Oberon::IsReachable (const Scope& scope)
 {
-	return IsModule (scope) || IsRecord (scope) && scope.record->record.isReachable;
+	return IsModule (scope) || IsRecord (scope) && IsReachable (*scope.record);
 }
 
 bool Oberon::IsExported (const Definition& definition)
@@ -1675,7 +1710,7 @@ bool Oberon::IsRecord (const Type& type)
 
 bool Oberon::IsAbstract (const Type& type)
 {
-	return IsRecord (type) && (type.record.isAbstract || type.record.declaration && type.record.declaration->type->record.abstractions);
+	return IsRecord (type) && type.record.isAbstract;
 }
 
 bool Oberon::IsFinal (const Type& type)
@@ -1761,6 +1796,11 @@ bool Oberon::IsSelectable (const Type& type)
 bool Oberon::IsTraceable (const Type& type)
 {
 	return IsBasic (type) || IsStringable (type) || IsAny (type) || IsNil (type) || IsPointer (type)|| IsProcedure (type);
+}
+
+bool Oberon::IsReachable (const Type& type)
+{
+	return IsRecord (type) && (type.record.isReachable || type.record.baseType && IsReachable (*type.record.baseType));
 }
 
 bool Oberon::IsEmptyLoop (const Statement& statement)
@@ -2014,7 +2054,7 @@ std::ostream& Oberon::operator << (std::ostream& stream, const Declaration& decl
 		if (declaration.parameter.isVariable) stream << Lexer::Var << ' ';
 		stream << declaration.name;
 		if (declaration.parameter.isReadOnly) stream << Lexer::Minus;
-		return stream << Lexer::Colon << ' ' << *declaration.parameter.type << Lexer::Semicolon;
+		return stream << Lexer::Colon << ' ' << *declaration.parameter.type;
 
 	default:
 		assert (Declaration::Unreachable);
@@ -2313,8 +2353,8 @@ std::ostream& Oberon::operator << (std::ostream& stream, const Expression& expre
 		return stream << *expression.typeGuard.designator << Lexer::LeftParen << *expression.typeGuard.identifier << Lexer::RightParen;
 
 	case Expression::Conversion:
-		assert (expression.conversion.designator); assert (expression.conversion.expression);
-		return stream << *expression.conversion.designator << ' ' << Lexer::LeftParen << *expression.conversion.expression << Lexer::RightParen;
+		assert (expression.conversion.identifier); assert (expression.conversion.expression);
+		return stream << *expression.conversion.identifier << ' ' << Lexer::LeftParen << *expression.conversion.expression << Lexer::RightParen;
 
 	case Expression::Identifier:
 		return stream << expression.identifier;

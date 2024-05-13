@@ -42,8 +42,8 @@ GENERATORS := $(filter-out docdoc, $(foreach EXTRACTOR, $(EXTRACTORS), $(addpref
 
 FRONTENDS := cd cpp fal ob
 FRONTENDNAMES := CODE CPP FALSE OBERON
-BACKENDS := code amd16 amd32 amd64 arma32 arma64 armt32 armt32fpe avr avr32 m68k mibl mips32 mips64 mmix or1k ppc32 ppc64 risc wasm
-BACKENDNAMES := CODE AMD16 AMD32 AMD64 ARMA32 ARMA64 ARMT32 ARMT32FPE AVR AVR32 M68K MICROBLAZE MIPS32 MIPS64 MMIX OR1K POWERPC32 POWERPC64 RISC WEBASSEMBLY
+BACKENDS := code amd16 amd32 amd64 arma32 arma64 armt32 armt32fpe avr avr32 m68k mibl mips32 mips64 mmix or1k ppc32 ppc64 risc wasm xtensa
+BACKENDNAMES := CODE AMD16 AMD32 AMD64 ARMA32 ARMA64 ARMT32 ARMT32FPE AVR AVR32 M68K MICROBLAZE MIPS32 MIPS64 MMIX OR1K POWERPC32 POWERPC64 RISC WEBASSEMBLY XTENSA
 COMPILERS := $(filter-out cdcode, $(foreach FRONTEND, $(FRONTENDS), $(addprefix $(FRONTEND), $(BACKENDS))))
 
 TARGETS := $(filter-out code, $(BACKENDS))
@@ -62,9 +62,9 @@ LINKFILEFORMATS := lib bin mem hex prg
 LINKFILEFORMATNAMES := LIBRARY BINARY MEMORY INTELHEX GEMDOS
 LINKERS := $(foreach LINKFILEFORMAT, $(LINKFILEFORMATS), link$(LINKFILEFORMAT))
 
-ENVIRONMENTS := amd32linux amd64linux arma32linux arma64linux armt32linux armt32fpelinux at32uc3a3 atmega32 atmega328 atmega8515 bios16 bios32 bios64 dos efi32 efi64 mips32linux mmixsim or1ksim osx32 osx64 riscdisk rpi2b tos webassembly win32 win64
-ENVIRONMENTTARGETS := amd32 amd64 arma32 arma64 armt32 armt32fpe avr32 avr avr avr amd16 amd32 amd64 amd16 amd32 amd64 mips32 mmix or1k amd32 amd64 risc arma32 m68k wasm amd32 amd64
-ENVIRONMENTARCHITECTURES := amd32 amd64 arma32 arma64 armt32 armt32 avr32 avr avr avr amd16 amd32 amd64 amd16 amd32 amd64 mips32 mmix or1k amd32 amd64 risc arma32 m68k wasm amd32 amd64
+ENVIRONMENTS := amd32linux amd64linux arma32linux arma64linux armt32linux armt32fpelinux at32uc3a3 atmega32 atmega328 atmega8515 bios16 bios32 bios64 dos efi32 efi64 mips32linux mmixsim or1ksim osx32 osx64 riscdisk rpi2b tos webassembly win32 win64 xtensalinux
+ENVIRONMENTTARGETS := amd32 amd64 arma32 arma64 armt32 armt32fpe avr32 avr avr avr amd16 amd32 amd64 amd16 amd32 amd64 mips32 mmix or1k amd32 amd64 risc arma32 m68k wasm amd32 amd64 xtensa
+ENVIRONMENTARCHITECTURES := amd32 amd64 arma32 arma64 armt32 armt32 avr32 avr avr avr amd16 amd32 amd64 amd16 amd32 amd64 mips32 mmix or1k amd32 amd64 risc arma32 m68k wasm amd32 amd64 xtensa
 
 # environment & toolchain
 
@@ -175,7 +175,7 @@ else ifeq "$(toolchain)" "gcc"
 
 	COMMONFLAGS := -c -pipe -x c++ -std=c++17 --pedantic -Wfatal-errors
 
-	CFLAGS = $(COMMONFLAGS) -Werror -Wall -Wextra -Wmissing-noreturn -Wno-switch -Wno-empty-body -Wno-parentheses -Wzero-as-null-pointer-constant -Wno-missing-field-initializers -Wno-return-type -Wno-misleading-indentation -Wno-psabi -Wno-implicit-fallthrough -o $(notdir $@)
+	CFLAGS = $(COMMONFLAGS) -Werror -Wall -Wextra -Wmissing-noreturn -Wno-switch -Wno-empty-body -Wno-parentheses -Wzero-as-null-pointer-constant -Wno-missing-field-initializers -Wno-return-type -Wno-misleading-indentation -Wno-psabi -Wno-implicit-fallthrough -Wno-suggest-attribute=noreturn -o $(notdir $@)
 	LFLAGS = -o $(notdir $@)
 
 	CCHECKFLAGS := $(COMMONFLAGS) -fsyntax-only
@@ -239,7 +239,8 @@ SRC := $(addprefix $(TOOLS), object.cpp objlinker.cpp objmap.cpp objhexfile.cpp 
 	m68k.cpp m68kassembler.cpp m68kdisassembler.cpp m68kgenerator.cpp mibl.cpp miblassembler.cpp mibldisassembler.cpp miblgenerator.cpp \
 	mips.cpp mipsassembler.cpp mipsdisassembler.cpp mipsgenerator.cpp mmix.cpp mmixassembler.cpp mmixdisassembler.cpp mmixgenerator.cpp \
 	or1k.cpp or1kassembler.cpp or1kdisassembler.cpp or1kgenerator.cpp ppc.cpp ppcassembler.cpp ppcdisassembler.cpp ppcgenerator.cpp \
-	risc.cpp riscassembler.cpp riscdisassembler.cpp riscgenerator.cpp wasm.cpp wasmassembler.cpp wasmdisassembler.cpp wasmgenerator.cpp) \
+	risc.cpp riscassembler.cpp riscdisassembler.cpp riscgenerator.cpp wasm.cpp wasmassembler.cpp wasmdisassembler.cpp wasmgenerator.cpp \
+	xtensa.cpp xtensaassembler.cpp xtensadisassembler.cpp xtensagenerator.cpp) \
 	$(addprefix $(UTILITIES), depwalk.cpp ecsd.cpp hexdump.cpp linecheck.cpp regtest.cpp $(ENVIRONMENT))
 DRV := $(addprefix $(TOOLS), $(addsuffix .drv, $(PREPROCESSORS) $(PRINTERS) $(CHECKERS) $(SERIALIZERS) $(INTERPRETERS) $(TRANSPILERS) $(GENERATORS) $(COMPILERS) $(CONVERTERS) $(ASSEMBLERS) $(DISASSEMBLERS) $(LINKERS)))
 OBJ := $(SRC:.cpp=$(O)) $(DRV:.drv=$(O))
@@ -370,6 +371,10 @@ $(addprefix $(TOOLS), wasm$(O): wasm.cpp ieee.hpp object.hpp utilities.hpp wasm.
 $(addprefix $(TOOLS), wasmassembler$(O): wasmassembler.cpp asmassembler.hpp asmchecker.hpp utilities.hpp wasm.def wasm.hpp wasmassembler.hpp)
 $(addprefix $(TOOLS), wasmdisassembler$(O): wasmdisassembler.cpp asmdisassembler.hpp utilities.hpp wasm.def wasm.hpp wasmdisassembler.hpp)
 $(addprefix $(TOOLS), wasmgenerator$(O): wasmgenerator.cpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmgeneratorcontext.hpp asmlexer.hpp asmparser.hpp asmprinter.hpp assembly.def code.def code.hpp debugging.hpp diagnostics.hpp layout.hpp object.hpp utilities.hpp wasm.def wasm.hpp wasmassembler.hpp wasmgenerator.hpp)
+$(addprefix $(TOOLS), xtensa$(O): xtensa.cpp object.hpp utilities.hpp xtensa.def xtensa.hpp)
+$(addprefix $(TOOLS), xtensaassembler$(O): xtensaassembler.cpp asmassembler.hpp asmchecker.hpp utilities.hpp xtensa.def xtensa.hpp xtensaassembler.hpp)
+$(addprefix $(TOOLS), xtensadisassembler$(O): xtensadisassembler.cpp asmdisassembler.hpp utilities.hpp xtensa.def xtensa.hpp xtensadisassembler.hpp)
+$(addprefix $(TOOLS), xtensagenerator$(O): xtensagenerator.cpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmgeneratorcontext.hpp asmlexer.hpp asmparser.hpp asmprinter.hpp assembly.def code.def code.hpp debugging.hpp diagnostics.hpp layout.hpp object.hpp utilities.hpp xtensa.def xtensa.hpp xtensaassembler.hpp xtensagenerator.hpp)
 $(addprefix $(TOOLS), cppprep$(O): cppprep.drv charset.hpp cpp.def cpplexer.hpp cpppreprocessor.hpp diagnostics.hpp driver.hpp error.hpp format.hpp position.hpp preprocessor.cpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
 $(addprefix $(TOOLS), cppprint$(O): cppprint.drv charset.hpp cpp.def cpp.hpp cppchecker.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp cppprinter.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp position.hpp printer.cpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), falprint$(O): falprint.drv charset.hpp diagnostics.hpp driver.hpp error.hpp fallexer.hpp falparser.hpp falprinter.hpp false.def false.hpp format.hpp layout.hpp position.hpp printer.cpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp structurepool.hpp)
@@ -415,7 +420,8 @@ $(addprefix $(TOOLS), cdppc32$(O): cdppc32.drv asmassembler.hpp asmchecker.hpp a
 $(addprefix $(TOOLS), cdppc64$(O): cdppc64.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmlexer.hpp asmparser.hpp asmprinter.hpp assembly.def assembly.hpp cdchecker.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp ppc.def ppc.hpp ppcassembler.hpp ppcgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
 $(addprefix $(TOOLS), cdrisc$(O): cdrisc.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmlexer.hpp asmparser.hpp asmprinter.hpp assembly.def assembly.hpp cdchecker.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp riscassembler.hpp riscgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
 $(addprefix $(TOOLS), cdwasm$(O): cdwasm.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmlexer.hpp asmparser.hpp asmprinter.hpp assembly.def assembly.hpp cdchecker.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp wasmassembler.hpp wasmgenerator.hpp)
-$(addprefix $(TOOLS), cppcode$(O): cppcode.drv asmchecker.hpp asmparser.hpp cdchecker.hpp cdemitter.hpp cdgenerator.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
+$(addprefix $(TOOLS), cdxtensa$(O): cdxtensa.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmlexer.hpp asmparser.hpp asmprinter.hpp assembly.def assembly.hpp cdchecker.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp xtensaassembler.hpp xtensagenerator.hpp)
+$(addprefix $(TOOLS), cppcode$(O): cppcode.drv asmchecker.hpp asmparser.hpp cdchecker.hpp cdemitter.hpp cdgenerator.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), cppamd16$(O): cppamd16.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), cppamd32$(O): cppamd32.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), cppamd64$(O): cppamd64.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
@@ -435,7 +441,8 @@ $(addprefix $(TOOLS), cppppc32$(O): cppppc32.drv asmassembler.hpp asmchecker.hpp
 $(addprefix $(TOOLS), cppppc64$(O): cppppc64.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp ppc.def ppc.hpp ppcassembler.hpp ppcgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), cpprisc$(O): cpprisc.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp riscassembler.hpp riscgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), cppwasm$(O): cppwasm.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp wasmassembler.hpp wasmgenerator.hpp)
-$(addprefix $(TOOLS), falcode$(O): falcode.drv asmchecker.hpp asmparser.hpp cdchecker.hpp cdemitter.hpp cdgenerator.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
+$(addprefix $(TOOLS), cppxtensa$(O): cppxtensa.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp cpp.def cpp.hpp cppchecker.hpp cppemitter.hpp cppinterpreter.hpp cpplexer.hpp cppparser.hpp cpppreprocessor.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp xtensaassembler.hpp xtensagenerator.hpp)
+$(addprefix $(TOOLS), falcode$(O): falcode.drv asmchecker.hpp asmparser.hpp cdchecker.hpp cdemitter.hpp cdgenerator.hpp charset.hpp code.def code.hpp compiler.cpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), falamd16$(O): falamd16.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), falamd32$(O): falamd32.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), falamd64$(O): falamd64.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
@@ -455,7 +462,8 @@ $(addprefix $(TOOLS), falppc32$(O): falppc32.drv asmassembler.hpp asmchecker.hpp
 $(addprefix $(TOOLS), falppc64$(O): falppc64.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp ppc.def ppc.hpp ppcassembler.hpp ppcgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), falrisc$(O): falrisc.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp riscassembler.hpp riscgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), falwasm$(O): falwasm.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp wasmassembler.hpp wasmgenerator.hpp)
-$(addprefix $(TOOLS), obcode$(O): obcode.drv asmchecker.hpp asmparser.hpp cdchecker.hpp cdemitter.hpp cdgenerator.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
+$(addprefix $(TOOLS), falxtensa$(O): falxtensa.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp falemitter.hpp fallexer.hpp falparser.hpp false.def false.hpp format.hpp layout.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp xtensaassembler.hpp xtensagenerator.hpp)
+$(addprefix $(TOOLS), obcode$(O): obcode.drv asmchecker.hpp asmparser.hpp cdchecker.hpp cdemitter.hpp cdgenerator.hpp charset.hpp code.def code.hpp compiler.cpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp stdlayout.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), obamd16$(O): obamd16.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), obamd32$(O): obamd32.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), obamd64$(O): obamd64.drv amd64.def amd64.hpp amd64assembler.hpp amd64generator.hpp asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
@@ -475,6 +483,7 @@ $(addprefix $(TOOLS), obppc32$(O): obppc32.drv asmassembler.hpp asmchecker.hpp a
 $(addprefix $(TOOLS), obppc64$(O): obppc64.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp ppc.def ppc.hpp ppcassembler.hpp ppcgenerator.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), obrisc$(O): obrisc.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp riscassembler.hpp riscgenerator.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp)
 $(addprefix $(TOOLS), obwasm$(O): obwasm.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp wasmassembler.hpp wasmgenerator.hpp)
+$(addprefix $(TOOLS), obxtensa$(O): obxtensa.drv asmassembler.hpp asmchecker.hpp asmgenerator.hpp asmparser.hpp asmprinter.hpp cdchecker.hpp cdemitter.hpp charset.hpp code.def code.hpp compiler.cpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp layout.hpp obchecker.hpp obemitter.hpp oberon.def oberon.hpp obinterpreter.hpp object.hpp oblexer.hpp obparser.hpp obprinter.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp structurepool.hpp xtensaassembler.hpp xtensagenerator.hpp)
 $(addprefix $(TOOLS), dbgdwarf$(O): dbgdwarf.drv charset.hpp converter.cpp dbgconverter.hpp dbgdwarfconverter.hpp debugging.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), amd16asm$(O): amd16asm.drv amd64.def amd64.hpp amd64assembler.hpp asmassembler.hpp asmchecker.hpp asmlexer.hpp asmparser.hpp assembler.cpp assembly.def assembly.hpp charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
 $(addprefix $(TOOLS), amd32asm$(O): amd32asm.drv amd64.def amd64.hpp amd64assembler.hpp asmassembler.hpp asmchecker.hpp asmlexer.hpp asmparser.hpp assembler.cpp assembly.def assembly.hpp charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
@@ -494,6 +503,7 @@ $(addprefix $(TOOLS), ppc32asm$(O): ppc32asm.drv asmassembler.hpp asmchecker.hpp
 $(addprefix $(TOOLS), ppc64asm$(O): ppc64asm.drv asmassembler.hpp asmchecker.hpp asmlexer.hpp asmparser.hpp assembler.cpp assembly.def assembly.hpp charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp ppc.def ppc.hpp ppcassembler.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
 $(addprefix $(TOOLS), riscasm$(O): riscasm.drv asmassembler.hpp asmchecker.hpp asmlexer.hpp asmparser.hpp assembler.cpp assembly.def assembly.hpp charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp riscassembler.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp)
 $(addprefix $(TOOLS), wasmasm$(O): wasmasm.drv asmassembler.hpp asmchecker.hpp asmlexer.hpp asmparser.hpp assembler.cpp assembly.def assembly.hpp charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp wasmassembler.hpp)
+$(addprefix $(TOOLS), xtensaasm$(O): xtensaasm.drv asmassembler.hpp asmchecker.hpp asmlexer.hpp asmparser.hpp assembler.cpp assembly.def assembly.hpp charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp stringpool.hpp xtensaassembler.hpp)
 $(addprefix $(TOOLS), amd16dism$(O): amd16dism.drv amd64.def amd64.hpp amd64disassembler.hpp asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), amd32dism$(O): amd32dism.drv amd64.def amd64.hpp amd64disassembler.hpp asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), amd64dism$(O): amd64dism.drv amd64.def amd64.hpp amd64disassembler.hpp asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp)
@@ -512,6 +522,7 @@ $(addprefix $(TOOLS), ppc32dism$(O): ppc32dism.drv asmdisassembler.hpp charset.h
 $(addprefix $(TOOLS), ppc64dism$(O): ppc64dism.drv asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp ppc.def ppc.hpp ppcdisassembler.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), riscdism$(O): riscdism.drv asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp riscdisassembler.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), wasmdism$(O): wasmdism.drv asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp wasmdisassembler.hpp)
+$(addprefix $(TOOLS), xtensadism$(O): xtensadism.drv asmdisassembler.hpp charset.hpp diagnostics.hpp disassembler.cpp driver.hpp error.hpp format.hpp object.hpp position.hpp stdcharset.hpp strdiagnostics.hpp xtensadisassembler.hpp)
 $(addprefix $(TOOLS), linklib$(O): linklib.drv charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp linker.cpp object.hpp objlinker.hpp objmap.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), linkbin$(O): linkbin.drv charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp linker.cpp object.hpp objlinker.hpp objmap.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp)
 $(addprefix $(TOOLS), linkmem$(O): linkmem.drv charset.hpp diagnostics.hpp driver.hpp error.hpp format.hpp linker.cpp object.hpp objlinker.hpp objmap.hpp position.hpp rangeset.hpp stdcharset.hpp strdiagnostics.hpp)
@@ -577,6 +588,7 @@ $(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter %or1k, $(COMPILERS))): $(adds
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter %ppc32 %ppc64, $(COMPILERS))): $(addsuffix $(O), ppc ppcassembler ppcgenerator))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter %risc, $(COMPILERS))): $(addsuffix $(O), risc riscassembler riscgenerator))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter %wasm, $(COMPILERS))): $(addsuffix $(O), wasm wasmassembler wasmgenerator))
+$(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter %xtensa, $(COMPILERS))): $(addsuffix $(O), xtensa xtensaassembler xtensagenerator))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter-out %code, $(COMPILERS))): $(addsuffix $(O), asmprinter asmassembler asmgenerator))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(COMPILERS)): $(addsuffix $(O), object debugging code cdchecker assembly asmlexer asmparser asmchecker))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(filter %dwarf, $(CONVERTERS))): $(addsuffix $(O), dbgdwarfconverter))
@@ -595,6 +607,7 @@ $(addprefix $(TOOLS), $(addsuffix $(PRG), or1kasm): $(addsuffix $(O), or1k or1ka
 $(addprefix $(TOOLS), $(addsuffix $(PRG), ppc32asm ppc64asm): $(addsuffix $(O), ppc ppcassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), riscasm): $(addsuffix $(O), risc riscassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), wasmasm): $(addsuffix $(O), wasm wasmassembler))
+$(addprefix $(TOOLS), $(addsuffix $(PRG), xtensaasm): $(addsuffix $(O), xtensa xtensaassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(ASSEMBLERS)): $(addsuffix $(O), object assembly asmlexer asmparser asmchecker asmassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), amd16dism amd32dism amd64dism): $(addsuffix $(O), amd64 amd64disassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), arma32dism): $(addsuffix $(O), arm arma32 arma32disassembler))
@@ -610,6 +623,7 @@ $(addprefix $(TOOLS), $(addsuffix $(PRG), or1kdism): $(addsuffix $(O), or1k or1k
 $(addprefix $(TOOLS), $(addsuffix $(PRG), ppc32dism ppc64dism): $(addsuffix $(O), ppc ppcdisassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), riscdism): $(addsuffix $(O), risc riscdisassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), wasmdism): $(addsuffix $(O), wasm wasmdisassembler))
+$(addprefix $(TOOLS), $(addsuffix $(PRG), xtensadism): $(addsuffix $(O), xtensa xtensadisassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(DISASSEMBLERS)): $(addsuffix $(O), object asmlexer asmdisassembler))
 $(addprefix $(TOOLS), $(addsuffix $(PRG), $(LINKERS)): $(addsuffix $(O), object objmap objlinker))
 $(addprefix $(UTILITIES), $(addsuffix $(PRG), ecsd hexdump regtest): $(addsuffix $(O), $(basename $(ENVIRONMENT))))
@@ -693,6 +707,7 @@ utilities: $(filter $(UTILITIESP)%, $(BIN))
 
 # runtime
 
+CURR := $(call DIR,./)
 PREV := $(call DIR,../)
 RUNTIME := $(call DIR,runtime/)
 RUNTIMEP := $(call DIRP,runtime/)
@@ -702,16 +717,16 @@ OBLIBRARY := $(call DIR,libraries/oberon/)
 
 export ECSINCLUDE := $(call DIR,$(abspath $(CPPLIBRARY))/)
 
-ASM := $(addprefix $(RUNTIME), amd32linuxrun.asm amd64linuxrun.asm arma32linuxrun.asm arma64linuxrun.asm armt32linuxrun.asm armt32fpelinuxrun.asm at32uc3a3run.asm atmega32run.asm atmega328run.asm atmega8515run.asm avrremote.asm bios16run.asm bios32run.asm bios64run.asm dosrun.asm efi32run.asm efi64run.asm mips32linuxrun.asm mmixsimrun.asm or1ksimrun.asm osx32run.asm osx64run.asm riscdiskrun.asm rpi2brun.asm tosapi.asm tosrun.asm webassemblyrun.asm win32run.asm win64run.asm)
+ASM := $(addprefix $(RUNTIME), amd32linuxrun.asm amd64linuxrun.asm arma32linuxrun.asm arma64linuxrun.asm armt32linuxrun.asm armt32fpelinuxrun.asm at32uc3a3run.asm atmega32run.asm atmega328run.asm atmega8515run.asm avrremote.asm bios16run.asm bios32run.asm bios64run.asm dosrun.asm efi32run.asm efi64run.asm mips32linuxrun.asm mmixsimrun.asm or1ksimrun.asm osx32run.asm osx64run.asm riscdiskrun.asm rpi2brun.asm tosapi.asm tosrun.asm webassemblyrun.asm win32run.asm win64run.asm xtensalinuxrun.asm)
 OBF := $(ASM:.asm=.obf) $(addprefix $(RUNTIME), $(addsuffix run.obf, $(BACKENDS)) $(foreach TARGET, amd32 amd64 arma32 arma64 armt32 armt32fpe mips32, $(TARGET)libdl.obf $(TARGET)libpthread.obf $(TARGET)libsdl.obf) $(foreach TARGET, 32 64, win$(TARGET)api.obf win$(TARGET)sdl.obf))
 LIB := $(addprefix $(RUNTIME), $(addsuffix run.lib, $(addprefix cpp, $(BACKENDS)) $(addprefix ob, $(BACKENDS))))
 CPP := $(addprefix $(CPPLIBRARY), cassert.cpp cctype.cpp cmath.cpp csetjmp.cpp cstdio.cpp cstdlib.cpp cstring.cpp ctime.cpp exception.cpp)
 HDR := $(addprefix $(CPPLIBRARY), algorithm any array assert.h atomic barrier bit bitset cassert cctype cerrno cfenv cfloat charconv chrono cinttypes climits clocale cmath codecvt compare complex complex.h concepts condition_variable coroutine csetjmp csignal cstdarg cstddef cstdint cstdio cstdlib cstring ctime ctype.h cuchar cwchar cwctype deque errno.h exception execution expected fenv.h filesystem flat_map flat_set float.h format forward_list fstream functional future generator initializer_list inttypes.h iomanip ios iosfwd iostream iso646.h istream iterator latch limits limits.h list locale locale.h map math.h mdspan memory memory_resource mutex new numbers numeric optional ostream print queue random ranges ratio rcu regex scoped_allocator semaphore set setjmp.h shared_mutex signal.h source_location span spanstream sstream stack stacktrace stdalign.h stdarg.h stdatomic.h stdbool.h stddef.h stdexcept stdfloat stdint.h stdio.h stdlib.h stop_token streambuf string string.h string_view strstream syncstream system_error text_encoding tgmath.h thread time.h tuple type_traits typeindex typeinfo uchar.h unordered_map unordered_set utility valarray variant vector version wchar.h wctype.h)
 RUN := $(addprefix $(CPPLIBRARY), cctype cmath cstdio cstring)
 API := $(addprefix $(APILIBRARY), dlfcn.h SDL.h tos.h windows.h)
-OBL := $(addprefix $(OBLIBRARY), obl.arguments.mod obl.hashes.mod obl.basictypes.mod obl.booleans.mod obl.characters.mod obl.exceptions.mod obl.iterators.mod obl.arrays.mod obl.coroutines.mod obl.dynamicarrays.mod obl.generators.mod obl.lists.mod obl.pairs.mod obl.hashmaps.mod obl.functions.mod obl.in.mod obl.math.mod obl.out.mod obl.random.mod obl.sets.mod obl.streams.mod obl.strings.mod)
+OBL := $(addprefix $(OBLIBRARY), obl.arguments.mod obl.hashes.mod obl.basictypes.mod obl.booleans.mod obl.characters.mod obl.devices.mod obl.exceptions.mod obl.files.mod obl.iostreams.mod obl.streams.mod obl.iterators.mod obl.arrays.mod obl.coroutines.mod obl.dynamicarrays.mod obl.generators.mod obl.lists.mod obl.pairs.mod obl.hashmaps.mod obl.functions.mod obl.in.mod obl.math.mod obl.out.mod obl.random.mod obl.sets.mod obl.strings.mod)
 EXT := $(addprefix $(OBLIBRARY), api.linux.mod api.pthread.mod api.sdl.mod api.windows.mod)
-OAK := $(addprefix $(OBLIBRARY), coroutines.mod math.mod mathl.mod strings.mod xyplane.mod)
+OAK := $(addprefix $(OBLIBRARY), coroutines.mod in.mod math.mod mathc.mod mathl.mod mathlc.mod out.mod strings.mod xyplane.mod)
 MOD := $(OBL) $(EXT) $(OAK)
 SYM := $(MOD:.mod=.sym)
 
@@ -729,6 +744,7 @@ $(addprefix $(RUNTIME), or1ksimrun.obf): $(TOOLS)or1kasm$(PRG)
 $(addprefix $(RUNTIME), riscdiskrun.obf): $(TOOLS)riscasm$(PRG)
 $(addprefix $(RUNTIME), tosapi.obf tosrun.obf): $(TOOLS)m68kasm$(PRG)
 $(addprefix $(RUNTIME), webassemblyrun.obf): $(TOOLS)wasmasm$(PRG)
+$(addprefix $(RUNTIME), xtensalinuxrun.obf): $(TOOLS)xtensaasm$(PRG)
 
 $(ASM:.asm=.obf): %.obf: %.asm
 	@cd $(RUNTIME) && $(PREV)$(lastword $^) $(notdir $<)
@@ -802,16 +818,19 @@ endif
 $(SYM): %.sym: %.mod $(TOOLS)obcheck$(PRG)
 	@cd $(OBLIBRARY) && $(PREV)$(PREV)$(TOOLS)obcheck$(PRG) $(notdir $<)
 
+$(addprefix $(OBLIBRARY), coroutines.sym: obl.coroutines.sym)
+$(addprefix $(OBLIBRARY), math.sym mathc.sym mathl.sym mathlc.sym: obl.math.sym)
 $(addprefix $(OBLIBRARY), obl.arrays.sym: obl.iterators.sym)
 $(addprefix $(OBLIBRARY), obl.basictypes.sym: obl.hashes.sym)
 $(addprefix $(OBLIBRARY), obl.coroutines.sym: obl.exceptions.sym)
 $(addprefix $(OBLIBRARY), obl.dynamicarrays.sym: obl.arrays.sym obl.exceptions.sym obl.iterators.sym)
+$(addprefix $(OBLIBRARY), obl.files.sym: obl.devices.sym)
 $(addprefix $(OBLIBRARY), obl.functions.sym: obl.generators.sym obl.iterators.sym)
 $(addprefix $(OBLIBRARY), obl.generators.sym: obl.coroutines.sym)
 $(addprefix $(OBLIBRARY), obl.hashmaps.sym: obl.exceptions.sym obl.iterators.sym obl.pairs.sym obl.lists.sym)
+$(addprefix $(OBLIBRARY), obl.iostreams.sym: obl.devices.sym obl.files.sym)
 $(addprefix $(OBLIBRARY), obl.lists.sym: obl.exceptions.sym obl.iterators.sym)
 $(addprefix $(OBLIBRARY), obl.out.sym: obl.math.sym)
-$(addprefix $(OBLIBRARY), coroutines.sym: obl.coroutines.sym)
 $(addprefix $(OBLIBRARY), xyplane.sym: api.sdl.sym)
 
 runtime: $(OBF) $(LIB) $(SYM)
@@ -821,8 +840,8 @@ runtime: $(OBF) $(LIB) $(SYM)
 DOCUMENTATION := $(call DIR,documentation/)
 DOCUMENTATIONP := $(call DIRP,documentation/)
 
-TEX := $(addprefix $(DOCUMENTATION), manual.tex guide.tex cpp.tex false.tex oberon.tex assembly.tex amd64.tex arm.tex avr.tex avr32.tex m68k.tex mibl.tex mips.tex mmix.tex or1k.tex ppc.tex risc.tex wasm.tex documentation.tex debugging.tex code.tex object.tex material.tex overview.tex implementation.tex)
-SET := $(addprefix $(DOCUMENTATION), amd64.set arm.set arma32.set arma64.set avr.set avr32.set m68k.set mibl.set mips.set mmix.set or1k.set ppc.set risc.set wasm.set code.set)
+TEX := $(addprefix $(DOCUMENTATION), manual.tex guide.tex cpp.tex false.tex oberon.tex assembly.tex amd64.tex arm.tex avr.tex avr32.tex m68k.tex mibl.tex mips.tex mmix.tex or1k.tex ppc.tex risc.tex wasm.tex xtensa.tex documentation.tex debugging.tex code.tex object.tex material.tex overview.tex implementation.tex)
+SET := $(addprefix $(DOCUMENTATION), amd64.set arm.set arma32.set arma64.set avr.set avr32.set m68k.set mibl.set mips.set mmix.set or1k.set ppc.set risc.set wasm.set xtensa.set code.set)
 DOC := $(addprefix $(DOCUMENTATION), cpplibrary.doc oblibrary.doc oaklibrary.doc)
 PDF := $(TEX:.tex=.pdf)
 
@@ -868,38 +887,36 @@ documentation: $(PDF)
 # tests
 
 TESTS := $(call DIR,tests/)
-
 TST := $(addprefix $(TESTS), linklib linkbin doccheck docprintcheck \
-	amd64asm amd64printasm arma32asm arma32printasm arma64asm arma64printasm armt32asm armt32printasm avrasm avrprintasm avr32asm avr32printasm m68kasm m68kprintasm miblasm miblprintasm mips64asm mips64printasm mmixasm mmixprintasm or1kasm or1kprintasm ppc64asm ppc64printasm riscasm riscprintasm wasmasm wasmprintasm \
-	cdcheck cdprintcheck cdrun cdprintrun cdamd32linux cdamd64linux cdarma32linux cdarma64linux cdarmt32linux cdarmt32fpelinux cdatmega32 cdatmega8515 cddos cdmips32linux cdmmixsim cdor1ksim cdosx32 cdosx64 cdqemuamd32 cdqemuamd64 cdqemuarma32 cdqemuarma64 cdqemuarmt32 cdqemuarmt32fpe cdqemumips32 cdwebassembly cdwin32 cdwin64 \
-	cppcheck cppprintcheck cppdump cppcppcheck cpprun cppprintrun cppcpprun cppcode cppamd32linux cppamd64linux cpparma32linux cpparma64linux cpparmt32linux cpparmt32fpelinux cppatmega32 cppatmega8515 cppdos cppmips32linux cppmmixsim cppor1ksim cpposx32 cpposx64 cppqemuamd32 cppqemuamd64 cppqemuarma32 cppqemuarma64 cppqemuarmt32 cppqemuarmt32fpe cppqemumips32 cppwebassembly cppwin32 cppwin64 \
-	falcheck falprintcheck faldump falrun falprintrun falcppcheck falcpprun falcode falamd32linux falamd64linux falarma32linux falarma64linux falarmt32linux falarmt32fpelinux falatmega32 falatmega8515 faldos falmips32linux falmmixsim falor1ksim falosx32 falosx64 falqemuamd32 falqemuamd64 falqemuarma32 falqemuarma64 falqemuarmt32 falqemuarmt32fpe falqemumips32 falwebassembly falwin32 falwin64 \
-	obcheck obprintcheck obdump obrun obprintrun obcppcheck obcpprun obcode obamd32linux obamd64linux obarma32linux obarma64linux obarmt32linux obarmt32fpelinux obatmega32 obdos obmips32linux obmmixsim obor1ksim obosx32 obosx64 obqemuamd32 obqemuamd64 obqemuarma32 obqemuarma64 obqemuarmt32 obqemuarmt32fpe obqemumips32 obwebassembly obwin32 obwin64)
+	amd64asm amd64printasm arma32asm arma32printasm arma64asm arma64printasm armt32asm armt32printasm avrasm avrprintasm avr32asm avr32printasm m68kasm m68kprintasm miblasm miblprintasm mips64asm mips64printasm mmixasm mmixprintasm or1kasm or1kprintasm ppc64asm ppc64printasm riscasm riscprintasm wasmasm wasmprintasm xtensaasm xtensaprintasm \
+	cdcheck cdprintcheck cdrun cdprintrun cdamd32linux cdamd64linux cdarma32linux cdarma64linux cdarmt32linux cdarmt32fpelinux cdatmega32 cdatmega8515 cddos cdmips32linux cdmmixsim cdor1ksim cdosx32 cdosx64 cdqemuamd32 cdqemuamd64 cdqemuarma32 cdqemuarma64 cdqemuarmt32 cdqemuarmt32fpe cdqemumips32 cdqemuxtensa cdwebassembly cdwin32 cdwin64 \
+	cppcheck cppprintcheck cppdump cppcppcheck cpprun cppprintrun cppcpprun cppcode cppamd32linux cppamd64linux cpparma32linux cpparma64linux cpparmt32linux cpparmt32fpelinux cppatmega32 cppatmega8515 cppdos cppmips32linux cppmmixsim cppor1ksim cpposx32 cpposx64 cppqemuamd32 cppqemuamd64 cppqemuarma32 cppqemuarma64 cppqemuarmt32 cppqemuarmt32fpe cppqemumips32 cppqemuxtensa cppwebassembly cppwin32 cppwin64 \
+	falcheck falprintcheck faldump falrun falprintrun falcppcheck falcpprun falcode falamd32linux falamd64linux falarma32linux falarma64linux falarmt32linux falarmt32fpelinux falatmega32 falatmega8515 faldos falmips32linux falmmixsim falor1ksim falosx32 falosx64 falqemuamd32 falqemuamd64 falqemuarma32 falqemuarma64 falqemuarmt32 falqemuarmt32fpe falqemumips32 falqemuxtensa falwebassembly falwin32 falwin64 \
+	obcheck obprintcheck obdump obrun obprintrun obcppcheck obcpprun obcode obamd32linux obamd64linux obarma32linux obarma64linux obarmt32linux obarmt32fpelinux obatmega32 obdos obmips32linux obmmixsim obor1ksim obosx32 obosx64 obqemuamd32 obqemuamd64 obqemuarma32 obqemuarma64 obqemuarmt32 obqemuarmt32fpe obqemumips32 obqemuxtensa obwebassembly obwin32 obwin64)
 RES := $(TST:=.res)
+
+export ECSIMPORT := $(call DIR,$(abspath $(TESTS))/)
 
 .PHONY: linktests
 linktests: $(addprefix $(TESTS), linklib linkbin)
 
 $(TESTS)linklib: $(UTILITIES)regtest$(PRG) $(TESTS)linklib.tst $(TOOLS)linklib$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)linklib$(PRG) linklib.tmp" linklib.tst linklib.tmp linklib.res
-	@cd $(TESTS) && $(RM) linklib.lib
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)linklib$(PRG)) linklib.tmp" linklib.tst linklib.tmp linklib.res
 	@$(TC) $@
 
 $(TESTS)linkbin: $(UTILITIES)regtest$(PRG) $(TESTS)linkbin.tst $(TOOLS)linkbin$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)linkbin$(PRG) linkbin.tmp" linkbin.tst linkbin.tmp linkbin.res
-	@cd $(TESTS) && $(RM) linkbin.bin linkbin.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)linkbin$(PRG)) linkbin.tmp" linkbin.tst linkbin.tmp linkbin.res
 	@$(TC) $@
 
 .PHONY: doctests
 doctests: $(addprefix $(TESTS), doccheck docprintcheck)
 
 $(TESTS)doccheck: $(UTILITIES)regtest$(PRG) $(TESTS)doccheck.tst $(TOOLS)doccheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)doccheck$(PRG) doccheck.tmp" doccheck.tst doccheck.tmp doccheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)doccheck$(PRG)) doccheck.tmp" doccheck.tst doccheck.tmp doccheck.res
 	@$(TC) $@
 
 $(TESTS)docprintcheck: $(UTILITIES)regtest$(PRG) $(TESTS)doccheck.tst $(TOOLS)docprint$(PRG) $(TOOLS)doccheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)docprint$(PRG) docprintcheck.tmp > docprintcheck.doc && $(PREV)$(TOOLS)doccheck$(PRG) docprintcheck.doc" doccheck.tst docprintcheck.tmp docprintcheck.res
-	@cd $(TESTS) && $(RM) docprintcheck.doc
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)docprint$(PRG)) docprintcheck.tmp > docprintcheck.doc && $(abspath $(TOOLS)doccheck$(PRG)) docprintcheck.doc" doccheck.tst docprintcheck.tmp docprintcheck.res
 	@$(TC) $@
 
 .PHONY: cdtests
@@ -909,40 +926,36 @@ cdtests: $(addprefix $(TESTS), cdcheck cdprintcheck cdrun cdprintrun $(foreach E
 opttests: $(addprefix $(TESTS), cdoptrun cppoptcode faloptcode oboptcode)
 
 $(TESTS)cdcheck: $(UTILITIES)regtest$(PRG) $(TESTS)cdcheck.tst $(TOOLS)cdcheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdcheck$(PRG) cdcheck.tmp" cdcheck.tst cdcheck.tmp cdcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdcheck$(PRG)) cdcheck.tmp" cdcheck.tst cdcheck.tmp cdcheck.res
 	@$(TC) $@
 
 $(TESTS)cdprintcheck: $(UTILITIES)regtest$(PRG) $(TESTS)cdcheck.tst $(TOOLS)asmprint$(PRG) $(TOOLS)cdcheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) cdprintcheck.tmp > cdprintcheck.cod && $(PREV)$(TOOLS)cdcheck$(PRG) cdprintcheck.cod" cdcheck.tst cdprintcheck.tmp cdprintcheck.res
-	@cd $(TESTS) && $(RM) cdprintcheck.cod
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) cdprintcheck.tmp > cdprintcheck.cod && $(abspath $(TOOLS)cdcheck$(PRG)) cdprintcheck.cod" cdcheck.tst cdprintcheck.tmp cdprintcheck.res
 	@$(TC) $@
 
 $(TESTS)cdrun: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdrun$(PRG) cdrun.tmp" cdrun.tst cdrun.tmp cdrun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdrun$(PRG)) cdrun.tmp" cdrun.tst cdrun.tmp cdrun.res
 	@$(TC) $@
 
 $(TESTS)cdprintrun: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)asmprint$(PRG) $(TOOLS)cdrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) cdprintrun.tmp > cdprintrun.cod && $(PREV)$(TOOLS)cdrun$(PRG) cdprintrun.cod" cdrun.tst cdprintrun.tmp cdprintrun.res
-	@cd $(TESTS) && $(RM) cdprintrun.cod
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) cdprintrun.tmp > cdprintrun.cod && $(abspath $(TOOLS)cdrun$(PRG)) cdprintrun.cod" cdrun.tst cdprintrun.tmp cdprintrun.res
 	@$(TC) $@
 
 $(TESTS)cdoptrun: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdopt$(PRG) $(TOOLS)cdrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdopt$(PRG) cdoptrun.tmp > cdoptrun.opt && $(PREV)$(TOOLS)cdrun$(PRG) cdoptrun.opt" cdrun.tst cdoptrun.tmp cdoptrun.res
-	@cd $(TESTS) && $(RM) cdoptrun.opt
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdopt$(PRG)) cdoptrun.tmp > cdoptrun.opt && $(abspath $(TOOLS)cdrun$(PRG)) cdoptrun.opt" cdrun.tst cdoptrun.tmp cdoptrun.res
 	@$(TC) $@
 
 .PHONY: cpptests
 cpptests: $(addprefix $(TESTS), cppcheck cppprintcheck cpprun cppprintrun cppcode $(foreach ENVIRONMENT, $(HOSTENVIRONMENTS), cpp$(ENVIRONMENT)))
 
 $(TESTS)cppcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdcppcheck.tst $(TESTS)extcppcheck.tst $(TOOLS)cppcheck$(PRG) $(HDR)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppcheck$(PRG) cppcheck.tmp" stdcppcheck.tst cppcheck.tmp stdcppcheck.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppcheck$(PRG) cppcheck.tmp" extcppcheck.tst cppcheck.tmp extcppcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppcheck$(PRG)) cppcheck.tmp" stdcppcheck.tst cppcheck.tmp stdcppcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppcheck$(PRG)) cppcheck.tmp" extcppcheck.tst cppcheck.tmp extcppcheck.res
 	@$(TC) $@
 
 $(TESTS)cppprintcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdcppcheck.tst $(TESTS)extcppcheck.tst $(TOOLS)cppprint$(PRG) $(TOOLS)cppcheck$(PRG) $(HDR)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppprint$(PRG) cppprintcheck.tmp > cppprintcheck.cpp && $(PREV)$(TOOLS)cppcheck$(PRG) cppprintcheck.cpp" stdcppcheck.tst cppprintcheck.tmp stdcppprintcheck.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppprint$(PRG) cppprintcheck.tmp > cppprintcheck.cpp && $(PREV)$(TOOLS)cppcheck$(PRG) cppprintcheck.cpp" extcppcheck.tst cppprintcheck.tmp extcppprintcheck.res
-	@cd $(TESTS) && $(RM) cppprintcheck.cpp
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppprint$(PRG)) cppprintcheck.tmp > cppprintcheck.cpp && $(abspath $(TOOLS)cppcheck$(PRG)) cppprintcheck.cpp" stdcppcheck.tst cppprintcheck.tmp stdcppprintcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppprint$(PRG)) cppprintcheck.tmp > cppprintcheck.cpp && $(abspath $(TOOLS)cppcheck$(PRG)) cppprintcheck.cpp" extcppcheck.tst cppprintcheck.tmp extcppprintcheck.res
 	@$(TC) $@
 
 $(TESTS)cppcppcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdcppcheck.tst
@@ -950,294 +963,253 @@ $(TESTS)cppcppcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdcppcheck.tst
 	@$(TC) $@
 
 $(TESTS)cpprun: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpprun$(PRG) $(CPP) $(HDR) $(RUNTIME)cpprunrun.cpp $(RUNTIME)runtime.cpp
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpprun$(PRG) cpprun.tmp $(PREV)$(RUNTIME)cpprunrun.cpp" stdcpprun.tst cpprun.tmp stdcpprun.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpprun$(PRG) cpprun.tmp $(PREV)$(RUNTIME)cpprunrun.cpp" extcpprun.tst cpprun.tmp extcpprun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpprun$(PRG)) cpprun.tmp $(abspath $(RUNTIME)cpprunrun.cpp)" stdcpprun.tst cpprun.tmp stdcpprun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpprun$(PRG)) cpprun.tmp $(abspath $(RUNTIME)cpprunrun.cpp)" extcpprun.tst cpprun.tmp extcpprun.res
 	@$(TC) $@
 
 $(TESTS)cppprintrun: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppprint$(PRG) $(TOOLS)cpprun$(PRG) $(CPP) $(HDR) $(RUNTIME)cpprunrun.cpp $(RUNTIME)runtime.cpp
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppprint$(PRG) cppprintrun.tmp > cppprintrun.cpp && $(PREV)$(TOOLS)cpprun$(PRG) cppprintrun.cpp $(PREV)$(RUNTIME)cpprunrun.cpp" stdcpprun.tst cppprintrun.tmp stdcppprintrun.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppprint$(PRG) cppprintrun.tmp > cppprintrun.cpp && $(PREV)$(TOOLS)cpprun$(PRG) cppprintrun.cpp $(PREV)$(RUNTIME)cpprunrun.cpp" extcpprun.tst cppprintrun.tmp extcppprintrun.res
-	@cd $(TESTS) && $(RM) cppprintrun.cpp
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppprint$(PRG)) cppprintrun.tmp > cppprintrun.cpp && $(abspath $(TOOLS)cpprun$(PRG)) cppprintrun.cpp $(abspath $(RUNTIME)cpprunrun.cpp)" stdcpprun.tst cppprintrun.tmp stdcppprintrun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppprint$(PRG)) cppprintrun.tmp > cppprintrun.cpp && $(abspath $(TOOLS)cpprun$(PRG)) cppprintrun.cpp $(abspath $(RUNTIME)cpprunrun.cpp)" extcpprun.tst cppprintrun.tmp extcppprintrun.res
 	@$(TC) $@
 
 $(TESTS)cppcpprun: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(CC) $(CRUNFLAGS) cppcpprun.cpp && $(LD) $(LRUNFLAGS)cppcpprun$(PRG) cppcpprun$(O) && $(PREV)$(TESTS)cppcpprun$(PRG)" stdcpprun.tst cppcpprun.cpp cppcpprun.res
-	@cd $(TESTS) && $(RM) cppcpprun$(O) cppcpprun$(PRG)
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(CC) $(CRUNFLAGS) cppcpprun.cpp && $(LD) $(LRUNFLAGS)cppcpprun$(PRG) cppcpprun$(O) && $(CURR)cppcpprun$(PRG)" stdcpprun.tst cppcpprun.cpp cppcpprun.res
 	@$(TC) $@
 
 $(TESTS)cppcode: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppcode$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf $(RUNTIME)cppcoderun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppcode$(PRG) cppcode.tmp && $(PREV)$(TOOLS)cdrun$(PRG) cppcode.cod $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)cppcoderun.lib" stdcpprun.tst cppcode.tmp stdcppcode.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppcode$(PRG) cppcode.tmp && $(PREV)$(TOOLS)cdrun$(PRG) cppcode.cod $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)cppcoderun.lib" extcpprun.tst cppcode.tmp extcppcode.res
-	@cd $(TESTS) && $(RM) cppcode.cod
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppcode$(PRG)) cppcode.tmp && $(abspath $(TOOLS)cdrun$(PRG)) cppcode.cod $(abspath $(RUNTIME)coderun.obf $(RUNTIME)cppcoderun.lib)" stdcpprun.tst cppcode.tmp stdcppcode.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppcode$(PRG)) cppcode.tmp && $(abspath $(TOOLS)cdrun$(PRG)) cppcode.cod $(abspath $(RUNTIME)coderun.obf $(RUNTIME)cppcoderun.lib)" extcpprun.tst cppcode.tmp extcppcode.res
 	@$(TC) $@
 
 $(TESTS)cppoptcode: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppcode$(PRG) $(TOOLS)cdopt$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf $(RUNTIME)cppcoderun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppcode$(PRG) cppoptcode.tmp && $(PREV)$(TOOLS)cdopt$(PRG) cppoptcode.cod > cppoptcode.opt && $(PREV)$(TOOLS)cdrun$(PRG) cppoptcode.opt $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)cppcoderun.lib" stdcpprun.tst cppoptcode.tmp stdcppoptcode.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppcode$(PRG) cppoptcode.tmp && $(PREV)$(TOOLS)cdopt$(PRG) cppoptcode.cod > cppoptcode.opt && $(PREV)$(TOOLS)cdrun$(PRG) cppoptcode.opt $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)cppcoderun.lib" extcpprun.tst cppoptcode.tmp extcppoptcode.res
-	@cd $(TESTS) && $(RM) cppoptcode.cod cppoptcode.opt
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppcode$(PRG)) cppoptcode.tmp && $(abspath $(TOOLS)cdopt$(PRG)) cppoptcode.cod > cppoptcode.opt && $(abspath $(TOOLS)cdrun$(PRG)) cppoptcode.opt $(abspath $(RUNTIME)coderun.obf $(RUNTIME)cppcoderun.lib)" stdcpprun.tst cppoptcode.tmp stdcppoptcode.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppcode$(PRG)) cppoptcode.tmp && $(abspath $(TOOLS)cdopt$(PRG)) cppoptcode.cod > cppoptcode.opt && $(abspath $(TOOLS)cdrun$(PRG)) cppoptcode.opt $(abspath $(RUNTIME)coderun.obf $(RUNTIME)cppcoderun.lib)" extcpprun.tst cppoptcode.tmp extcppoptcode.res
 	@$(TC) $@
 
 .PHONY: faltests
 faltests: $(addprefix $(TESTS), falcheck falprintcheck falrun falprintrun falcode $(foreach ENVIRONMENT, $(HOSTENVIRONMENTS), fal$(ENVIRONMENT)))
 
 $(TESTS)falcheck: $(UTILITIES)regtest$(PRG) $(TESTS)falcheck.tst $(TOOLS)falcheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falcheck$(PRG) falcheck.tmp" falcheck.tst falcheck.tmp falcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falcheck$(PRG)) falcheck.tmp" falcheck.tst falcheck.tmp falcheck.res
 	@$(TC) $@
 
 $(TESTS)falprintcheck: $(UTILITIES)regtest$(PRG) $(TESTS)falcheck.tst $(TOOLS)falprint$(PRG) $(TOOLS)falcheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falprint$(PRG) falprintcheck.tmp > falprintcheck.fal && $(PREV)$(TOOLS)falcheck$(PRG) falprintcheck.fal" falcheck.tst falprintcheck.tmp falprintcheck.res
-	@cd $(TESTS) && $(RM) falprintcheck.fal
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falprint$(PRG)) falprintcheck.tmp > falprintcheck.fal && $(abspath $(TOOLS)falcheck$(PRG)) falprintcheck.fal" falcheck.tst falprintcheck.tmp falprintcheck.res
 	@$(TC) $@
 
 $(TESTS)falrun: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falrun$(PRG) falrun.tmp" falrun.tst falrun.tmp falrun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falrun$(PRG)) falrun.tmp" falrun.tst falrun.tmp falrun.res
 	@$(TC) $@
 
 $(TESTS)falprintrun: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falprint$(PRG) $(TOOLS)falrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falprint$(PRG) falprintrun.tmp > falprintrun.fal && $(PREV)$(TOOLS)falrun$(PRG) falprintrun.fal" falrun.tst falprintrun.tmp falprintrun.res
-	@cd $(TESTS) && $(RM) falprintrun.fal
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falprint$(PRG)) falprintrun.tmp > falprintrun.fal && $(abspath $(TOOLS)falrun$(PRG)) falprintrun.fal" falrun.tst falprintrun.tmp falprintrun.res
 	@$(TC) $@
 
 $(TESTS)falcode: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falcode$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falcode$(PRG) falcode.tmp && $(PREV)$(TOOLS)cdrun$(PRG) falcode.cod $(PREV)$(RUNTIME)coderun.obf" falrun.tst falcode.tmp falcode.res
-	@cd $(TESTS) && $(RM) falcode.cod
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falcode$(PRG)) falcode.tmp && $(abspath $(TOOLS)cdrun$(PRG)) falcode.cod $(abspath $(RUNTIME)coderun.obf)" falrun.tst falcode.tmp falcode.res
 	@$(TC) $@
 
 $(TESTS)faloptcode: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falcode$(PRG) $(TOOLS)cdopt$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falcode$(PRG) faloptcode.tmp && $(PREV)$(TOOLS)cdopt$(PRG) faloptcode.cod > faloptcode.opt && $(PREV)$(TOOLS)cdrun$(PRG) faloptcode.opt $(PREV)$(RUNTIME)coderun.obf" falrun.tst faloptcode.tmp faloptcode.res
-	@cd $(TESTS) && $(RM) faloptcode.cod faloptcode.opt
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falcode$(PRG)) faloptcode.tmp && $(abspath $(TOOLS)cdopt$(PRG)) faloptcode.cod > faloptcode.opt && $(abspath $(TOOLS)cdrun$(PRG)) faloptcode.opt $(abspath $(RUNTIME)coderun.obf)" falrun.tst faloptcode.tmp faloptcode.res
 	@$(TC) $@
 
 .PHONY: obtests
 obtests: $(addprefix $(TESTS), obcheck obprintcheck obrun obprintrun obcode $(foreach ENVIRONMENT, $(HOSTENVIRONMENTS), ob$(ENVIRONMENT)))
 
 $(TESTS)obcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdobcheck.tst $(TESTS)extobcheck.tst $(TESTS)import.sym $(TESTS)generic.sym $(TESTS)package.packaged.sym $(TOOLS)obcheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcheck$(PRG) obcheck.tmp" stdobcheck.tst obcheck.tmp stdobcheck.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcheck$(PRG) obcheck.tmp" extobcheck.tst obcheck.tmp extobcheck.res
-	@cd $(TESTS) && $(RM) test.sym
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcheck$(PRG)) obcheck.tmp" stdobcheck.tst obcheck.tmp stdobcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcheck$(PRG)) obcheck.tmp" extobcheck.tst obcheck.tmp extobcheck.res
 	@$(TC) $@
 
 $(TESTS)obprintcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdobcheck.tst $(TESTS)extobcheck.tst $(TESTS)import.sym $(TESTS)generic.sym $(TESTS)package.packaged.sym $(TOOLS)obprint$(PRG) $(TOOLS)obcheck$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obprint$(PRG) obprintcheck.tmp > obprintcheck.mod && $(PREV)$(TOOLS)obcheck$(PRG) obprintcheck.mod" stdobcheck.tst obprintcheck.tmp stdobprintcheck.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obprint$(PRG) obprintcheck.tmp > obprintcheck.mod && $(PREV)$(TOOLS)obcheck$(PRG) obprintcheck.mod" extobcheck.tst obprintcheck.tmp extobprintcheck.res
-	@cd $(TESTS) && $(RM) obprintcheck.mod test.sym
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obprint$(PRG)) obprintcheck.tmp > obprintcheck.mod && $(abspath $(TOOLS)obcheck$(PRG)) obprintcheck.mod" stdobcheck.tst obprintcheck.tmp stdobprintcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obprint$(PRG)) obprintcheck.tmp > obprintcheck.mod && $(abspath $(TOOLS)obcheck$(PRG)) obprintcheck.mod" extobcheck.tst obprintcheck.tmp extobprintcheck.res
 	@$(TC) $@
 
 $(TESTS)obrun: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obrun$(PRG) obrun.tmp" stdobrun.tst obrun.tmp stdobrun.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obrun$(PRG) generic.sym obrun.tmp" extobrun.tst obrun.tmp extobrun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obrun$(PRG)) obrun.tmp" stdobrun.tst obrun.tmp stdobrun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obrun$(PRG)) $(abspath $(TESTS)generic.sym) obrun.tmp" extobrun.tst obrun.tmp extobrun.res
 	@$(TC) $@
 
 $(TESTS)obprintrun: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obprint$(PRG) $(TOOLS)obrun$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obprint$(PRG) obprintrun.tmp > obprintrun.mod && $(PREV)$(TOOLS)obrun$(PRG) obprintrun.mod" stdobrun.tst obprintrun.tmp stdobprintrun.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obprint$(PRG) obprintrun.tmp > obprintrun.mod && $(PREV)$(TOOLS)obrun$(PRG) generic.sym obprintrun.mod" extobrun.tst obprintrun.tmp extobprintrun.res
-	@cd $(TESTS) && $(RM) obprintrun.mod
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obprint$(PRG)) obprintrun.tmp > obprintrun.mod && $(abspath $(TOOLS)obrun$(PRG)) obprintrun.mod" stdobrun.tst obprintrun.tmp stdobprintrun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obprint$(PRG)) obprintrun.tmp > obprintrun.mod && $(abspath $(TOOLS)obrun$(PRG)) $(abspath $(TESTS)generic.sym) obprintrun.mod" extobrun.tst obprintrun.tmp extobprintrun.res
 	@$(TC) $@
 
-$(TESTS)obcode: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obcode$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf $(RUNTIME)obcoderun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcode$(PRG) obcode.tmp && $(PREV)$(TOOLS)cdrun$(PRG) obcode.cod $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)obcoderun.lib" stdobrun.tst obcode.tmp stdobcode.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcode$(PRG) obcode.tmp && $(PREV)$(TOOLS)cdrun$(PRG) obcode.cod $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)obcoderun.lib" extobrun.tst obcode.tmp extobcode.res
-	@cd $(TESTS) && $(RM) test.sym obcode.cod
+$(TESTS)obcode: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obcode$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcode$(PRG)) obcode.tmp && $(abspath $(TOOLS)cdrun$(PRG)) obcode.cod $(abspath $(RUNTIME)coderun.obf)" stdobrun.tst obcode.tmp stdobcode.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcode$(PRG)) obcode.tmp && $(abspath $(TOOLS)cdrun$(PRG)) obcode.cod $(abspath $(RUNTIME)coderun.obf)" extobrun.tst obcode.tmp extobcode.res
 	@$(TC) $@
 
-$(TESTS)oboptcode: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obcode$(PRG) $(TOOLS)cdopt$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf $(RUNTIME)obcoderun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcode$(PRG) oboptcode.tmp && $(PREV)$(TOOLS)cdopt$(PRG) oboptcode.cod > oboptcode.opt && $(PREV)$(TOOLS)cdrun$(PRG) oboptcode.opt $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)obcoderun.lib" stdobrun.tst oboptcode.tmp stdoboptcode.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcode$(PRG) oboptcode.tmp && $(PREV)$(TOOLS)cdopt$(PRG) oboptcode.cod > oboptcode.opt && $(PREV)$(TOOLS)cdrun$(PRG) oboptcode.opt $(PREV)$(RUNTIME)coderun.obf $(PREV)$(RUNTIME)obcoderun.lib" extobrun.tst oboptcode.tmp extoboptcode.res
-	@cd $(TESTS) && $(RM) test.sym oboptcode.cod oboptcode.opt
+$(TESTS)oboptcode: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obcode$(PRG) $(TOOLS)cdopt$(PRG) $(TOOLS)cdrun$(PRG) $(RUNTIME)coderun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcode$(PRG)) oboptcode.tmp && $(abspath $(TOOLS)cdopt$(PRG)) oboptcode.cod > oboptcode.opt && $(abspath $(TOOLS)cdrun$(PRG)) oboptcode.opt $(abspath $(RUNTIME)coderun.obf)" stdobrun.tst oboptcode.tmp stdoboptcode.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcode$(PRG)) oboptcode.tmp && $(abspath $(TOOLS)cdopt$(PRG)) oboptcode.cod > oboptcode.opt && $(abspath $(TOOLS)cdrun$(PRG)) oboptcode.opt $(abspath $(RUNTIME)coderun.obf)" extobrun.tst oboptcode.tmp extoboptcode.res
 	@$(TC) $@
 
 .PHONY: asmtests
-asmtests: $(addprefix $(TESTS), cdcheck cdprintcheck amd64asm amd64printasm arma32asm arma32printasm arma64asm arma64printasm armt32asm armt32printasm avrasm avrprintasm avr32asm avr32printasm m68kasm m68kprintasm miblasm miblprintasm mips64asm mips64printasm mmixasm mmixprintasm or1kasm or1kprintasm ppc64asm ppc64printasm riscasm riscprintasm wasmasm wasmprintasm)
+asmtests: $(addprefix $(TESTS), cdcheck cdprintcheck amd64asm amd64printasm arma32asm arma32printasm arma64asm arma64printasm armt32asm armt32printasm avrasm avrprintasm avr32asm avr32printasm m68kasm m68kprintasm miblasm miblprintasm mips64asm mips64printasm mmixasm mmixprintasm or1kasm or1kprintasm ppc64asm ppc64printasm riscasm riscprintasm wasmasm wasmprintasm xtensaasm xtensaprintasm)
 
 $(TESTS)amd64asm: $(UTILITIES)regtest$(PRG) $(TESTS)amd64asm.tst $(TOOLS)amd64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)amd64asm$(PRG) amd64asm.tmp" amd64asm.tst amd64asm.tmp amd64asm.res
-	@cd $(TESTS) && $(RM) amd64asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)amd64asm$(PRG)) amd64asm.tmp" amd64asm.tst amd64asm.tmp amd64asm.res
 	@$(TC) $@
 
 $(TESTS)amd64printasm: $(UTILITIES)regtest$(PRG) $(TESTS)amd64asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)amd64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) amd64printasm.tmp > amd64printasm.asm && $(PREV)$(TOOLS)amd64asm$(PRG) amd64printasm.asm" amd64asm.tst amd64printasm.tmp amd64printasm.res
-	@cd $(TESTS) && $(RM) amd64printasm.asm amd64printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) amd64printasm.tmp > amd64printasm.asm && $(abspath $(TOOLS)amd64asm$(PRG)) amd64printasm.asm" amd64asm.tst amd64printasm.tmp amd64printasm.res
 	@$(TC) $@
 
 $(TESTS)arma32asm: $(UTILITIES)regtest$(PRG) $(TESTS)arma32asm.tst $(TOOLS)arma32asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)arma32asm$(PRG) arma32asm.tmp" arma32asm.tst arma32asm.tmp arma32asm.res
-	@cd $(TESTS) && $(RM) arma32asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)arma32asm$(PRG)) arma32asm.tmp" arma32asm.tst arma32asm.tmp arma32asm.res
 	@$(TC) $@
 
 $(TESTS)arma32printasm: $(UTILITIES)regtest$(PRG) $(TESTS)arma32asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)arma32asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) arma32printasm.tmp > arma32printasm.asm && $(PREV)$(TOOLS)arma32asm$(PRG) arma32printasm.asm" arma32asm.tst arma32printasm.tmp arma32printasm.res
-	@cd $(TESTS) && $(RM) arma32printasm.asm arma32printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) arma32printasm.tmp > arma32printasm.asm && $(abspath $(TOOLS)arma32asm$(PRG)) arma32printasm.asm" arma32asm.tst arma32printasm.tmp arma32printasm.res
 	@$(TC) $@
 
 $(TESTS)arma64asm: $(UTILITIES)regtest$(PRG) $(TESTS)arma64asm.tst $(TOOLS)arma64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)arma64asm$(PRG) arma64asm.tmp" arma64asm.tst arma64asm.tmp arma64asm.res
-	@cd $(TESTS) && $(RM) arma64asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)arma64asm$(PRG)) arma64asm.tmp" arma64asm.tst arma64asm.tmp arma64asm.res
 	@$(TC) $@
 
 $(TESTS)arma64printasm: $(UTILITIES)regtest$(PRG) $(TESTS)arma64asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)arma64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) arma64printasm.tmp > arma64printasm.asm && $(PREV)$(TOOLS)arma64asm$(PRG) arma64printasm.asm" arma64asm.tst arma64printasm.tmp arma64printasm.res
-	@cd $(TESTS) && $(RM) arma64printasm.asm arma64printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) arma64printasm.tmp > arma64printasm.asm && $(abspath $(TOOLS)arma64asm$(PRG)) arma64printasm.asm" arma64asm.tst arma64printasm.tmp arma64printasm.res
 	@$(TC) $@
 
 $(TESTS)armt32asm: $(UTILITIES)regtest$(PRG) $(TESTS)armt32asm.tst $(TOOLS)armt32asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)armt32asm$(PRG) armt32asm.tmp" armt32asm.tst armt32asm.tmp armt32asm.res
-	@cd $(TESTS) && $(RM) armt32asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)armt32asm$(PRG)) armt32asm.tmp" armt32asm.tst armt32asm.tmp armt32asm.res
 	@$(TC) $@
 
 $(TESTS)armt32printasm: $(UTILITIES)regtest$(PRG) $(TESTS)armt32asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)armt32asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) armt32printasm.tmp > armt32printasm.asm && $(PREV)$(TOOLS)armt32asm$(PRG) armt32printasm.asm" armt32asm.tst armt32printasm.tmp armt32printasm.res
-	@cd $(TESTS) && $(RM) armt32printasm.asm armt32printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) armt32printasm.tmp > armt32printasm.asm && $(abspath $(TOOLS)armt32asm$(PRG)) armt32printasm.asm" armt32asm.tst armt32printasm.tmp armt32printasm.res
 	@$(TC) $@
 
 $(TESTS)avrasm: $(UTILITIES)regtest$(PRG) $(TESTS)avrasm.tst $(TOOLS)avrasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)avrasm$(PRG) avrasm.tmp" avrasm.tst avrasm.tmp avrasm.res
-	@cd $(TESTS) && $(RM) avrasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)avrasm$(PRG)) avrasm.tmp" avrasm.tst avrasm.tmp avrasm.res
 	@$(TC) $@
 
 $(TESTS)avrprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)avrasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)avrasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) avrprintasm.tmp > avrprintasm.asm && $(PREV)$(TOOLS)avrasm$(PRG) avrprintasm.asm" avrasm.tst avrprintasm.tmp avrprintasm.res
-	@cd $(TESTS) && $(RM) avrprintasm.asm avrprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) avrprintasm.tmp > avrprintasm.asm && $(abspath $(TOOLS)avrasm$(PRG)) avrprintasm.asm" avrasm.tst avrprintasm.tmp avrprintasm.res
 	@$(TC) $@
 
 $(TESTS)avr32asm: $(UTILITIES)regtest$(PRG) $(TESTS)avr32asm.tst $(TOOLS)avr32asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)avr32asm$(PRG) avr32asm.tmp" avr32asm.tst avr32asm.tmp avr32asm.res
-	@cd $(TESTS) && $(RM) avr32asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)avr32asm$(PRG)) avr32asm.tmp" avr32asm.tst avr32asm.tmp avr32asm.res
 	@$(TC) $@
 
 $(TESTS)avr32printasm: $(UTILITIES)regtest$(PRG) $(TESTS)avr32asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)avr32asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) avr32printasm.tmp > avr32printasm.asm && $(PREV)$(TOOLS)avr32asm$(PRG) avr32printasm.asm" avr32asm.tst avr32printasm.tmp avr32printasm.res
-	@cd $(TESTS) && $(RM) avr32printasm.asm avr32printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) avr32printasm.tmp > avr32printasm.asm && $(abspath $(TOOLS)avr32asm$(PRG)) avr32printasm.asm" avr32asm.tst avr32printasm.tmp avr32printasm.res
 	@$(TC) $@
 
 $(TESTS)m68kasm: $(UTILITIES)regtest$(PRG) $(TESTS)m68kasm.tst $(TOOLS)m68kasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)m68kasm$(PRG) m68kasm.tmp" m68kasm.tst m68kasm.tmp m68kasm.res
-	@cd $(TESTS) && $(RM) m68kasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)m68kasm$(PRG)) m68kasm.tmp" m68kasm.tst m68kasm.tmp m68kasm.res
 	@$(TC) $@
 
 $(TESTS)m68kprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)m68kasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)m68kasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) m68kprintasm.tmp > m68kprintasm.asm && $(PREV)$(TOOLS)m68kasm$(PRG) m68kprintasm.asm" m68kasm.tst m68kprintasm.tmp m68kprintasm.res
-	@cd $(TESTS) && $(RM) m68kprintasm.asm m68kprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) m68kprintasm.tmp > m68kprintasm.asm && $(abspath $(TOOLS)m68kasm$(PRG)) m68kprintasm.asm" m68kasm.tst m68kprintasm.tmp m68kprintasm.res
 	@$(TC) $@
 
 $(TESTS)miblasm: $(UTILITIES)regtest$(PRG) $(TESTS)miblasm.tst $(TOOLS)miblasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)miblasm$(PRG) miblasm.tmp" miblasm.tst miblasm.tmp miblasm.res
-	@cd $(TESTS) && $(RM) miblasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)miblasm$(PRG)) miblasm.tmp" miblasm.tst miblasm.tmp miblasm.res
 	@$(TC) $@
 
 $(TESTS)miblprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)miblasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)miblasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) miblprintasm.tmp > miblprintasm.asm && $(PREV)$(TOOLS)miblasm$(PRG) miblprintasm.asm" miblasm.tst miblprintasm.tmp miblprintasm.res
-	@cd $(TESTS) && $(RM) miblprintasm.asm miblprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) miblprintasm.tmp > miblprintasm.asm && $(abspath $(TOOLS)miblasm$(PRG)) miblprintasm.asm" miblasm.tst miblprintasm.tmp miblprintasm.res
 	@$(TC) $@
 
 $(TESTS)mips64asm: $(UTILITIES)regtest$(PRG) $(TESTS)mips64asm.tst $(TOOLS)mips64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)mips64asm$(PRG) mips64asm.tmp" mips64asm.tst mips64asm.tmp mips64asm.res
-	@cd $(TESTS) && $(RM) mips64asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)mips64asm$(PRG)) mips64asm.tmp" mips64asm.tst mips64asm.tmp mips64asm.res
 	@$(TC) $@
 
 $(TESTS)mips64printasm: $(UTILITIES)regtest$(PRG) $(TESTS)mips64asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)mips64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) mips64printasm.tmp > mips64printasm.asm && $(PREV)$(TOOLS)mips64asm$(PRG) mips64printasm.asm" mips64asm.tst mips64printasm.tmp mips64printasm.res
-	@cd $(TESTS) && $(RM) mips64printasm.asm mips64printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) mips64printasm.tmp > mips64printasm.asm && $(abspath $(TOOLS)mips64asm$(PRG)) mips64printasm.asm" mips64asm.tst mips64printasm.tmp mips64printasm.res
 	@$(TC) $@
 
 $(TESTS)mmixasm: $(UTILITIES)regtest$(PRG) $(TESTS)mmixasm.tst $(TOOLS)mmixasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)mmixasm$(PRG) mmixasm.tmp" mmixasm.tst mmixasm.tmp mmixasm.res
-	@cd $(TESTS) && $(RM) mmixasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)mmixasm$(PRG)) mmixasm.tmp" mmixasm.tst mmixasm.tmp mmixasm.res
 	@$(TC) $@
 
 $(TESTS)mmixprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)mmixasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)mmixasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) mmixprintasm.tmp > mmixprintasm.asm && $(PREV)$(TOOLS)mmixasm$(PRG) mmixprintasm.asm" mmixasm.tst mmixprintasm.tmp mmixprintasm.res
-	@cd $(TESTS) && $(RM) mmixprintasm.asm mmixprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) mmixprintasm.tmp > mmixprintasm.asm && $(abspath $(TOOLS)mmixasm$(PRG)) mmixprintasm.asm" mmixasm.tst mmixprintasm.tmp mmixprintasm.res
 	@$(TC) $@
 
 $(TESTS)or1kasm: $(UTILITIES)regtest$(PRG) $(TESTS)or1kasm.tst $(TOOLS)or1kasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)or1kasm$(PRG) or1kasm.tmp" or1kasm.tst or1kasm.tmp or1kasm.res
-	@cd $(TESTS) && $(RM) or1kasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)or1kasm$(PRG)) or1kasm.tmp" or1kasm.tst or1kasm.tmp or1kasm.res
 	@$(TC) $@
 
 $(TESTS)or1kprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)or1kasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)or1kasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) or1kprintasm.tmp > or1kprintasm.asm && $(PREV)$(TOOLS)or1kasm$(PRG) or1kprintasm.asm" or1kasm.tst or1kprintasm.tmp or1kprintasm.res
-	@cd $(TESTS) && $(RM) or1kprintasm.asm or1kprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) or1kprintasm.tmp > or1kprintasm.asm && $(abspath $(TOOLS)or1kasm$(PRG)) or1kprintasm.asm" or1kasm.tst or1kprintasm.tmp or1kprintasm.res
 	@$(TC) $@
 
 $(TESTS)ppc64asm: $(UTILITIES)regtest$(PRG) $(TESTS)ppc64asm.tst $(TOOLS)ppc64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)ppc64asm$(PRG) ppc64asm.tmp" ppc64asm.tst ppc64asm.tmp ppc64asm.res
-	@cd $(TESTS) && $(RM) ppc64asm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)ppc64asm$(PRG)) ppc64asm.tmp" ppc64asm.tst ppc64asm.tmp ppc64asm.res
 	@$(TC) $@
 
 $(TESTS)ppc64printasm: $(UTILITIES)regtest$(PRG) $(TESTS)ppc64asm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)ppc64asm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) ppc64printasm.tmp > ppc64printasm.asm && $(PREV)$(TOOLS)ppc64asm$(PRG) ppc64printasm.asm" ppc64asm.tst ppc64printasm.tmp ppc64printasm.res
-	@cd $(TESTS) && $(RM) ppc64printasm.asm ppc64printasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) ppc64printasm.tmp > ppc64printasm.asm && $(abspath $(TOOLS)ppc64asm$(PRG)) ppc64printasm.asm" ppc64asm.tst ppc64printasm.tmp ppc64printasm.res
 	@$(TC) $@
 
 $(TESTS)riscasm: $(UTILITIES)regtest$(PRG) $(TESTS)riscasm.tst $(TOOLS)riscasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)riscasm$(PRG) riscasm.tmp" riscasm.tst riscasm.tmp riscasm.res
-	@cd $(TESTS) && $(RM) riscasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)riscasm$(PRG)) riscasm.tmp" riscasm.tst riscasm.tmp riscasm.res
 	@$(TC) $@
 
 $(TESTS)riscprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)riscasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)riscasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) riscprintasm.tmp > riscprintasm.asm && $(PREV)$(TOOLS)riscasm$(PRG) riscprintasm.asm" riscasm.tst riscprintasm.tmp riscprintasm.res
-	@cd $(TESTS) && $(RM) riscprintasm.asm riscprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) riscprintasm.tmp > riscprintasm.asm && $(abspath $(TOOLS)riscasm$(PRG)) riscprintasm.asm" riscasm.tst riscprintasm.tmp riscprintasm.res
 	@$(TC) $@
 
 $(TESTS)wasmasm: $(UTILITIES)regtest$(PRG) $(TESTS)wasmasm.tst $(TOOLS)wasmasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)wasmasm$(PRG) wasmasm.tmp" wasmasm.tst wasmasm.tmp wasmasm.res
-	@cd $(TESTS) && $(RM) wasmasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)wasmasm$(PRG)) wasmasm.tmp" wasmasm.tst wasmasm.tmp wasmasm.res
 	@$(TC) $@
 
 $(TESTS)wasmprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)wasmasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)wasmasm$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)asmprint$(PRG) wasmprintasm.tmp > wasmprintasm.asm && $(PREV)$(TOOLS)wasmasm$(PRG) wasmprintasm.asm" wasmasm.tst wasmprintasm.tmp wasmprintasm.res
-	@cd $(TESTS) && $(RM) wasmprintasm.asm wasmprintasm.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) wasmprintasm.tmp > wasmprintasm.asm && $(abspath $(TOOLS)wasmasm$(PRG)) wasmprintasm.asm" wasmasm.tst wasmprintasm.tmp wasmprintasm.res
+	@$(TC) $@
+
+$(TESTS)xtensaasm: $(UTILITIES)regtest$(PRG) $(TESTS)xtensaasm.tst $(TOOLS)xtensaasm$(PRG)
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)xtensaasm$(PRG)) xtensaasm.tmp" xtensaasm.tst xtensaasm.tmp xtensaasm.res
+	@$(TC) $@
+
+$(TESTS)xtensaprintasm: $(UTILITIES)regtest$(PRG) $(TESTS)xtensaasm.tst $(TOOLS)asmprint$(PRG) $(TOOLS)xtensaasm$(PRG)
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)asmprint$(PRG)) xtensaprintasm.tmp > xtensaprintasm.asm && $(abspath $(TOOLS)xtensaasm$(PRG)) xtensaprintasm.asm" xtensaasm.tst xtensaprintasm.tmp xtensaprintasm.res
 	@$(TC) $@
 
 .PHONY: dumptests
 dumptests: $(addprefix $(TESTS), cppdump faldump obdump)
 
 $(TESTS)cppdump: $(UTILITIES)regtest$(PRG) $(TESTS)stdcppcheck.tst $(TESTS)extcppcheck.tst $(TOOLS)cppdump$(PRG) $(HDR) $(TESTS)cpp.dtd
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppdump$(PRG) cppdump.tmp && xmllint --noout --valid cppdump.xml" stdcppcheck.tst cppdump.tmp stdcppdump.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppdump$(PRG) cppdump.tmp && xmllint --noout --valid cppdump.xml" extcppcheck.tst cppdump.tmp extcppdump.res
-	@cd $(TESTS) && $(RM) cppdump.xml
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppdump$(PRG)) cppdump.tmp && xmllint --noout --valid --path $(abspath $(TESTS)) cppdump.xml" stdcppcheck.tst cppdump.tmp stdcppdump.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppdump$(PRG)) cppdump.tmp && xmllint --noout --valid --path $(abspath $(TESTS)) cppdump.xml" extcppcheck.tst cppdump.tmp extcppdump.res
 	@$(TC) $@
 
 $(TESTS)faldump: $(UTILITIES)regtest$(PRG) $(TESTS)falcheck.tst $(TOOLS)faldump$(PRG) $(TESTS)false.dtd
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)faldump$(PRG) faldump.tmp && xmllint --noout --valid faldump.xml" falcheck.tst faldump.tmp faldump.res
-	@cd $(TESTS) && $(RM) faldump.xml
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)faldump$(PRG)) faldump.tmp && xmllint --noout --valid --path $(abspath $(TESTS)) faldump.xml" falcheck.tst faldump.tmp faldump.res
 	@$(TC) $@
 
 $(TESTS)obdump: $(UTILITIES)regtest$(PRG) $(TESTS)stdobcheck.tst $(TESTS)extobcheck.tst $(TESTS)import.sym $(TESTS)generic.sym $(TESTS)package.packaged.sym $(TOOLS)obdump$(PRG) $(TESTS)oberon.dtd
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obdump$(PRG) obdump.tmp && xmllint --noout --valid obdump.xml" stdobcheck.tst obdump.tmp stdobdump.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obdump$(PRG) obdump.tmp && xmllint --noout --valid obdump.xml" extobcheck.tst obdump.tmp extobdump.res
-	@cd $(TESTS) && $(RM) obdump.xml test.sym
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obdump$(PRG)) obdump.tmp && xmllint --noout --valid --path $(abspath $(TESTS)) obdump.xml" stdobcheck.tst obdump.tmp stdobdump.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obdump$(PRG)) obdump.tmp && xmllint --noout --valid --path $(abspath $(TESTS)) obdump.xml" extobcheck.tst obdump.tmp extobdump.res
 	@$(TC) $@
 
 .PHONY: transtests
 transtests: $(addprefix $(TESTS), falcppcheck falcpprun obcppcheck obcpprun)
 
 $(TESTS)falcppcheck: $(UTILITIES)regtest$(PRG) $(TESTS)falcheck.tst $(TOOLS)falcpp$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falcpp$(PRG) falcppcheck.tmp && $(CC) $(CCHECKFLAGS) falcppcheck.cpp" falcheck.tst falcppcheck.tmp falcppcheck.res
-	@cd $(TESTS) && $(RM) falcppcheck.cpp
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falcpp$(PRG)) falcppcheck.tmp && $(CC) $(CCHECKFLAGS) falcppcheck.cpp" falcheck.tst falcppcheck.tmp falcppcheck.res
 	@$(TC) $@
 
 $(TESTS)falcpprun: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falcpp$(PRG)
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falcpp$(PRG) falcpprun.tmp && $(CC) $(CRUNFLAGS) falcpprun.cpp && $(LD) $(LRUNFLAGS)falcpprun$(PRG) falcpprun$(O) && $(PREV)$(TESTS)falcpprun$(PRG)" falrun.tst falcpprun.tmp falcpprun.res
-	@cd $(TESTS) && $(RM) falcpprun.cpp falcpprun$(O) falcpprun$(PRG)
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falcpp$(PRG)) falcpprun.tmp && $(CC) $(CRUNFLAGS) falcpprun.cpp && $(LD) $(LRUNFLAGS)falcpprun$(PRG) falcpprun$(O) && $(CURR)falcpprun$(PRG)" falrun.tst falcpprun.tmp falcpprun.res
 	@$(TC) $@
 
 $(TESTS)obcppcheck: $(UTILITIES)regtest$(PRG) $(TESTS)stdobcheck.tst $(TESTS)extobcheck.tst $(TESTS)import.sym $(TESTS)generic.sym $(TESTS)package.packaged.sym $(TOOLS)obcpp$(PRG) $(RUNTIME)obcpprun.hpp
-	@$(CP) $(RUNTIME)obcpprun.hpp $(TESTS)obcpprun.hpp
-	@cd $(TESTS) && $(PREV)$(TOOLS)obcpp$(PRG) import.sym generic.sym package.packaged.sym
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcpp$(PRG) obcppcheck.tmp && $(CC) $(CCHECKFLAGS) test.cpp" stdobcheck.tst obcppcheck.tmp stdobcppcheck.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcpp$(PRG) obcppcheck.tmp && $(CC) $(CCHECKFLAGS) test.cpp" extobcheck.tst obcppcheck.tmp extobcppcheck.res
-	@cd $(TESTS) && $(RM) test.sym test.cpp test.hpp import.cpp import.hpp generic.cpp generic.hpp package.packaged.hpp obcpprun.hpp
+	@cd $(TESTS) && $(abspath $(TOOLS)obcpp$(PRG)) import.sym generic.sym package.packaged.sym
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcpp$(PRG)) obcppcheck.tmp && $(CC) $(CCHECKFLAGS) -I $(abspath $(TESTS)) -I $(abspath $(RUNTIME)) test.cpp" stdobcheck.tst obcppcheck.tmp stdobcppcheck.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcpp$(PRG)) obcppcheck.tmp && $(CC) $(CCHECKFLAGS) -I $(abspath $(TESTS)) -I $(abspath $(RUNTIME)) test.cpp" extobcheck.tst obcppcheck.tmp extobcppcheck.res
+	@cd $(TESTS) && $(RM) import.cpp import.hpp generic.cpp generic.hpp package.packaged.cpp package.packaged.hpp
 	@$(TC) $@
 
 $(TESTS)obcpprun: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obcpp$(PRG) $(RUNTIME)obcpprun.hpp $(RUNTIME)obcpprun.cpp | $(TESTS)obcppcheck
-	@$(CP) $(RUNTIME)obcpprun.hpp $(TESTS)obcpprun.hpp
-	@$(CP) $(RUNTIME)obcpprun.cpp $(TESTS)obcpprun.cpp
-	@cd $(TESTS) && $(CC) $(CRUNFLAGS) obcpprun.cpp
-	@cd $(TESTS) && $(PREV)$(TOOLS)obcpp$(PRG) generic.sym
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcpp$(PRG) obcpprun.tmp && $(CC) $(CRUNFLAGS) test.cpp && $(LD) $(LRUNFLAGS)obcpprun$(PRG) test$(O) obcpprun$(O) && $(PREV)$(TESTS)obcpprun$(PRG)" stdobrun.tst obcpprun.tmp stdobcpprun.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obcpp$(PRG) obcpprun.tmp && $(CC) $(CRUNFLAGS) test.cpp && $(LD) $(LRUNFLAGS)obcpprun$(PRG) test$(O) obcpprun$(O) && $(PREV)$(TESTS)obcpprun$(PRG)" extobrun.tst obcpprun.tmp extobcpprun.res
-	@cd $(TESTS) && $(RM) test.sym test.cpp test.hpp generic.cpp generic.hpp test$(O) obcpprun$(O) obcpprun$(PRG) obcpprun.hpp obcpprun.cpp
+	@cd $(TESTS) && $(abspath $(TOOLS)obcpp$(PRG)) generic.sym
+	@cd $(TESTS) && $(CC) $(CRUNFLAGS) $(abspath $(RUNTIME)obcpprun.cpp)
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcpp$(PRG)) obcpprun.tmp && $(CC) $(CRUNFLAGS) -I $(abspath $(TESTS)) -I $(abspath $(RUNTIME)) test.cpp && $(LD) $(LRUNFLAGS)obcpprun$(PRG) test$(O) $(abspath $(TESTS)obcpprun$(O)) && $(CURR)obcpprun$(PRG)" stdobrun.tst obcpprun.tmp stdobcpprun.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obcpp$(PRG)) obcpprun.tmp && $(CC) $(CRUNFLAGS) -I $(abspath $(TESTS)) -I $(abspath $(RUNTIME)) test.cpp && $(LD) $(LRUNFLAGS)obcpprun$(PRG) test$(O) $(abspath $(TESTS)obcpprun$(O)) && $(CURR)obcpprun$(PRG)" extobrun.tst obcpprun.tmp extobcpprun.res
+	@cd $(TESTS) && $(RM) generic.cpp generic.hpp obcpprun$(O)
 	@$(TC) $@
 
 .PHONY: codetests
@@ -1250,594 +1222,523 @@ hosttests: $(foreach ENVIRONMENT, $(HOSTENVIRONMENTS), $(ENVIRONMENT)tests)
 amd32linuxtests: $(addprefix $(TESTS), cdamd32linux cppamd32linux falamd32linux obamd32linux)
 
 $(TESTS)cdamd32linux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd32$(PRG) cdamd32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdamd32linux.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf && chmod +x cdamd32linux && $(PREV)$(TESTS)cdamd32linux" cdrun.tst cdamd32linux.tmp cdamd32linux.res
-	@cd $(TESTS) && $(RM) cdamd32linux.lst cdamd32linux.dbg cdamd32linux.obf cdamd32linux cdamd32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd32$(PRG)) cdamd32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdamd32linux.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x cdamd32linux && $(CURR)cdamd32linux" cdrun.tst cdamd32linux.tmp cdamd32linux.res
 	@$(TC) $@
 
 $(TESTS)cppamd32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)cppamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cppamd32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppamd32linux.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)cppamd32run.lib && chmod +x cppamd32linux && $(PREV)$(TESTS)cppamd32linux" stdcpprun.tst cppamd32linux.tmp stdcppamd32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cppamd32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppamd32linux.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)cppamd32run.lib && chmod +x cppamd32linux && $(PREV)$(TESTS)cppamd32linux" extcpprun.tst cppamd32linux.tmp extcppamd32linux.res
-	@cd $(TESTS) && $(RM) cppamd32linux.lst cppamd32linux.dbg cppamd32linux.obf cppamd32linux cppamd32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cppamd32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppamd32linux.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)cppamd32run.lib) && chmod +x cppamd32linux && $(CURR)cppamd32linux" stdcpprun.tst cppamd32linux.tmp stdcppamd32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cppamd32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppamd32linux.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)cppamd32run.lib) && chmod +x cppamd32linux && $(CURR)cppamd32linux" extcpprun.tst cppamd32linux.tmp extcppamd32linux.res
 	@$(TC) $@
 
 $(TESTS)falamd32linux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd32$(PRG) falamd32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falamd32linux.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf && chmod +x falamd32linux && $(PREV)$(TESTS)falamd32linux" falrun.tst falamd32linux.tmp falamd32linux.res
-	@cd $(TESTS) && $(RM) falamd32linux.dbg falamd32linux.obf falamd32linux falamd32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd32$(PRG)) falamd32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falamd32linux.obf $(abspath $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf)) && chmod +x falamd32linux && $(CURR)falamd32linux" falrun.tst falamd32linux.tmp falamd32linux.res
 	@$(TC) $@
 
-$(TESTS)obamd32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)obamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obamd32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obamd32linux.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)obamd32run.lib && chmod +x obamd32linux && $(PREV)$(TESTS)obamd32linux" stdobrun.tst obamd32linux.tmp stdobamd32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obamd32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obamd32linux.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)obamd32run.lib && chmod +x obamd32linux && $(PREV)$(TESTS)obamd32linux" extobrun.tst obamd32linux.tmp extobamd32linux.res
-	@cd $(TESTS) && $(RM) test.sym obamd32linux.lst obamd32linux.dbg obamd32linux.obf obamd32linux obamd32linux.map
+$(TESTS)obamd32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obamd32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obamd32linux.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x obamd32linux && $(CURR)obamd32linux" stdobrun.tst obamd32linux.tmp stdobamd32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obamd32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obamd32linux.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x obamd32linux && $(CURR)obamd32linux" extobrun.tst obamd32linux.tmp extobamd32linux.res
 	@$(TC) $@
 
 .PHONY: amd64linuxtests
 amd64linuxtests: $(addprefix $(TESTS), cdamd64linux cppamd64linux falamd64linux obamd64linux)
 
 $(TESTS)cdamd64linux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd64$(PRG) cdamd64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdamd64linux.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf && chmod +x cdamd64linux && $(PREV)$(TESTS)cdamd64linux" cdrun.tst cdamd64linux.tmp cdamd64linux.res
-	@cd $(TESTS) && $(RM) cdamd64linux.lst cdamd64linux.dbg cdamd64linux.obf cdamd64linux cdamd64linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd64$(PRG)) cdamd64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdamd64linux.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x cdamd64linux && $(CURR)cdamd64linux" cdrun.tst cdamd64linux.tmp cdamd64linux.res
 	@$(TC) $@
 
 $(TESTS)cppamd64linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)cppamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cppamd64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppamd64linux.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)cppamd64run.lib && chmod +x cppamd64linux && $(PREV)$(TESTS)cppamd64linux" stdcpprun.tst cppamd64linux.tmp stdcppamd64linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cppamd64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppamd64linux.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)cppamd64run.lib && chmod +x cppamd64linux && $(PREV)$(TESTS)cppamd64linux" extcpprun.tst cppamd64linux.tmp extcppamd64linux.res
-	@cd $(TESTS) && $(RM) cppamd64linux.lst cppamd64linux.dbg cppamd64linux.obf cppamd64linux cppamd64linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cppamd64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppamd64linux.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)cppamd64run.lib) && chmod +x cppamd64linux && $(CURR)cppamd64linux" stdcpprun.tst cppamd64linux.tmp stdcppamd64linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cppamd64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppamd64linux.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)cppamd64run.lib) && chmod +x cppamd64linux && $(CURR)cppamd64linux" extcpprun.tst cppamd64linux.tmp extcppamd64linux.res
 	@$(TC) $@
 
 $(TESTS)falamd64linux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd64$(PRG) falamd64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falamd64linux.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf && chmod +x falamd64linux && $(PREV)$(TESTS)falamd64linux" falrun.tst falamd64linux.tmp falamd64linux.res
-	@cd $(TESTS) && $(RM) falamd64linux.dbg falamd64linux.obf falamd64linux falamd64linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd64$(PRG)) falamd64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falamd64linux.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x falamd64linux && $(CURR)falamd64linux" falrun.tst falamd64linux.tmp falamd64linux.res
 	@$(TC) $@
 
-$(TESTS)obamd64linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)obamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obamd64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obamd64linux.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)obamd64run.lib && chmod +x obamd64linux && $(PREV)$(TESTS)obamd64linux" stdobrun.tst obamd64linux.tmp stdobamd64linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obamd64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obamd64linux.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)obamd64run.lib && chmod +x obamd64linux && $(PREV)$(TESTS)obamd64linux" extobrun.tst obamd64linux.tmp extobamd64linux.res
-	@cd $(TESTS) && $(RM) test.sym obamd64linux.lst obamd64linux.dbg obamd64linux.obf obamd64linux obamd64linux.map
+$(TESTS)obamd64linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obamd64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obamd64linux.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x obamd64linux && $(CURR)obamd64linux" stdobrun.tst obamd64linux.tmp stdobamd64linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obamd64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obamd64linux.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x obamd64linux && $(CURR)obamd64linux" extobrun.tst obamd64linux.tmp extobamd64linux.res
 	@$(TC) $@
 
 .PHONY: arma32linuxtests
 arma32linuxtests: $(addprefix $(TESTS), cdarma32linux cpparma32linux falarma32linux obarma32linux)
 
 $(TESTS)cdarma32linux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarma32$(PRG) cdarma32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdarma32linux.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf && chmod +x cdarma32linux && $(PREV)$(TESTS)cdarma32linux" cdrun.tst cdarma32linux.tmp cdarma32linux.res
-	@cd $(TESTS) && $(RM) cdarma32linux.lst cdarma32linux.dbg cdarma32linux.obf cdarma32linux cdarma32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarma32$(PRG)) cdarma32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdarma32linux.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x cdarma32linux && $(CURR)cdarma32linux" cdrun.tst cdarma32linux.tmp cdarma32linux.res
 	@$(TC) $@
 
 $(TESTS)cpparma32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)cpparma32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma32$(PRG) cpparma32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparma32linux.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)cpparma32run.lib && chmod +x cpparma32linux && $(PREV)$(TESTS)cpparma32linux" stdcpprun.tst cpparma32linux.tmp stdcpparma32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma32$(PRG) cpparma32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparma32linux.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)cpparma32run.lib && chmod +x cpparma32linux && $(PREV)$(TESTS)cpparma32linux" extcpprun.tst cpparma32linux.tmp extcpparma32linux.res
-	@cd $(TESTS) && $(RM) cpparma32linux.lst cpparma32linux.dbg cpparma32linux.obf cpparma32linux cpparma32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma32$(PRG)) cpparma32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparma32linux.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)cpparma32run.lib) && chmod +x cpparma32linux && $(CURR)cpparma32linux" stdcpprun.tst cpparma32linux.tmp stdcpparma32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma32$(PRG)) cpparma32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparma32linux.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)cpparma32run.lib) && chmod +x cpparma32linux && $(CURR)cpparma32linux" extcpprun.tst cpparma32linux.tmp extcpparma32linux.res
 	@$(TC) $@
 
 $(TESTS)falarma32linux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarma32$(PRG) falarma32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falarma32linux.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf && chmod +x falarma32linux && $(PREV)$(TESTS)falarma32linux" falrun.tst falarma32linux.tmp falarma32linux.res
-	@cd $(TESTS) && $(RM) falarma32linux.dbg falarma32linux.obf falarma32linux falarma32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarma32$(PRG)) falarma32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falarma32linux.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x falarma32linux && $(CURR)falarma32linux" falrun.tst falarma32linux.tmp falarma32linux.res
 	@$(TC) $@
 
-$(TESTS)obarma32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)obarma32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma32$(PRG) obarma32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarma32linux.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)obarma32run.lib && chmod +x obarma32linux && $(PREV)$(TESTS)obarma32linux" stdobrun.tst obarma32linux.tmp stdobarma32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma32$(PRG) obarma32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarma32linux.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)obarma32run.lib && chmod +x obarma32linux && $(PREV)$(TESTS)obarma32linux" extobrun.tst obarma32linux.tmp extobarma32linux.res
-	@cd $(TESTS) && $(RM) test.sym obarma32linux.lst obarma32linux.dbg obarma32linux.obf obarma32linux obarma32linux.map
+$(TESTS)obarma32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma32$(PRG)) obarma32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarma32linux.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x obarma32linux && $(CURR)obarma32linux" stdobrun.tst obarma32linux.tmp stdobarma32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma32$(PRG)) obarma32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarma32linux.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x obarma32linux && $(CURR)obarma32linux" extobrun.tst obarma32linux.tmp extobarma32linux.res
 	@$(TC) $@
 
 .PHONY: arma64linuxtests
 arma64linuxtests: $(addprefix $(TESTS), cdarma64linux cpparma64linux falarma64linux obarma64linux)
 
 $(TESTS)cdarma64linux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarma64$(PRG) cdarma64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdarma64linux.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf && chmod +x cdarma64linux && $(PREV)$(TESTS)cdarma64linux" cdrun.tst cdarma64linux.tmp cdarma64linux.res
-	@cd $(TESTS) && $(RM) cdarma64linux.lst cdarma64linux.dbg cdarma64linux.obf cdarma64linux cdarma64linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarma64$(PRG)) cdarma64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdarma64linux.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x cdarma64linux && $(CURR)cdarma64linux" cdrun.tst cdarma64linux.tmp cdarma64linux.res
 	@$(TC) $@
 
 $(TESTS)cpparma64linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)cpparma64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma64$(PRG) cpparma64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparma64linux.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)cpparma64run.lib && chmod +x cpparma64linux && $(PREV)$(TESTS)cpparma64linux" stdcpprun.tst cpparma64linux.tmp stdcpparma64linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma64$(PRG) cpparma64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparma64linux.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)cpparma64run.lib && chmod +x cpparma64linux && $(PREV)$(TESTS)cpparma64linux" extcpprun.tst cpparma64linux.tmp extcpparma64linux.res
-	@cd $(TESTS) && $(RM) cpparma64linux.lst cpparma64linux.dbg cpparma64linux.obf cpparma64linux cpparma64linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma64$(PRG)) cpparma64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparma64linux.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)cpparma64run.lib) && chmod +x cpparma64linux && $(CURR)cpparma64linux" stdcpprun.tst cpparma64linux.tmp stdcpparma64linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma64$(PRG)) cpparma64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparma64linux.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)cpparma64run.lib) && chmod +x cpparma64linux && $(CURR)cpparma64linux" extcpprun.tst cpparma64linux.tmp extcpparma64linux.res
 	@$(TC) $@
 
 $(TESTS)falarma64linux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarma64$(PRG) falarma64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falarma64linux.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf && chmod +x falarma64linux && $(PREV)$(TESTS)falarma64linux" falrun.tst falarma64linux.tmp falarma64linux.res
-	@cd $(TESTS) && $(RM) falarma64linux.dbg falarma64linux.obf falarma64linux falarma64linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarma64$(PRG)) falarma64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falarma64linux.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x falarma64linux && $(CURR)falarma64linux" falrun.tst falarma64linux.tmp falarma64linux.res
 	@$(TC) $@
 
-$(TESTS)obarma64linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)obarma64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma64$(PRG) obarma64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarma64linux.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)obarma64run.lib && chmod +x obarma64linux && $(PREV)$(TESTS)obarma64linux" stdobrun.tst obarma64linux.tmp stdobarma64linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma64$(PRG) obarma64linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarma64linux.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)obarma64run.lib && chmod +x obarma64linux && $(PREV)$(TESTS)obarma64linux" extobrun.tst obarma64linux.tmp extobarma64linux.res
-	@cd $(TESTS) && $(RM) test.sym obarma64linux.lst obarma64linux.dbg obarma64linux.obf obarma64linux obarma64linux.map
+$(TESTS)obarma64linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma64$(PRG)) obarma64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarma64linux.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x obarma64linux && $(CURR)obarma64linux" stdobrun.tst obarma64linux.tmp stdobarma64linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma64$(PRG)) obarma64linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarma64linux.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x obarma64linux && $(CURR)obarma64linux" extobrun.tst obarma64linux.tmp extobarma64linux.res
 	@$(TC) $@
 
 .PHONY: armt32linuxtests
 armt32linuxtests: $(addprefix $(TESTS), cdarmt32linux cpparmt32linux falarmt32linux obarmt32linux)
 
 $(TESTS)cdarmt32linux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarmt32$(PRG) cdarmt32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdarmt32linux.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf && chmod +x cdarmt32linux && $(PREV)$(TESTS)cdarmt32linux" cdrun.tst cdarmt32linux.tmp cdarmt32linux.res
-	@cd $(TESTS) && $(RM) cdarmt32linux.lst cdarmt32linux.dbg cdarmt32linux.obf cdarmt32linux cdarmt32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarmt32$(PRG)) cdarmt32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdarmt32linux.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x cdarmt32linux && $(CURR)cdarmt32linux" cdrun.tst cdarmt32linux.tmp cdarmt32linux.res
 	@$(TC) $@
 
 $(TESTS)cpparmt32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)cpparmt32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32$(PRG) cpparmt32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparmt32linux.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)cpparmt32run.lib && chmod +x cpparmt32linux && $(PREV)$(TESTS)cpparmt32linux" stdcpprun.tst cpparmt32linux.tmp stdcpparmt32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32$(PRG) cpparmt32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparmt32linux.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)cpparmt32run.lib && chmod +x cpparmt32linux && $(PREV)$(TESTS)cpparmt32linux" extcpprun.tst cpparmt32linux.tmp extcpparmt32linux.res
-	@cd $(TESTS) && $(RM) cpparmt32linux.lst cpparmt32linux.dbg cpparmt32linux.obf cpparmt32linux cpparmt32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32$(PRG)) cpparmt32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparmt32linux.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)cpparmt32run.lib) && chmod +x cpparmt32linux && $(CURR)cpparmt32linux" stdcpprun.tst cpparmt32linux.tmp stdcpparmt32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32$(PRG)) cpparmt32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparmt32linux.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)cpparmt32run.lib) && chmod +x cpparmt32linux && $(CURR)cpparmt32linux" extcpprun.tst cpparmt32linux.tmp extcpparmt32linux.res
 	@$(TC) $@
 
 $(TESTS)falarmt32linux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarmt32$(PRG) falarmt32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falarmt32linux.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf && chmod +x falarmt32linux && $(PREV)$(TESTS)falarmt32linux" falrun.tst falarmt32linux.tmp falarmt32linux.res
-	@cd $(TESTS) && $(RM) falarmt32linux.dbg falarmt32linux.obf falarmt32linux falarmt32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarmt32$(PRG)) falarmt32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falarmt32linux.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x falarmt32linux && $(CURR)falarmt32linux" falrun.tst falarmt32linux.tmp falarmt32linux.res
 	@$(TC) $@
 
-$(TESTS)obarmt32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)obarmt32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32$(PRG) obarmt32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarmt32linux.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)obarmt32run.lib && chmod +x obarmt32linux && $(PREV)$(TESTS)obarmt32linux" stdobrun.tst obarmt32linux.tmp stdobarmt32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32$(PRG) obarmt32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarmt32linux.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)obarmt32run.lib && chmod +x obarmt32linux && $(PREV)$(TESTS)obarmt32linux" extobrun.tst obarmt32linux.tmp extobarmt32linux.res
-	@cd $(TESTS) && $(RM) test.sym obarmt32linux.lst obarmt32linux.dbg obarmt32linux.obf obarmt32linux obarmt32linux.map
+$(TESTS)obarmt32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32$(PRG)) obarmt32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarmt32linux.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x obarmt32linux && $(CURR)obarmt32linux" stdobrun.tst obarmt32linux.tmp stdobarmt32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32$(PRG)) obarmt32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarmt32linux.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x obarmt32linux && $(CURR)obarmt32linux" extobrun.tst obarmt32linux.tmp extobarmt32linux.res
 	@$(TC) $@
 
 .PHONY: armt32fpelinuxtests
 armt32fpelinuxtests: $(addprefix $(TESTS), cdarmt32fpelinux cpparmt32fpelinux falarmt32fpelinux obarmt32fpelinux)
 
 $(TESTS)cdarmt32fpelinux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarmt32fpe$(PRG) cdarmt32fpelinux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdarmt32fpelinux.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf && chmod +x cdarmt32fpelinux && $(PREV)$(TESTS)cdarmt32fpelinux" cdrun.tst cdarmt32fpelinux.tmp cdarmt32fpelinux.res
-	@cd $(TESTS) && $(RM) cdarmt32fpelinux.lst cdarmt32fpelinux.dbg cdarmt32fpelinux.obf cdarmt32fpelinux cdarmt32fpelinux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarmt32fpe$(PRG)) cdarmt32fpelinux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdarmt32fpelinux.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x cdarmt32fpelinux && $(CURR)cdarmt32fpelinux" cdrun.tst cdarmt32fpelinux.tmp cdarmt32fpelinux.res
 	@$(TC) $@
 
 $(TESTS)cpparmt32fpelinux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)cpparmt32fperun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32fpe$(PRG) cpparmt32fpelinux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparmt32fpelinux.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)cpparmt32fperun.lib && chmod +x cpparmt32fpelinux && $(PREV)$(TESTS)cpparmt32fpelinux" stdcpprun.tst cpparmt32fpelinux.tmp stdcpparmt32fpelinux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32fpe$(PRG) cpparmt32fpelinux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpparmt32fpelinux.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)cpparmt32fperun.lib && chmod +x cpparmt32fpelinux && $(PREV)$(TESTS)cpparmt32fpelinux" extcpprun.tst cpparmt32fpelinux.tmp extcpparmt32fpelinux.res
-	@cd $(TESTS) && $(RM) cpparmt32fpelinux.lst cpparmt32fpelinux.dbg cpparmt32fpelinux.obf cpparmt32fpelinux cpparmt32fpelinux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32fpe$(PRG)) cpparmt32fpelinux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparmt32fpelinux.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)cpparmt32fperun.lib) && chmod +x cpparmt32fpelinux && $(CURR)cpparmt32fpelinux" stdcpprun.tst cpparmt32fpelinux.tmp stdcpparmt32fpelinux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32fpe$(PRG)) cpparmt32fpelinux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpparmt32fpelinux.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)cpparmt32fperun.lib) && chmod +x cpparmt32fpelinux && $(CURR)cpparmt32fpelinux" extcpprun.tst cpparmt32fpelinux.tmp extcpparmt32fpelinux.res
 	@$(TC) $@
 
 $(TESTS)falarmt32fpelinux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarmt32fpe$(PRG) falarmt32fpelinux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falarmt32fpelinux.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf && chmod +x falarmt32fpelinux && $(PREV)$(TESTS)falarmt32fpelinux" falrun.tst falarmt32fpelinux.tmp falarmt32fpelinux.res
-	@cd $(TESTS) && $(RM) falarmt32fpelinux.dbg falarmt32fpelinux.obf falarmt32fpelinux falarmt32fpelinux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarmt32fpe$(PRG)) falarmt32fpelinux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falarmt32fpelinux.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x falarmt32fpelinux && $(CURR)falarmt32fpelinux" falrun.tst falarmt32fpelinux.tmp falarmt32fpelinux.res
 	@$(TC) $@
 
-$(TESTS)obarmt32fpelinux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)obarmt32fperun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32fpe$(PRG) obarmt32fpelinux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarmt32fpelinux.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)obarmt32fperun.lib && chmod +x obarmt32fpelinux && $(PREV)$(TESTS)obarmt32fpelinux" stdobrun.tst obarmt32fpelinux.tmp stdobarmt32fpelinux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32fpe$(PRG) obarmt32fpelinux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obarmt32fpelinux.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)obarmt32fperun.lib && chmod +x obarmt32fpelinux && $(PREV)$(TESTS)obarmt32fpelinux" extobrun.tst obarmt32fpelinux.tmp extobarmt32fpelinux.res
-	@cd $(TESTS) && $(RM) test.sym obarmt32fpelinux.lst obarmt32fpelinux.dbg obarmt32fpelinux.obf obarmt32fpelinux obarmt32fpelinux.map
+$(TESTS)obarmt32fpelinux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32fpe$(PRG)) obarmt32fpelinux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarmt32fpelinux.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x obarmt32fpelinux && $(CURR)obarmt32fpelinux" stdobrun.tst obarmt32fpelinux.tmp stdobarmt32fpelinux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32fpe$(PRG)) obarmt32fpelinux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obarmt32fpelinux.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x obarmt32fpelinux && $(CURR)obarmt32fpelinux" extobrun.tst obarmt32fpelinux.tmp extobarmt32fpelinux.res
 	@$(TC) $@
 
 .PHONY: atmega32tests
 atmega32tests: $(addprefix $(TESTS), cdatmega32 cppatmega32 falatmega32 obatmega32)
 
 $(TESTS)cdatmega32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdavr$(PRG) cdatmega32.tmp && $(PREV)$(TOOLS)linkhex$(PRG) cdatmega32.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega32run.obf $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega32 -ms -ifcdatmega32.hex -e -pf -vf -g && remote com2" cdrun.tst cdatmega32.tmp cdatmega32.res
-	@cd $(TESTS) && $(RM) cdatmega32.lst cdatmega32.dbg cdatmega32.obf cdatmega32.hex cdatmega32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdavr$(PRG)) cdatmega32.tmp && $(abspath $(TOOLS)linkhex$(PRG)) cdatmega32.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega32 -ms -ifcdatmega32.hex -e -pf -vf -g && remote com2" cdrun.tst cdatmega32.tmp cdatmega32.res
 	@$(TC) $@
 
 $(TESTS)cppatmega32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)cppavrrun.lib $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppavr$(PRG) cppatmega32.tmp && $(PREV)$(TOOLS)linkhex$(PRG) cppatmega32.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega32run.obf $(PREV)$(RUNTIME)cppavrrun.lib $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega32 -ms -ifstdcppatmega32.hex -e -pf -vf -g && remote com2" stdcpprun.tst cppatmega32.tmp stdcppatmega32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppavr$(PRG) cppatmega32.tmp && $(PREV)$(TOOLS)linkhex$(PRG) cppatmega32.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega32run.obf $(PREV)$(RUNTIME)cppavrrun.lib $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega32 -ms -ifextcppatmega32.hex -e -pf -vf -g && remote com2" extcpprun.tst cppatmega32.tmp extcppatmega32.res
-	@cd $(TESTS) && $(RM) cppatmega32.lst cppatmega32.dbg cppatmega32.obf cppatmega32.hex cppatmega32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppavr$(PRG)) cppatmega32.tmp && $(abspath $(TOOLS)linkhex$(PRG)) cppatmega32.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)cppavrrun.lib $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega32 -ms -ifstdcppatmega32.hex -e -pf -vf -g && remote com2" stdcpprun.tst cppatmega32.tmp stdcppatmega32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppavr$(PRG)) cppatmega32.tmp && $(abspath $(TOOLS)linkhex$(PRG)) cppatmega32.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)cppavrrun.lib $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega32 -ms -ifextcppatmega32.hex -e -pf -vf -g && remote com2" extcpprun.tst cppatmega32.tmp extcppatmega32.res
 	@$(TC) $@
 
 $(TESTS)falatmega32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falavr$(PRG) falatmega32.tmp && $(PREV)$(TOOLS)linkhex$(PRG) falatmega32.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega32run.obf $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega32 -ms -iffalatmega32.hex -e -pf -vf -g && remote com2" falrun.tst falatmega32.tmp falatmega32.res
-	@cd $(TESTS) && $(RM) falatmega32.dbg falatmega32.obf falatmega32.hex falatmega32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falavr$(PRG)) falatmega32.tmp && $(abspath $(TOOLS)linkhex$(PRG)) falatmega32.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega32 -ms -iffalatmega32.hex -e -pf -vf -g && remote com2" falrun.tst falatmega32.tmp falatmega32.res
 	@$(TC) $@
 
-$(TESTS)obatmega32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)obavrrun.lib $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obavr$(PRG) obatmega32.tmp && $(PREV)$(TOOLS)linkhex$(PRG) obatmega32.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega32run.obf $(PREV)$(RUNTIME)obavrrun.lib $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega32 -ms -ifobatmega32.hex -e -pf -vf -g && remote com2" stdobrun.tst obatmega32.tmp stdobatmega32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obavr$(PRG) obatmega32.tmp && $(PREV)$(TOOLS)linkhex$(PRG) obatmega32.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega32run.obf $(PREV)$(RUNTIME)obavrrun.lib $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega32 -ms -ifobatmega32.hex -e -pf -vf -g && remote com2" extobrun.tst obatmega32.tmp extobatmega32.res
-	@cd $(TESTS) && $(RM) test.sym obatmega32.lst obatmega32.dbg obatmega32.obf obatmega32.hex obatmega32.map
+$(TESTS)obatmega32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obavr$(PRG)) obatmega32.tmp && $(abspath $(TOOLS)linkhex$(PRG)) obatmega32.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega32 -ms -ifobatmega32.hex -e -pf -vf -g && remote com2" stdobrun.tst obatmega32.tmp stdobatmega32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obavr$(PRG)) obatmega32.tmp && $(abspath $(TOOLS)linkhex$(PRG)) obatmega32.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega32run.obf $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega32 -ms -ifobatmega32.hex -e -pf -vf -g && remote com2" extobrun.tst obatmega32.tmp extobatmega32.res
 	@$(TC) $@
 
 .PHONY: atmega8515tests
 atmega8515tests: $(addprefix $(TESTS), cdatmega8515 cppatmega8515 falatmega8515)
 
 $(TESTS)cdatmega8515: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdavr$(PRG) cdatmega8515.tmp && $(PREV)$(TOOLS)linkhex$(PRG) cdatmega8515.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega8515run.obf $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega8515 -ms -ifcdatmega8515.hex -e -pf -vf -g && remote com2" cdrun.tst cdatmega8515.tmp cdatmega8515.res
-	@cd $(TESTS) && $(RM) cdatmega8515.lst cdatmega8515.dbg cdatmega8515.obf cdatmega8515.hex cdatmega8515.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdavr$(PRG)) cdatmega8515.tmp && $(abspath $(TOOLS)linkhex$(PRG)) cdatmega8515.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega8515 -ms -ifcdatmega8515.hex -e -pf -vf -g && remote com2" cdrun.tst cdatmega8515.tmp cdatmega8515.res
 	@$(TC) $@
 
 $(TESTS)cppatmega8515: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)cppavrrun.lib $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppavr$(PRG) cppatmega8515.tmp && $(PREV)$(TOOLS)linkhex$(PRG) cppatmega8515.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega8515run.obf $(PREV)$(RUNTIME)cppavrrun.lib $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega8515 -ms -ifstdcppatmega8515.hex -e -pf -vf -g && remote com2" stdcpprun.tst cppatmega8515.tmp stdcppatmega8515.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppavr$(PRG) cppatmega8515.tmp && $(PREV)$(TOOLS)linkhex$(PRG) cppatmega8515.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega8515run.obf $(PREV)$(RUNTIME)cppavrrun.lib $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega8515 -ms -ifextcppatmega8515.hex -e -pf -vf -g && remote com2" extcpprun.tst cppatmega8515.tmp extcppatmega8515.res
-	@cd $(TESTS) && $(RM) cppatmega8515.lst cppatmega8515.dbg cppatmega8515.obf cppatmega8515.hex cppatmega8515.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppavr$(PRG)) cppatmega8515.tmp && $(abspath $(TOOLS)linkhex$(PRG)) cppatmega8515.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)cppavrrun.lib $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega8515 -ms -ifstdcppatmega8515.hex -e -pf -vf -g && remote com2" stdcpprun.tst cppatmega8515.tmp stdcppatmega8515.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppavr$(PRG)) cppatmega8515.tmp && $(abspath $(TOOLS)linkhex$(PRG)) cppatmega8515.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)cppavrrun.lib $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega8515 -ms -ifextcppatmega8515.hex -e -pf -vf -g && remote com2" extcpprun.tst cppatmega8515.tmp extcppatmega8515.res
 	@$(TC) $@
 
 $(TESTS)falatmega8515: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falavr$(PRG) $(TOOLS)linkhex$(PRG) $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)avrremote.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falavr$(PRG) falatmega8515.tmp && $(PREV)$(TOOLS)linkhex$(PRG) falatmega8515.obf $(PREV)$(RUNTIME)avrrun.obf $(PREV)$(RUNTIME)atmega8515run.obf $(PREV)$(RUNTIME)avrremote.obf && stk500 -ccom1 -dATmega8515 -ms -iffalatmega8515.hex -e -pf -vf -g && remote com2" falrun.tst falatmega8515.tmp falatmega8515.res
-	@cd $(TESTS) && $(RM) falatmega8515.dbg falatmega8515.obf falatmega8515.hex falatmega8515.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falavr$(PRG)) falatmega8515.tmp && $(abspath $(TOOLS)linkhex$(PRG)) falatmega8515.obf $(abspath $(RUNTIME)avrrun.obf $(RUNTIME)atmega8515run.obf $(RUNTIME)avrremote.obf) && stk500 -ccom1 -dATmega8515 -ms -iffalatmega8515.hex -e -pf -vf -g && remote com2" falrun.tst falatmega8515.tmp falatmega8515.res
 	@$(TC) $@
 
 .PHONY: dostests
 dostests: $(addprefix $(TESTS), cddos cppdos faldos obdos)
 
 $(TESTS)cddos: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd16$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd16$(PRG) cddos.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cddos.obf $(PREV)$(RUNTIME)amd16run.obf $(PREV)$(RUNTIME)dosrun.obf && cddos.com" cdrun.tst cddos.tmp cddos.res
-	@cd $(TESTS) && $(RM) cddos.lst cddos.dbg cddos.obf cddos.com cddos.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd16$(PRG)) cddos.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cddos.obf $(abspath $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf) && cddos.com" cdrun.tst cddos.tmp cddos.res
 	@$(TC) $@
 
 $(TESTS)cppdos: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd16$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf $(RUNTIME)cppamd16run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd16$(PRG) cppdos.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppdos.obf $(PREV)$(RUNTIME)amd16run.obf $(PREV)$(RUNTIME)dosrun.obf $(PREV)$(RUNTIME)cppamd16run.lib && cppdos.com" stdcpprun.tst cppdos.tmp stdcppdos.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd16$(PRG) cppdos.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppdos.obf $(PREV)$(RUNTIME)amd16run.obf $(PREV)$(RUNTIME)dosrun.obf $(PREV)$(RUNTIME)cppamd16run.lib && cppdos.com" extcpprun.tst cppdos.tmp extcppdos.res
-	@cd $(TESTS) && $(RM) cppdos.lst cppdos.dbg cppdos.obf cppdos.com cppdos.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd16$(PRG)) cppdos.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppdos.obf $(abspath $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf $(RUNTIME)cppamd16run.lib) && cppdos.com" stdcpprun.tst cppdos.tmp stdcppdos.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd16$(PRG)) cppdos.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppdos.obf $(abspath $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf $(RUNTIME)cppamd16run.lib) && cppdos.com" extcpprun.tst cppdos.tmp extcppdos.res
 	@$(TC) $@
 
 $(TESTS)faldos: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd16$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd16$(PRG) faldos.tmp && $(PREV)$(TOOLS)linkbin$(PRG) faldos.obf $(PREV)$(RUNTIME)amd16run.obf $(PREV)$(RUNTIME)dosrun.obf && faldos.com" falrun.tst faldos.tmp faldos.res
-	@cd $(TESTS) && $(RM) faldos.dbg faldos.obf faldos.com faldos.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd16$(PRG)) faldos.tmp && $(abspath $(TOOLS)linkbin$(PRG)) faldos.obf $(abspath $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf) && faldos.com" falrun.tst faldos.tmp faldos.res
 	@$(TC) $@
 
-$(TESTS)obdos: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd16$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf $(RUNTIME)obamd16run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd16$(PRG) obdos.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obdos.obf $(PREV)$(RUNTIME)amd16run.obf $(PREV)$(RUNTIME)dosrun.obf $(PREV)$(RUNTIME)obamd16run.lib && obdos.com" stdobrun.tst obdos.tmp stdobdos.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd16$(PRG) obdos.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obdos.obf $(PREV)$(RUNTIME)amd16run.obf $(PREV)$(RUNTIME)dosrun.obf $(PREV)$(RUNTIME)obamd16run.lib && obdos.com" extobrun.tst obdos.tmp extobdos.res
-	@cd $(TESTS) && $(RM) test.sym obdos.lst obdos.dbg obdos.obf obdos.com obdos.map
+$(TESTS)obdos: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd16$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd16$(PRG)) obdos.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obdos.obf $(abspath $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf) && obdos.com" stdobrun.tst obdos.tmp stdobdos.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd16$(PRG)) obdos.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obdos.obf $(abspath $(RUNTIME)amd16run.obf $(RUNTIME)dosrun.obf) && obdos.com" extobrun.tst obdos.tmp extobdos.res
 	@$(TC) $@
 
 .PHONY: mips32linuxtests
 mips32linuxtests: $(addprefix $(TESTS), cdmips32linux cppmips32linux falmips32linux obmips32linux)
 
 $(TESTS)cdmips32linux: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdmips32$(PRG) cdmips32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdmips32linux.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf && chmod +x cdmips32linux && $(PREV)$(TESTS)cdmips32linux" cdrun.tst cdmips32linux.tmp cdmips32linux.res
-	@cd $(TESTS) && $(RM) cdmips32linux.lst cdmips32linux.dbg cdmips32linux.obf cdmips32linux cdmips32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdmips32$(PRG)) cdmips32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdmips32linux.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x cdmips32linux && $(CURR)cdmips32linux" cdrun.tst cdmips32linux.tmp cdmips32linux.res
 	@$(TC) $@
 
 $(TESTS)cppmips32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)cppmips32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppmips32$(PRG) cppmips32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppmips32linux.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)cppmips32run.lib && chmod +x cppmips32linux && $(PREV)$(TESTS)cppmips32linux" stdcpprun.tst cppmips32linux.tmp stdcppmips32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppmips32$(PRG) cppmips32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppmips32linux.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)cppmips32run.lib && chmod +x cppmips32linux && $(PREV)$(TESTS)cppmips32linux" extcpprun.tst cppmips32linux.tmp extcppmips32linux.res
-	@cd $(TESTS) && $(RM) cppmips32linux.lst cppmips32linux.dbg cppmips32linux.obf cppmips32linux cppmips32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppmips32$(PRG)) cppmips32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppmips32linux.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)cppmips32run.lib) && chmod +x cppmips32linux && $(CURR)cppmips32linux" stdcpprun.tst cppmips32linux.tmp stdcppmips32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppmips32$(PRG)) cppmips32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppmips32linux.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)cppmips32run.lib) && chmod +x cppmips32linux && $(CURR)cppmips32linux" extcpprun.tst cppmips32linux.tmp extcppmips32linux.res
 	@$(TC) $@
 
 $(TESTS)falmips32linux: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falmips32$(PRG) falmips32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falmips32linux.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf && chmod +x falmips32linux && $(PREV)$(TESTS)falmips32linux" falrun.tst falmips32linux.tmp falmips32linux.res
-	@cd $(TESTS) && $(RM) falmips32linux.dbg falmips32linux.obf falmips32linux falmips32linux.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falmips32$(PRG)) falmips32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falmips32linux.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x falmips32linux && $(CURR)falmips32linux" falrun.tst falmips32linux.tmp falmips32linux.res
 	@$(TC) $@
 
-$(TESTS)obmips32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)obmips32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obmips32$(PRG) obmips32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obmips32linux.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)obmips32run.lib && chmod +x obmips32linux && $(PREV)$(TESTS)obmips32linux" stdobrun.tst obmips32linux.tmp stdobmips32linux.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obmips32$(PRG) obmips32linux.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obmips32linux.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)obmips32run.lib && chmod +x obmips32linux && $(PREV)$(TESTS)obmips32linux" extobrun.tst obmips32linux.tmp extobmips32linux.res
-	@cd $(TESTS) && $(RM) test.sym obmips32linux.lst obmips32linux.dbg obmips32linux.obf obmips32linux obmips32linux.map
+$(TESTS)obmips32linux: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obmips32$(PRG)) obmips32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obmips32linux.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x obmips32linux && $(CURR)obmips32linux" stdobrun.tst obmips32linux.tmp stdobmips32linux.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obmips32$(PRG)) obmips32linux.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obmips32linux.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x obmips32linux && $(CURR)obmips32linux" extobrun.tst obmips32linux.tmp extobmips32linux.res
 	@$(TC) $@
 
 .PHONY: mmixsimtests
 mmixsimtests: $(addprefix $(TESTS), cdmmixsim cppmmixsim falmmixsim obmmixsim)
 
 $(TESTS)cdmmixsim: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdmmix$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdmmix$(PRG) cdmmixsim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdmmixsim.obf $(PREV)$(RUNTIME)mmixrun.obf $(PREV)$(RUNTIME)mmixsimrun.obf && mmix cdmmixsim.mmo" cdrun.tst cdmmixsim.tmp cdmmixsim.res
-	@cd $(TESTS) && $(RM) cdmmixsim.lst cdmmixsim.dbg cdmmixsim.obf cdmmixsim.mmo cdmmixsim.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdmmix$(PRG)) cdmmixsim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdmmixsim.obf $(abspath $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf) && mmix cdmmixsim.mmo" cdrun.tst cdmmixsim.tmp cdmmixsim.res
 	@$(TC) $@
 
 $(TESTS)cppmmixsim: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppmmix$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf $(RUNTIME)cppmmixrun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppmmix$(PRG) cppmmixsim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppmmixsim.obf $(PREV)$(RUNTIME)mmixrun.obf $(PREV)$(RUNTIME)mmixsimrun.obf $(PREV)$(RUNTIME)cppmmixrun.lib && mmix cppmmixsim.mmo" stdcpprun.tst cppmmixsim.tmp stdcppmmixsim.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppmmix$(PRG) cppmmixsim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppmmixsim.obf $(PREV)$(RUNTIME)mmixrun.obf $(PREV)$(RUNTIME)mmixsimrun.obf $(PREV)$(RUNTIME)cppmmixrun.lib && mmix cppmmixsim.mmo" extcpprun.tst cppmmixsim.tmp extcppmmixsim.res
-	@cd $(TESTS) && $(RM) cppmmixsim.lst cppmmixsim.dbg cppmmixsim.obf cppmmixsim.mmo cppmmixsim.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppmmix$(PRG)) cppmmixsim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppmmixsim.obf $(abspath $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf $(RUNTIME)cppmmixrun.lib) && mmix cppmmixsim.mmo" stdcpprun.tst cppmmixsim.tmp stdcppmmixsim.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppmmix$(PRG)) cppmmixsim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppmmixsim.obf $(abspath $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf $(RUNTIME)cppmmixrun.lib) && mmix cppmmixsim.mmo" extcpprun.tst cppmmixsim.tmp extcppmmixsim.res
 	@$(TC) $@
 
 $(TESTS)falmmixsim: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falmmix$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falmmix$(PRG) falmmixsim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falmmixsim.obf $(PREV)$(RUNTIME)mmixrun.obf $(PREV)$(RUNTIME)mmixsimrun.obf && mmix falmmixsim.mmo" falrun.tst falmmixsim.tmp falmmixsim.res
-	@cd $(TESTS) && $(RM) falmmixsim.dbg falmmixsim.obf falmmixsim.mmo falmmixsim.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falmmix$(PRG)) falmmixsim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falmmixsim.obf $(abspath $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf) && mmix falmmixsim.mmo" falrun.tst falmmixsim.tmp falmmixsim.res
 	@$(TC) $@
 
-$(TESTS)obmmixsim: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obmmix$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf $(RUNTIME)obmmixrun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obmmix$(PRG) obmmixsim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obmmixsim.obf $(PREV)$(RUNTIME)mmixrun.obf $(PREV)$(RUNTIME)mmixsimrun.obf $(PREV)$(RUNTIME)obmmixrun.lib && mmix obmmixsim.mmo" stdobrun.tst obmmixsim.tmp stdobmmixsim.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obmmix$(PRG) obmmixsim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obmmixsim.obf $(PREV)$(RUNTIME)mmixrun.obf $(PREV)$(RUNTIME)mmixsimrun.obf $(PREV)$(RUNTIME)obmmixrun.lib && mmix obmmixsim.mmo" extobrun.tst obmmixsim.tmp extobmmixsim.res
-	@cd $(TESTS) && $(RM) test.sym obmmixsim.lst obmmixsim.dbg obmmixsim.obf obmmixsim.mmo obmmixsim.map
+$(TESTS)obmmixsim: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obmmix$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obmmix$(PRG)) obmmixsim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obmmixsim.obf $(abspath $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf) && mmix obmmixsim.mmo" stdobrun.tst obmmixsim.tmp stdobmmixsim.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obmmix$(PRG)) obmmixsim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obmmixsim.obf $(abspath $(RUNTIME)mmixrun.obf $(RUNTIME)mmixsimrun.obf) && mmix obmmixsim.mmo" extobrun.tst obmmixsim.tmp extobmmixsim.res
 	@$(TC) $@
 
 .PHONY: or1ksimtests
 or1ksimtests: $(addprefix $(TESTS), cdor1ksim cppor1ksim falor1ksim obor1ksim)
 
 $(TESTS)cdor1ksim: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdor1k$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdor1k$(PRG) cdor1ksim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdor1ksim.obf $(PREV)$(RUNTIME)or1krun.obf $(PREV)$(RUNTIME)or1ksimrun.obf && or1ksim -q -m 1m cdor1ksim" cdrun.tst cdor1ksim.tmp cdor1ksim.res
-	@cd $(TESTS) && $(RM) cdor1ksim.lst cdor1ksim.dbg cdor1ksim.obf cdor1ksim cdor1ksim.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdor1k$(PRG)) cdor1ksim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdor1ksim.obf $(abspath $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf) && or1ksim -q -m 1m cdor1ksim" cdrun.tst cdor1ksim.tmp cdor1ksim.res
 	@$(TC) $@
 
 $(TESTS)cppor1ksim: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppor1k$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf $(RUNTIME)cppor1krun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppor1k$(PRG) cppor1ksim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppor1ksim.obf $(PREV)$(RUNTIME)or1krun.obf $(PREV)$(RUNTIME)or1ksimrun.obf $(PREV)$(RUNTIME)cppor1krun.lib && or1ksim -q -m 1m cppor1ksim" stdcpprun.tst cppor1ksim.tmp stdcppor1ksim.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppor1k$(PRG) cppor1ksim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppor1ksim.obf $(PREV)$(RUNTIME)or1krun.obf $(PREV)$(RUNTIME)or1ksimrun.obf $(PREV)$(RUNTIME)cppor1krun.lib && or1ksim -q -m 1m cppor1ksim" extcpprun.tst cppor1ksim.tmp extcppor1ksim.res
-	@cd $(TESTS) && $(RM) cppor1ksim.lst cppor1ksim.dbg cppor1ksim.obf cppor1ksim cppor1ksim.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppor1k$(PRG)) cppor1ksim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppor1ksim.obf $(abspath $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf $(RUNTIME)cppor1krun.lib) && or1ksim -q -m 1m cppor1ksim" stdcpprun.tst cppor1ksim.tmp stdcppor1ksim.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppor1k$(PRG)) cppor1ksim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppor1ksim.obf $(abspath $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf $(RUNTIME)cppor1krun.lib) && or1ksim -q -m 1m cppor1ksim" extcpprun.tst cppor1ksim.tmp extcppor1ksim.res
 	@$(TC) $@
 
 $(TESTS)falor1ksim: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falor1k$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falor1k$(PRG) falor1ksim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falor1ksim.obf $(PREV)$(RUNTIME)or1krun.obf $(PREV)$(RUNTIME)or1ksimrun.obf && or1ksim -q -m 1m falor1ksim" falrun.tst falor1ksim.tmp falor1ksim.res
-	@cd $(TESTS) && $(RM) falor1ksim.dbg falor1ksim.obf falor1ksim falor1ksim.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falor1k$(PRG)) falor1ksim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falor1ksim.obf $(abspath $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf) && or1ksim -q -m 1m falor1ksim" falrun.tst falor1ksim.tmp falor1ksim.res
 	@$(TC) $@
 
-$(TESTS)obor1ksim: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obor1k$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf $(RUNTIME)obor1krun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obor1k$(PRG) obor1ksim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obor1ksim.obf $(PREV)$(RUNTIME)or1krun.obf $(PREV)$(RUNTIME)or1ksimrun.obf $(PREV)$(RUNTIME)obor1krun.lib && or1ksim -q -m 1m obor1ksim" stdobrun.tst obor1ksim.tmp stdobor1ksim.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obor1k$(PRG) obor1ksim.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obor1ksim.obf $(PREV)$(RUNTIME)or1krun.obf $(PREV)$(RUNTIME)or1ksimrun.obf $(PREV)$(RUNTIME)obor1krun.lib && or1ksim -q -m 1m obor1ksim" extobrun.tst obor1ksim.tmp extobor1ksim.res
-	@cd $(TESTS) && $(RM) test.sym obor1ksim.lst obor1ksim.dbg obor1ksim.obf obor1ksim obor1ksim.map
+$(TESTS)obor1ksim: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obor1k$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obor1k$(PRG)) obor1ksim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obor1ksim.obf $(abspath $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf) && or1ksim -q -m 1m obor1ksim" stdobrun.tst obor1ksim.tmp stdobor1ksim.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obor1k$(PRG)) obor1ksim.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obor1ksim.obf $(abspath $(RUNTIME)or1krun.obf $(RUNTIME)or1ksimrun.obf) && or1ksim -q -m 1m obor1ksim" extobrun.tst obor1ksim.tmp extobor1ksim.res
 	@$(TC) $@
 
 .PHONY: osx32tests
 osx32tests: $(addprefix $(TESTS), cdosx32 cpposx32 falosx32 obosx32)
 
 $(TESTS)cdosx32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd32$(PRG) cdosx32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdosx32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)osx32run.obf && chmod +x cdosx32 && $(PREV)$(TESTS)cdosx32" cdrun.tst cdosx32.tmp cdosx32.res
-	@cd $(TESTS) && $(RM) cdosx32.lst cdosx32.dbg cdosx32.obf cdosx32 cdosx32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd32$(PRG)) cdosx32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdosx32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf) && chmod +x cdosx32 && $(CURR)cdosx32" cdrun.tst cdosx32.tmp cdosx32.res
 	@$(TC) $@
 
 $(TESTS)cpposx32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf $(RUNTIME)cppamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cpposx32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpposx32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)osx32run.obf $(PREV)$(RUNTIME)cppamd32run.lib && chmod +x cpposx32 && $(PREV)$(TESTS)cpposx32" stdcpprun.tst cpposx32.tmp stdcpposx32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cpposx32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpposx32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)osx32run.obf $(PREV)$(RUNTIME)cppamd32run.lib && chmod +x cpposx32 && $(PREV)$(TESTS)cpposx32" extcpprun.tst cpposx32.tmp extcpposx32.res
-	@cd $(TESTS) && $(RM) cpposx32.lst cpposx32.dbg cpposx32.obf cpposx32 cpposx32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cpposx32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpposx32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf $(RUNTIME)cppamd32run.lib) && chmod +x cpposx32 && $(CURR)cpposx32" stdcpprun.tst cpposx32.tmp stdcpposx32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cpposx32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpposx32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf $(RUNTIME)cppamd32run.lib) && chmod +x cpposx32 && $(CURR)cpposx32" extcpprun.tst cpposx32.tmp extcpposx32.res
 	@$(TC) $@
 
 $(TESTS)falosx32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd32$(PRG) falosx32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falosx32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)osx32run.obf && chmod +x falosx32 && $(PREV)$(TESTS)falosx32" falrun.tst falosx32.tmp falosx32.res
-	@cd $(TESTS) && $(RM) falosx32.dbg falosx32.obf falosx32 falosx32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd32$(PRG)) falosx32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falosx32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf) && chmod +x falosx32 && $(CURR)falosx32" falrun.tst falosx32.tmp falosx32.res
 	@$(TC) $@
 
-$(TESTS)obosx32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf $(RUNTIME)obamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obosx32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obosx32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)osx32run.obf $(PREV)$(RUNTIME)obamd32run.lib && chmod +x obosx32 && $(PREV)$(TESTS)obosx32" stdobrun.tst obosx32.tmp stdobosx32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obosx32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obosx32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)osx32run.obf $(PREV)$(RUNTIME)obamd32run.lib && chmod +x obosx32 && $(PREV)$(TESTS)obosx32" extobrun.tst obosx32.tmp extobosx32.res
-	@cd $(TESTS) && $(RM) test.sym obosx32.lst obosx32.dbg obosx32.obf obosx32 obosx32.map
+$(TESTS)obosx32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obosx32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obosx32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf) && chmod +x obosx32 && $(CURR)obosx32" stdobrun.tst obosx32.tmp stdobosx32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obosx32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obosx32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)osx32run.obf) && chmod +x obosx32 && $(CURR)obosx32" extobrun.tst obosx32.tmp extobosx32.res
 	@$(TC) $@
 
 .PHONY: osx64tests
 osx64tests: $(addprefix $(TESTS), cdosx64 cpposx64 falosx64 obosx64)
 
 $(TESTS)cdosx64: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd64$(PRG) cdosx64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdosx64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)osx64run.obf && chmod +x cdosx64 && $(PREV)$(TESTS)cdosx64" cdrun.tst cdosx64.tmp cdosx64.res
-	@cd $(TESTS) && $(RM) cdosx64.lst cdosx64.dbg cdosx64.obf cdosx64 cdosx64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd64$(PRG)) cdosx64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdosx64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf) && chmod +x cdosx64 && $(CURR)cdosx64" cdrun.tst cdosx64.tmp cdosx64.res
 	@$(TC) $@
 
 $(TESTS)cpposx64: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf $(RUNTIME)cppamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cpposx64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpposx64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)osx64run.obf $(PREV)$(RUNTIME)cppamd64run.lib && chmod +x cpposx64 && $(PREV)$(TESTS)cpposx64" stdcpprun.tst cpposx64.tmp stdcpposx64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cpposx64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cpposx64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)osx64run.obf $(PREV)$(RUNTIME)cppamd64run.lib && chmod +x cpposx64 && $(PREV)$(TESTS)cpposx64" extcpprun.tst cpposx64.tmp extcpposx64.res
-	@cd $(TESTS) && $(RM) cpposx64.lst cpposx64.dbg cpposx64.obf cpposx64 cpposx64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cpposx64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpposx64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf $(RUNTIME)cppamd64run.lib) && chmod +x cpposx64 && $(CURR)cpposx64" stdcpprun.tst cpposx64.tmp stdcpposx64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cpposx64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cpposx64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf $(RUNTIME)cppamd64run.lib) && chmod +x cpposx64 && $(CURR)cpposx64" extcpprun.tst cpposx64.tmp extcpposx64.res
 	@$(TC) $@
 
 $(TESTS)falosx64: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd64$(PRG) falosx64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falosx64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)osx64run.obf && chmod +x falosx64 && $(PREV)$(TESTS)falosx64" falrun.tst falosx64.tmp falosx64.res
-	@cd $(TESTS) && $(RM) falosx64.dbg falosx64.obf falosx64 falosx64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd64$(PRG)) falosx64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falosx64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf) && chmod +x falosx64 && $(CURR)falosx64" falrun.tst falosx64.tmp falosx64.res
 	@$(TC) $@
 
-$(TESTS)obosx64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf $(RUNTIME)obamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obosx64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obosx64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)osx64run.obf $(PREV)$(RUNTIME)obamd64run.lib && chmod +x obosx64 && $(PREV)$(TESTS)obosx64" stdobrun.tst obosx64.tmp stdobosx64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obosx64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obosx64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)osx64run.obf $(PREV)$(RUNTIME)obamd64run.lib && chmod +x obosx64 && $(PREV)$(TESTS)obosx64" extobrun.tst obosx64.tmp extobosx64.res
-	@cd $(TESTS) && $(RM) test.sym obosx64.lst obosx64.dbg obosx64.obf obosx64 obosx64.map
+$(TESTS)obosx64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obosx64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obosx64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf) && chmod +x obosx64 && $(CURR)obosx64" stdobrun.tst obosx64.tmp stdobosx64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obosx64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obosx64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)osx64run.obf) && chmod +x obosx64 && $(CURR)obosx64" extobrun.tst obosx64.tmp extobosx64.res
 	@$(TC) $@
+
+.PHONY: qemutests
+qemutests: qemuamd32tests qemuamd64tests qemuarma32tests qemuarma64tests qemuarmt32tests qemuarmt32fpetests qemumips32tests
 
 .PHONY: qemuamd32tests
 qemuamd32tests: $(addprefix $(TESTS), cdqemuamd32 cppqemuamd32 falqemuamd32 obqemuamd32)
 
 $(TESTS)cdqemuamd32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd32$(PRG) cdqemuamd32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemuamd32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf && chmod +x cdqemuamd32 && qemu-i386 cdqemuamd32" cdrun.tst cdqemuamd32.tmp cdqemuamd32.res
-	@cd $(TESTS) && $(RM) cdqemuamd32.lst cdqemuamd32.dbg cdqemuamd32.obf cdqemuamd32 cdqemuamd32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd32$(PRG)) cdqemuamd32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuamd32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x cdqemuamd32 && qemu-i386 cdqemuamd32" cdrun.tst cdqemuamd32.tmp cdqemuamd32.res
 	@$(TC) $@
 
 $(TESTS)cppqemuamd32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)cppamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cppqemuamd32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuamd32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)cppamd32run.lib && chmod +x cppqemuamd32 && qemu-i386 cppqemuamd32" stdcpprun.tst cppqemuamd32.tmp stdcppqemuamd32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cppqemuamd32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuamd32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)cppamd32run.lib && chmod +x cppqemuamd32 && qemu-i386 cppqemuamd32" extcpprun.tst cppqemuamd32.tmp extcppqemuamd32.res
-	@cd $(TESTS) && $(RM) cppqemuamd32.lst cppqemuamd32.dbg cppqemuamd32.obf cppqemuamd32 cppqemuamd32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cppqemuamd32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuamd32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)cppamd32run.lib) && chmod +x cppqemuamd32 && qemu-i386 cppqemuamd32" stdcpprun.tst cppqemuamd32.tmp stdcppqemuamd32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cppqemuamd32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuamd32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)cppamd32run.lib) && chmod +x cppqemuamd32 && qemu-i386 cppqemuamd32" extcpprun.tst cppqemuamd32.tmp extcppqemuamd32.res
 	@$(TC) $@
 
 $(TESTS)falqemuamd32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd32$(PRG) falqemuamd32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemuamd32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf && chmod +x falqemuamd32 && qemu-i386 falqemuamd32" falrun.tst falqemuamd32.tmp falqemuamd32.res
-	@cd $(TESTS) && $(RM) falqemuamd32.dbg falqemuamd32.obf falqemuamd32 falqemuamd32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd32$(PRG)) falqemuamd32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuamd32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x falqemuamd32 && qemu-i386 falqemuamd32" falrun.tst falqemuamd32.tmp falqemuamd32.res
 	@$(TC) $@
 
-$(TESTS)obqemuamd32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf $(RUNTIME)obamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obqemuamd32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuamd32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)obamd32run.lib && chmod +x obqemuamd32 && qemu-i386 obqemuamd32" stdobrun.tst obqemuamd32.tmp stdobqemuamd32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obqemuamd32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuamd32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)amd32linuxrun.obf $(PREV)$(RUNTIME)obamd32run.lib && chmod +x obqemuamd32 && qemu-i386 obqemuamd32" extobrun.tst obqemuamd32.tmp extobqemuamd32.res
-	@cd $(TESTS) && $(RM) test.sym obqemuamd32.lst obqemuamd32.dbg obqemuamd32.obf obqemuamd32 obqemuamd32.map
+$(TESTS)obqemuamd32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obqemuamd32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuamd32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x obqemuamd32 && qemu-i386 obqemuamd32" stdobrun.tst obqemuamd32.tmp stdobqemuamd32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obqemuamd32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuamd32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)amd32linuxrun.obf) && chmod +x obqemuamd32 && qemu-i386 obqemuamd32" extobrun.tst obqemuamd32.tmp extobqemuamd32.res
 	@$(TC) $@
 
 .PHONY: qemuamd64tests
 qemuamd64tests: $(addprefix $(TESTS), cdqemuamd64 cppqemuamd64 falqemuamd64 obqemuamd64)
 
 $(TESTS)cdqemuamd64: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd64$(PRG) cdqemuamd64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemuamd64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf && chmod +x cdqemuamd64 && qemu-x86_64 cdqemuamd64" cdrun.tst cdqemuamd64.tmp cdqemuamd64.res
-	@cd $(TESTS) && $(RM) cdqemuamd64.lst cdqemuamd64.dbg cdqemuamd64.obf cdqemuamd64 cdqemuamd64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd64$(PRG)) cdqemuamd64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuamd64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x cdqemuamd64 && qemu-x86_64 cdqemuamd64" cdrun.tst cdqemuamd64.tmp cdqemuamd64.res
 	@$(TC) $@
 
 $(TESTS)cppqemuamd64: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)cppamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cppqemuamd64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuamd64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)cppamd64run.lib && chmod +x cppqemuamd64 && qemu-x86_64 cppqemuamd64" stdcpprun.tst cppqemuamd64.tmp stdcppqemuamd64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cppqemuamd64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuamd64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)cppamd64run.lib && chmod +x cppqemuamd64 && qemu-x86_64 cppqemuamd64" extcpprun.tst cppqemuamd64.tmp extcppqemuamd64.res
-	@cd $(TESTS) && $(RM) cppqemuamd64.lst cppqemuamd64.dbg cppqemuamd64.obf cppqemuamd64 cppqemuamd64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cppqemuamd64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuamd64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)cppamd64run.lib) && chmod +x cppqemuamd64 && qemu-x86_64 cppqemuamd64" stdcpprun.tst cppqemuamd64.tmp stdcppqemuamd64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cppqemuamd64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuamd64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)cppamd64run.lib) && chmod +x cppqemuamd64 && qemu-x86_64 cppqemuamd64" extcpprun.tst cppqemuamd64.tmp extcppqemuamd64.res
 	@$(TC) $@
 
 $(TESTS)falqemuamd64: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd64$(PRG) falqemuamd64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemuamd64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf && chmod +x falqemuamd64 && qemu-x86_64 falqemuamd64" falrun.tst falqemuamd64.tmp falqemuamd64.res
-	@cd $(TESTS) && $(RM) falqemuamd64.dbg falqemuamd64.obf falqemuamd64 falqemuamd64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd64$(PRG)) falqemuamd64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuamd64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x falqemuamd64 && qemu-x86_64 falqemuamd64" falrun.tst falqemuamd64.tmp falqemuamd64.res
 	@$(TC) $@
 
-$(TESTS)obqemuamd64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf $(RUNTIME)obamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obqemuamd64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuamd64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)obamd64run.lib && chmod +x obqemuamd64 && qemu-x86_64 obqemuamd64" stdobrun.tst obqemuamd64.tmp stdobqemuamd64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obqemuamd64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuamd64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)amd64linuxrun.obf $(PREV)$(RUNTIME)obamd64run.lib && chmod +x obqemuamd64 && qemu-x86_64 obqemuamd64" extobrun.tst obqemuamd64.tmp extobqemuamd64.res
-	@cd $(TESTS) && $(RM) test.sym obqemuamd64.lst obqemuamd64.dbg obqemuamd64.obf obqemuamd64 obqemuamd64.map
+$(TESTS)obqemuamd64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obqemuamd64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuamd64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x obqemuamd64 && qemu-x86_64 obqemuamd64" stdobrun.tst obqemuamd64.tmp stdobqemuamd64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obqemuamd64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuamd64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)amd64linuxrun.obf) && chmod +x obqemuamd64 && qemu-x86_64 obqemuamd64" extobrun.tst obqemuamd64.tmp extobqemuamd64.res
 	@$(TC) $@
 
 .PHONY: qemuarma32tests
 qemuarma32tests: $(addprefix $(TESTS), cdqemuarma32 cppqemuarma32 falqemuarma32 obqemuarma32)
 
 $(TESTS)cdqemuarma32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarma32$(PRG) cdqemuarma32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemuarma32.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf && chmod +x cdqemuarma32 && qemu-arm cdqemuarma32" cdrun.tst cdqemuarma32.tmp cdqemuarma32.res
-	@cd $(TESTS) && $(RM) cdqemuarma32.lst cdqemuarma32.dbg cdqemuarma32.obf cdqemuarma32 cdqemuarma32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarma32$(PRG)) cdqemuarma32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuarma32.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x cdqemuarma32 && qemu-arm cdqemuarma32" cdrun.tst cdqemuarma32.tmp cdqemuarma32.res
 	@$(TC) $@
 
 $(TESTS)cppqemuarma32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)cpparma32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma32$(PRG) cppqemuarma32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarma32.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)cpparma32run.lib && chmod +x cppqemuarma32 && qemu-arm cppqemuarma32" stdcpprun.tst cppqemuarma32.tmp stdcppqemuarma32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma32$(PRG) cppqemuarma32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarma32.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)cpparma32run.lib && chmod +x cppqemuarma32 && qemu-arm cppqemuarma32" extcpprun.tst cppqemuarma32.tmp extcppqemuarma32.res
-	@cd $(TESTS) && $(RM) cppqemuarma32.lst cppqemuarma32.dbg cppqemuarma32.obf cppqemuarma32 cppqemuarma32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma32$(PRG)) cppqemuarma32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarma32.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)cpparma32run.lib) && chmod +x cppqemuarma32 && qemu-arm cppqemuarma32" stdcpprun.tst cppqemuarma32.tmp stdcppqemuarma32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma32$(PRG)) cppqemuarma32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarma32.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)cpparma32run.lib) && chmod +x cppqemuarma32 && qemu-arm cppqemuarma32" extcpprun.tst cppqemuarma32.tmp extcppqemuarma32.res
 	@$(TC) $@
 
 $(TESTS)falqemuarma32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarma32$(PRG) falqemuarma32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemuarma32.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf && chmod +x falqemuarma32 && qemu-arm falqemuarma32" falrun.tst falqemuarma32.tmp falqemuarma32.res
-	@cd $(TESTS) && $(RM) falqemuarma32.dbg falqemuarma32.obf falqemuarma32 falqemuarma32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarma32$(PRG)) falqemuarma32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuarma32.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x falqemuarma32 && qemu-arm falqemuarma32" falrun.tst falqemuarma32.tmp falqemuarma32.res
 	@$(TC) $@
 
-$(TESTS)obqemuarma32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf $(RUNTIME)obarma32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma32$(PRG) obqemuarma32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarma32.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)obarma32run.lib && chmod +x obqemuarma32 && qemu-arm obqemuarma32" stdobrun.tst obqemuarma32.tmp stdobqemuarma32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma32$(PRG) obqemuarma32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarma32.obf $(PREV)$(RUNTIME)arma32run.obf $(PREV)$(RUNTIME)arma32linuxrun.obf $(PREV)$(RUNTIME)obarma32run.lib && chmod +x obqemuarma32 && qemu-arm obqemuarma32" extobrun.tst obqemuarma32.tmp extobqemuarma32.res
-	@cd $(TESTS) && $(RM) test.sym obqemuarma32.lst obqemuarma32.dbg obqemuarma32.obf obqemuarma32 obqemuarma32.map
+$(TESTS)obqemuarma32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarma32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma32$(PRG)) obqemuarma32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarma32.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x obqemuarma32 && qemu-arm obqemuarma32" stdobrun.tst obqemuarma32.tmp stdobqemuarma32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma32$(PRG)) obqemuarma32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarma32.obf $(abspath $(RUNTIME)arma32run.obf $(RUNTIME)arma32linuxrun.obf) && chmod +x obqemuarma32 && qemu-arm obqemuarma32" extobrun.tst obqemuarma32.tmp extobqemuarma32.res
 	@$(TC) $@
 
 .PHONY: qemuarma64tests
 qemuarma64tests: $(addprefix $(TESTS), cdqemuarma64 cppqemuarma64 falqemuarma64 obqemuarma64)
 
 $(TESTS)cdqemuarma64: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarma64$(PRG) cdqemuarma64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemuarma64.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf && chmod +x cdqemuarma64 && qemu-aarch64 cdqemuarma64" cdrun.tst cdqemuarma64.tmp cdqemuarma64.res
-	@cd $(TESTS) && $(RM) cdqemuarma64.lst cdqemuarma64.dbg cdqemuarma64.obf cdqemuarma64 cdqemuarma64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarma64$(PRG)) cdqemuarma64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuarma64.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x cdqemuarma64 && qemu-aarch64 cdqemuarma64" cdrun.tst cdqemuarma64.tmp cdqemuarma64.res
 	@$(TC) $@
 
 $(TESTS)cppqemuarma64: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)cpparma64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma64$(PRG) cppqemuarma64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarma64.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)cpparma64run.lib && chmod +x cppqemuarma64 && qemu-aarch64 cppqemuarma64" stdcpprun.tst cppqemuarma64.tmp stdcppqemuarma64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparma64$(PRG) cppqemuarma64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarma64.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)cpparma64run.lib && chmod +x cppqemuarma64 && qemu-aarch64 cppqemuarma64" extcpprun.tst cppqemuarma64.tmp extcppqemuarma64.res
-	@cd $(TESTS) && $(RM) cppqemuarma64.lst cppqemuarma64.dbg cppqemuarma64.obf cppqemuarma64 cppqemuarma64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma64$(PRG)) cppqemuarma64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarma64.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)cpparma64run.lib) && chmod +x cppqemuarma64 && qemu-aarch64 cppqemuarma64" stdcpprun.tst cppqemuarma64.tmp stdcppqemuarma64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparma64$(PRG)) cppqemuarma64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarma64.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)cpparma64run.lib) && chmod +x cppqemuarma64 && qemu-aarch64 cppqemuarma64" extcpprun.tst cppqemuarma64.tmp extcppqemuarma64.res
 	@$(TC) $@
 
 $(TESTS)falqemuarma64: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarma64$(PRG) falqemuarma64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemuarma64.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf && chmod +x falqemuarma64 && qemu-aarch64 falqemuarma64" falrun.tst falqemuarma64.tmp falqemuarma64.res
-	@cd $(TESTS) && $(RM) falqemuarma64.dbg falqemuarma64.obf falqemuarma64 falqemuarma64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarma64$(PRG)) falqemuarma64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuarma64.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x falqemuarma64 && qemu-aarch64 falqemuarma64" falrun.tst falqemuarma64.tmp falqemuarma64.res
 	@$(TC) $@
 
-$(TESTS)obqemuarma64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf $(RUNTIME)obarma64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma64$(PRG) obqemuarma64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarma64.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)obarma64run.lib && chmod +x obqemuarma64 && qemu-aarch64 obqemuarma64" stdobrun.tst obqemuarma64.tmp stdobqemuarma64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarma64$(PRG) obqemuarma64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarma64.obf $(PREV)$(RUNTIME)arma64run.obf $(PREV)$(RUNTIME)arma64linuxrun.obf $(PREV)$(RUNTIME)obarma64run.lib && chmod +x obqemuarma64 && qemu-aarch64 obqemuarma64" extobrun.tst obqemuarma64.tmp extobqemuarma64.res
-	@cd $(TESTS) && $(RM) test.sym obqemuarma64.lst obqemuarma64.dbg obqemuarma64.obf obqemuarma64 obqemuarma64.map
+$(TESTS)obqemuarma64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obarma64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma64$(PRG)) obqemuarma64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarma64.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x obqemuarma64 && qemu-aarch64 obqemuarma64" stdobrun.tst obqemuarma64.tmp stdobqemuarma64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarma64$(PRG)) obqemuarma64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarma64.obf $(abspath $(RUNTIME)arma64run.obf $(RUNTIME)arma64linuxrun.obf) && chmod +x obqemuarma64 && qemu-aarch64 obqemuarma64" extobrun.tst obqemuarma64.tmp extobqemuarma64.res
 	@$(TC) $@
 
 .PHONY: qemuarmt32tests
 qemuarmt32tests: $(addprefix $(TESTS), cdqemuarmt32 cppqemuarmt32 falqemuarmt32 obqemuarmt32)
 
 $(TESTS)cdqemuarmt32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarmt32$(PRG) cdqemuarmt32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemuarmt32.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf && chmod +x cdqemuarmt32 && qemu-arm cdqemuarmt32" cdrun.tst cdqemuarmt32.tmp cdqemuarmt32.res
-	@cd $(TESTS) && $(RM) cdqemuarmt32.lst cdqemuarmt32.dbg cdqemuarmt32.obf cdqemuarmt32 cdqemuarmt32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarmt32$(PRG)) cdqemuarmt32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuarmt32.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x cdqemuarmt32 && qemu-arm cdqemuarmt32" cdrun.tst cdqemuarmt32.tmp cdqemuarmt32.res
 	@$(TC) $@
 
 $(TESTS)cppqemuarmt32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)cpparmt32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32$(PRG) cppqemuarmt32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarmt32.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)cpparmt32run.lib && chmod +x cppqemuarmt32 && qemu-arm cppqemuarmt32" stdcpprun.tst cppqemuarmt32.tmp stdcppqemuarmt32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32$(PRG) cppqemuarmt32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarmt32.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)cpparmt32run.lib && chmod +x cppqemuarmt32 && qemu-arm cppqemuarmt32" extcpprun.tst cppqemuarmt32.tmp extcppqemuarmt32.res
-	@cd $(TESTS) && $(RM) cppqemuarmt32.lst cppqemuarmt32.dbg cppqemuarmt32.obf cppqemuarmt32 cppqemuarmt32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32$(PRG)) cppqemuarmt32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarmt32.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)cpparmt32run.lib) && chmod +x cppqemuarmt32 && qemu-arm cppqemuarmt32" stdcpprun.tst cppqemuarmt32.tmp stdcppqemuarmt32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32$(PRG)) cppqemuarmt32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarmt32.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)cpparmt32run.lib) && chmod +x cppqemuarmt32 && qemu-arm cppqemuarmt32" extcpprun.tst cppqemuarmt32.tmp extcppqemuarmt32.res
 	@$(TC) $@
 
 $(TESTS)falqemuarmt32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarmt32$(PRG) falqemuarmt32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemuarmt32.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf && chmod +x falqemuarmt32 && qemu-arm falqemuarmt32" falrun.tst falqemuarmt32.tmp falqemuarmt32.res
-	@cd $(TESTS) && $(RM) falqemuarmt32.dbg falqemuarmt32.obf falqemuarmt32 falqemuarmt32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarmt32$(PRG)) falqemuarmt32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuarmt32.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x falqemuarmt32 && qemu-arm falqemuarmt32" falrun.tst falqemuarmt32.tmp falqemuarmt32.res
 	@$(TC) $@
 
-$(TESTS)obqemuarmt32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf $(RUNTIME)obarmt32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32$(PRG) obqemuarmt32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarmt32.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)obarmt32run.lib && chmod +x obqemuarmt32 && qemu-arm obqemuarmt32" stdobrun.tst obqemuarmt32.tmp stdobqemuarmt32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32$(PRG) obqemuarmt32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarmt32.obf $(PREV)$(RUNTIME)armt32run.obf $(PREV)$(RUNTIME)armt32linuxrun.obf $(PREV)$(RUNTIME)obarmt32run.lib && chmod +x obqemuarmt32 && qemu-arm obqemuarmt32" extobrun.tst obqemuarmt32.tmp extobqemuarmt32.res
-	@cd $(TESTS) && $(RM) test.sym obqemuarmt32.lst obqemuarmt32.dbg obqemuarmt32.obf obqemuarmt32 obqemuarmt32.map
+$(TESTS)obqemuarmt32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32$(PRG)) obqemuarmt32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarmt32.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x obqemuarmt32 && qemu-arm obqemuarmt32" stdobrun.tst obqemuarmt32.tmp stdobqemuarmt32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32$(PRG)) obqemuarmt32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarmt32.obf $(abspath $(RUNTIME)armt32run.obf $(RUNTIME)armt32linuxrun.obf) && chmod +x obqemuarmt32 && qemu-arm obqemuarmt32" extobrun.tst obqemuarmt32.tmp extobqemuarmt32.res
 	@$(TC) $@
 
 .PHONY: qemuarmt32fpetests
 qemuarmt32fpetests: $(addprefix $(TESTS), cdqemuarmt32fpe cppqemuarmt32fpe falqemuarmt32fpe obqemuarmt32fpe)
 
 $(TESTS)cdqemuarmt32fpe: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdarmt32fpe$(PRG) cdqemuarmt32fpe.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemuarmt32fpe.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf && chmod +x cdqemuarmt32fpe && qemu-arm cdqemuarmt32fpe" cdrun.tst cdqemuarmt32fpe.tmp cdqemuarmt32fpe.res
-	@cd $(TESTS) && $(RM) cdqemuarmt32fpe.lst cdqemuarmt32fpe.dbg cdqemuarmt32fpe.obf cdqemuarmt32fpe cdqemuarmt32fpe.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdarmt32fpe$(PRG)) cdqemuarmt32fpe.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuarmt32fpe.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x cdqemuarmt32fpe && qemu-arm cdqemuarmt32fpe" cdrun.tst cdqemuarmt32fpe.tmp cdqemuarmt32fpe.res
 	@$(TC) $@
 
 $(TESTS)cppqemuarmt32fpe: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cpparmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)cpparmt32fperun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32fpe$(PRG) cppqemuarmt32fpe.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarmt32fpe.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)cpparmt32fperun.lib && chmod +x cppqemuarmt32fpe && qemu-arm cppqemuarmt32fpe" stdcpprun.tst cppqemuarmt32fpe.tmp stdcppqemuarmt32fpe.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cpparmt32fpe$(PRG) cppqemuarmt32fpe.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemuarmt32fpe.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)cpparmt32fperun.lib && chmod +x cppqemuarmt32fpe && qemu-arm cppqemuarmt32fpe" extcpprun.tst cppqemuarmt32fpe.tmp extcppqemuarmt32fpe.res
-	@cd $(TESTS) && $(RM) cppqemuarmt32fpe.lst cppqemuarmt32fpe.dbg cppqemuarmt32fpe.obf cppqemuarmt32fpe cppqemuarmt32fpe.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32fpe$(PRG)) cppqemuarmt32fpe.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarmt32fpe.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)cpparmt32fperun.lib) && chmod +x cppqemuarmt32fpe && qemu-arm cppqemuarmt32fpe" stdcpprun.tst cppqemuarmt32fpe.tmp stdcppqemuarmt32fpe.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cpparmt32fpe$(PRG)) cppqemuarmt32fpe.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuarmt32fpe.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)cpparmt32fperun.lib) && chmod +x cppqemuarmt32fpe && qemu-arm cppqemuarmt32fpe" extcpprun.tst cppqemuarmt32fpe.tmp extcppqemuarmt32fpe.res
 	@$(TC) $@
 
 $(TESTS)falqemuarmt32fpe: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falarmt32fpe$(PRG) falqemuarmt32fpe.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemuarmt32fpe.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf && chmod +x falqemuarmt32fpe && qemu-arm falqemuarmt32fpe" falrun.tst falqemuarmt32fpe.tmp falqemuarmt32fpe.res
-	@cd $(TESTS) && $(RM) falqemuarmt32fpe.dbg falqemuarmt32fpe.obf falqemuarmt32fpe falqemuarmt32fpe.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falarmt32fpe$(PRG)) falqemuarmt32fpe.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuarmt32fpe.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x falqemuarmt32fpe && qemu-arm falqemuarmt32fpe" falrun.tst falqemuarmt32fpe.tmp falqemuarmt32fpe.res
 	@$(TC) $@
 
-$(TESTS)obqemuarmt32fpe: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf $(RUNTIME)obarmt32fperun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32fpe$(PRG) obqemuarmt32fpe.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarmt32fpe.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)obarmt32fperun.lib && chmod +x obqemuarmt32fpe && qemu-arm obqemuarmt32fpe" stdobrun.tst obqemuarmt32fpe.tmp stdobqemuarmt32fpe.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obarmt32fpe$(PRG) obqemuarmt32fpe.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemuarmt32fpe.obf $(PREV)$(RUNTIME)armt32fperun.obf $(PREV)$(RUNTIME)armt32fpelinuxrun.obf $(PREV)$(RUNTIME)obarmt32fperun.lib && chmod +x obqemuarmt32fpe && qemu-arm obqemuarmt32fpe" extobrun.tst obqemuarmt32fpe.tmp extobqemuarmt32fpe.res
-	@cd $(TESTS) && $(RM) test.sym obqemuarmt32fpe.lst obqemuarmt32fpe.dbg obqemuarmt32fpe.obf obqemuarmt32fpe obqemuarmt32fpe.map
+$(TESTS)obqemuarmt32fpe: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TOOLS)obarmt32fpe$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32fpe$(PRG)) obqemuarmt32fpe.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarmt32fpe.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x obqemuarmt32fpe && qemu-arm obqemuarmt32fpe" stdobrun.tst obqemuarmt32fpe.tmp stdobqemuarmt32fpe.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obarmt32fpe$(PRG)) obqemuarmt32fpe.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuarmt32fpe.obf $(abspath $(RUNTIME)armt32fperun.obf $(RUNTIME)armt32fpelinuxrun.obf) && chmod +x obqemuarmt32fpe && qemu-arm obqemuarmt32fpe" extobrun.tst obqemuarmt32fpe.tmp extobqemuarmt32fpe.res
 	@$(TC) $@
 
 .PHONY: qemumips32tests
 qemumips32tests: $(addprefix $(TESTS), cdqemumips32 cppqemumips32 falqemumips32 obqemumips32)
 
 $(TESTS)cdqemumips32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdmips32$(PRG) cdqemumips32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdqemumips32.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf && chmod +x cdqemumips32 && qemu-mipsel cdqemumips32" cdrun.tst cdqemumips32.tmp cdqemumips32.res
-	@cd $(TESTS) && $(RM) cdqemumips32.lst cdqemumips32.dbg cdqemumips32.obf cdqemumips32 cdqemumips32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdmips32$(PRG)) cdqemumips32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemumips32.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x cdqemumips32 && qemu-mipsel cdqemumips32" cdrun.tst cdqemumips32.tmp cdqemumips32.res
 	@$(TC) $@
 
 $(TESTS)cppqemumips32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)cppmips32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppmips32$(PRG) cppqemumips32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemumips32.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)cppmips32run.lib && chmod +x cppqemumips32 && qemu-mipsel cppqemumips32" stdcpprun.tst cppqemumips32.tmp stdcppqemumips32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppmips32$(PRG) cppqemumips32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppqemumips32.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)cppmips32run.lib && chmod +x cppqemumips32 && qemu-mipsel cppqemumips32" extcpprun.tst cppqemumips32.tmp extcppqemumips32.res
-	@cd $(TESTS) && $(RM) cppqemumips32.lst cppqemumips32.dbg cppqemumips32.obf cppqemumips32 cppqemumips32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppmips32$(PRG)) cppqemumips32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemumips32.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)cppmips32run.lib) && chmod +x cppqemumips32 && qemu-mipsel cppqemumips32" stdcpprun.tst cppqemumips32.tmp stdcppqemumips32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppmips32$(PRG)) cppqemumips32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemumips32.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)cppmips32run.lib) && chmod +x cppqemumips32 && qemu-mipsel cppqemumips32" extcpprun.tst cppqemumips32.tmp extcppqemumips32.res
 	@$(TC) $@
 
 $(TESTS)falqemumips32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falmips32$(PRG) falqemumips32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falqemumips32.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf && chmod +x falqemumips32 && qemu-mipsel falqemumips32" falrun.tst falqemumips32.tmp falqemumips32.res
-	@cd $(TESTS) && $(RM) falqemumips32.dbg falqemumips32.obf falqemumips32 falqemumips32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falmips32$(PRG)) falqemumips32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemumips32.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x falqemumips32 && qemu-mipsel falqemumips32" falrun.tst falqemumips32.tmp falqemumips32.res
 	@$(TC) $@
 
-$(TESTS)obqemumips32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf $(RUNTIME)obmips32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obmips32$(PRG) obqemumips32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemumips32.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)obmips32run.lib && chmod +x obqemumips32 && qemu-mipsel obqemumips32" stdobrun.tst obqemumips32.tmp stdobqemumips32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obmips32$(PRG) obqemumips32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obqemumips32.obf $(PREV)$(RUNTIME)mips32run.obf $(PREV)$(RUNTIME)mips32linuxrun.obf $(PREV)$(RUNTIME)obmips32run.lib && chmod +x obqemumips32 && qemu-mipsel obqemumips32" extobrun.tst obqemumips32.tmp extobqemumips32.res
-	@cd $(TESTS) && $(RM) test.sym obqemumips32.lst obqemumips32.dbg obqemumips32.obf obqemumips32 obqemumips32.map
+$(TESTS)obqemumips32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obmips32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obmips32$(PRG)) obqemumips32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemumips32.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x obqemumips32 && qemu-mipsel obqemumips32" stdobrun.tst obqemumips32.tmp stdobqemumips32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obmips32$(PRG)) obqemumips32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemumips32.obf $(abspath $(RUNTIME)mips32run.obf $(RUNTIME)mips32linuxrun.obf) && chmod +x obqemumips32 && qemu-mipsel obqemumips32" extobrun.tst obqemumips32.tmp extobqemumips32.res
+	@$(TC) $@
+
+.PHONY: qemuxtensatests
+qemuxtensatests: $(addprefix $(TESTS), cdqemuxtensa cppqemuxtensa falqemuxtensa obqemuxtensa)
+
+$(TESTS)cdqemuxtensa: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdxtensa$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdxtensa$(PRG)) cdqemuxtensa.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdqemuxtensa.obf $(abspath $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf) && chmod +x cdqemuxtensa && qemu-xtensa -cpu de233_fpu cdqemuxtensa" cdrun.tst cdqemuxtensa.tmp cdqemuxtensa.res
+	@$(TC) $@
+
+$(TESTS)cppqemuxtensa: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppxtensa$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf $(RUNTIME)cppxtensarun.lib
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppxtensa$(PRG)) cppqemuxtensa.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuxtensa.obf $(abspath $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf $(RUNTIME)cppxtensarun.lib) && chmod +x cppqemuxtensa && qemu-xtensa -cpu de233_fpu cppqemuxtensa" stdcpprun.tst cppqemuxtensa.tmp stdcppqemuxtensa.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppxtensa$(PRG)) cppqemuxtensa.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppqemuxtensa.obf $(abspath $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf $(RUNTIME)cppxtensarun.lib) && chmod +x cppqemuxtensa && qemu-xtensa -cpu de233_fpu cppqemuxtensa" extcpprun.tst cppqemuxtensa.tmp extcppqemuxtensa.res
+	@$(TC) $@
+
+$(TESTS)falqemuxtensa: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falxtensa$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falxtensa$(PRG)) falqemuxtensa.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falqemuxtensa.obf $(abspath $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf) && chmod +x falqemuxtensa && qemu-xtensa falqemuxtensa" falrun.tst falqemuxtensa.tmp falqemuxtensa.res
+	@$(TC) $@
+
+$(TESTS)obqemuxtensa: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obxtensa$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obxtensa$(PRG)) obqemuxtensa.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuxtensa.obf $(abspath $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf) && chmod +x obqemuxtensa && qemu-xtensa -cpu de233_fpu obqemuxtensa" stdobrun.tst obqemuxtensa.tmp stdobqemuxtensa.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obxtensa$(PRG)) obqemuxtensa.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obqemuxtensa.obf $(abspath $(RUNTIME)xtensarun.obf $(RUNTIME)xtensalinuxrun.obf) && chmod +x obqemuxtensa && qemu-xtensa -cpu de233_fpu obqemuxtensa" extobrun.tst obqemuxtensa.tmp extobqemuxtensa.res
 	@$(TC) $@
 
 .PHONY: webassemblytests
 webassemblytests: $(addprefix $(TESTS), cdwebassembly cppwebassembly falwebassembly obwebassembly)
 
 $(TESTS)cdwebassembly: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdwasm$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdwasm$(PRG) cdwebassembly.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdwebassembly.obf $(PREV)$(RUNTIME)wasmrun.obf $(PREV)$(RUNTIME)webassemblyrun.obf && wasm-interp cdwebassembly.wasm" cdrun.tst cdwebassembly.tmp cdwebassembly.res
-	@cd $(TESTS) && $(RM) cdwebassembly.lst cdwebassembly.dbg cdwebassembly.obf cdwebassembly.wasm cdwebassembly.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdwasm$(PRG)) cdwebassembly.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdwebassembly.obf $(abspath $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf) && wasm-interp cdwebassembly.wasm" cdrun.tst cdwebassembly.tmp cdwebassembly.res
 	@$(TC) $@
 
 $(TESTS)cppwebassembly: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppwasm$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf $(RUNTIME)cppwasmrun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppwasm$(PRG) cppwebassembly.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppwebassembly.obf $(PREV)$(RUNTIME)wasmrun.obf $(PREV)$(RUNTIME)webassemblyrun.obf $(PREV)$(RUNTIME)cppwasmrun.lib && wasm-interp cppwebassembly.wasm" stdcpprun.tst cppwebassembly.tmp stdcppwebassembly.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppwasm$(PRG) cppwebassembly.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppwebassembly.obf $(PREV)$(RUNTIME)wasmrun.obf $(PREV)$(RUNTIME)webassemblyrun.obf $(PREV)$(RUNTIME)cppwasmrun.lib && wasm-interp cppwebassembly.wasm" extcpprun.tst cppwebassembly.tmp extcppwebassembly.res
-	@cd $(TESTS) && $(RM) cppwebassembly.lst cppwebassembly.dbg cppwebassembly.obf cppwebassembly.wasm cppwebassembly.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppwasm$(PRG)) cppwebassembly.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppwebassembly.obf $(abspath $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf $(RUNTIME)cppwasmrun.lib) && wasm-interp cppwebassembly.wasm" stdcpprun.tst cppwebassembly.tmp stdcppwebassembly.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppwasm$(PRG)) cppwebassembly.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppwebassembly.obf $(abspath $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf $(RUNTIME)cppwasmrun.lib) && wasm-interp cppwebassembly.wasm" extcpprun.tst cppwebassembly.tmp extcppwebassembly.res
 	@$(TC) $@
 
 $(TESTS)falwebassembly: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falwasm$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falwasm$(PRG) falwebassembly.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falwebassembly.obf $(PREV)$(RUNTIME)wasmrun.obf $(PREV)$(RUNTIME)webassemblyrun.obf && wasm-interp falwebassembly.wasm" falrun.tst falwebassembly.tmp falwebassembly.res
-	@cd $(TESTS) && $(RM) falwebassembly.dbg falwebassembly.obf falwebassembly.wasm falwebassembly.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falwasm$(PRG)) falwebassembly.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falwebassembly.obf $(abspath $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf) && wasm-interp falwebassembly.wasm" falrun.tst falwebassembly.tmp falwebassembly.res
 	@$(TC) $@
 
-$(TESTS)obwebassembly: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obwasm$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf $(RUNTIME)obwasmrun.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obwasm$(PRG) obwebassembly.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obwebassembly.obf $(PREV)$(RUNTIME)wasmrun.obf $(PREV)$(RUNTIME)webassemblyrun.obf $(PREV)$(RUNTIME)obwasmrun.lib && wasm-interp obwebassembly.wasm" stdobrun.tst obwebassembly.tmp stdobwebassembly.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obwasm$(PRG) obwebassembly.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obwebassembly.obf $(PREV)$(RUNTIME)wasmrun.obf $(PREV)$(RUNTIME)webassemblyrun.obf $(PREV)$(RUNTIME)obwasmrun.lib && wasm-interp obwebassembly.wasm" extobrun.tst obwebassembly.tmp extobwebassembly.res
-	@cd $(TESTS) && $(RM) test.sym obwebassembly.lst obwebassembly.dbg obwebassembly.obf obwebassembly.wasm obwebassembly.map
+$(TESTS)obwebassembly: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obwasm$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obwasm$(PRG)) obwebassembly.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obwebassembly.obf $(abspath $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf) && wasm-interp obwebassembly.wasm" stdobrun.tst obwebassembly.tmp stdobwebassembly.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obwasm$(PRG)) obwebassembly.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obwebassembly.obf $(abspath $(RUNTIME)wasmrun.obf $(RUNTIME)webassemblyrun.obf) && wasm-interp obwebassembly.wasm" extobrun.tst obwebassembly.tmp extobwebassembly.res
 	@$(TC) $@
 
 .PHONY: win32tests
 win32tests: $(addprefix $(TESTS), cdwin32 cppwin32 falwin32 obwin32)
 
 $(TESTS)cdwin32: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd32$(PRG) cdwin32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdwin32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)win32run.obf && cdwin32.exe" cdrun.tst cdwin32.tmp cdwin32.res
-	@cd $(TESTS) && $(RM) cdwin32.lst cdwin32.dbg cdwin32.obf cdwin32.exe cdwin32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd32$(PRG)) cdwin32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdwin32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf) && cdwin32.exe" cdrun.tst cdwin32.tmp cdwin32.res
 	@$(TC) $@
 
 $(TESTS)cppwin32: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf $(RUNTIME)cppamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cppwin32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppwin32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)win32run.obf $(PREV)$(RUNTIME)cppamd32run.lib && cppwin32.exe" stdcpprun.tst cppwin32.tmp stdcppwin32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd32$(PRG) cppwin32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppwin32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)win32run.obf $(PREV)$(RUNTIME)cppamd32run.lib && cppwin32.exe" extcpprun.tst cppwin32.tmp extcppwin32.res
-	@cd $(TESTS) && $(RM) cppwin32.lst cppwin32.dbg cppwin32.obf cppwin32.exe cppwin32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cppwin32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppwin32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf $(RUNTIME)cppamd32run.lib) && cppwin32.exe" stdcpprun.tst cppwin32.tmp stdcppwin32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd32$(PRG)) cppwin32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppwin32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf $(RUNTIME)cppamd32run.lib) && cppwin32.exe" extcpprun.tst cppwin32.tmp extcppwin32.res
 	@$(TC) $@
 
 $(TESTS)falwin32: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd32$(PRG) falwin32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falwin32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)win32run.obf && falwin32.exe" falrun.tst falwin32.tmp falwin32.res
-	@cd $(TESTS) && $(RM) falwin32.dbg falwin32.obf falwin32.exe falwin32.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd32$(PRG)) falwin32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falwin32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf) && falwin32.exe" falrun.tst falwin32.tmp falwin32.res
 	@$(TC) $@
 
-$(TESTS)obwin32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf $(RUNTIME)obamd32run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obwin32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obwin32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)win32run.obf $(PREV)$(RUNTIME)obamd32run.lib && obwin32.exe" stdobrun.tst obwin32.tmp stdobwin32.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd32$(PRG) obwin32.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obwin32.obf $(PREV)$(RUNTIME)amd32run.obf $(PREV)$(RUNTIME)win32run.obf $(PREV)$(RUNTIME)obamd32run.lib && obwin32.exe" extobrun.tst obwin32.tmp extobwin32.res
-	@cd $(TESTS) && $(RM) test.sym obwin32.lst obwin32.dbg obwin32.obf obwin32.exe obwin32.map
+$(TESTS)obwin32: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd32$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obwin32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obwin32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf) && obwin32.exe" stdobrun.tst obwin32.tmp stdobwin32.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd32$(PRG)) obwin32.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obwin32.obf $(abspath $(RUNTIME)amd32run.obf $(RUNTIME)win32run.obf) && obwin32.exe" extobrun.tst obwin32.tmp extobwin32.res
 	@$(TC) $@
 
 .PHONY: win64tests
 win64tests: $(addprefix $(TESTS), cdwin64 cppwin64 falwin64 obwin64)
 
 $(TESTS)cdwin64: $(UTILITIES)regtest$(PRG) $(TESTS)cdrun.tst $(TOOLS)cdamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cdamd64$(PRG) cdwin64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cdwin64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)win64run.obf && cdwin64.exe" cdrun.tst cdwin64.tmp cdwin64.res
-	@cd $(TESTS) && $(RM) cdwin64.lst cdwin64.dbg cdwin64.obf cdwin64.exe cdwin64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cdamd64$(PRG)) cdwin64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cdwin64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf) && cdwin64.exe" cdrun.tst cdwin64.tmp cdwin64.res
 	@$(TC) $@
 
 $(TESTS)cppwin64: $(UTILITIES)regtest$(PRG) $(TESTS)stdcpprun.tst $(TESTS)extcpprun.tst $(TOOLS)cppamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf $(RUNTIME)cppamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cppwin64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppwin64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)win64run.obf $(PREV)$(RUNTIME)cppamd64run.lib && cppwin64.exe" stdcpprun.tst cppwin64.tmp stdcppwin64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)cppamd64$(PRG) cppwin64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) cppwin64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)win64run.obf $(PREV)$(RUNTIME)cppamd64run.lib && cppwin64.exe" extcpprun.tst cppwin64.tmp extcppwin64.res
-	@cd $(TESTS) && $(RM) cppwin64.lst cppwin64.dbg cppwin64.obf cppwin64.exe cppwin64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cppwin64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppwin64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf $(RUNTIME)cppamd64run.lib) && cppwin64.exe" stdcpprun.tst cppwin64.tmp stdcppwin64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)cppamd64$(PRG)) cppwin64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) cppwin64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf $(RUNTIME)cppamd64run.lib) && cppwin64.exe" extcpprun.tst cppwin64.tmp extcppwin64.res
 	@$(TC) $@
 
 $(TESTS)falwin64: $(UTILITIES)regtest$(PRG) $(TESTS)falrun.tst $(TOOLS)falamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)falamd64$(PRG) falwin64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) falwin64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)win64run.obf && falwin64.exe" falrun.tst falwin64.tmp falwin64.res
-	@cd $(TESTS) && $(RM) falwin64.dbg falwin64.obf falwin64.exe falwin64.map
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)falamd64$(PRG)) falwin64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) falwin64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf) && falwin64.exe" falrun.tst falwin64.tmp falwin64.res
 	@$(TC) $@
 
-$(TESTS)obwin64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf $(RUNTIME)obamd64run.lib
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obwin64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obwin64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)win64run.obf $(PREV)$(RUNTIME)obamd64run.lib && obwin64.exe" stdobrun.tst obwin64.tmp stdobwin64.res
-	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(PREV)$(TOOLS)obamd64$(PRG) obwin64.tmp && $(PREV)$(TOOLS)linkbin$(PRG) obwin64.obf $(PREV)$(RUNTIME)amd64run.obf $(PREV)$(RUNTIME)win64run.obf $(PREV)$(RUNTIME)obamd64run.lib && obwin64.exe" extobrun.tst obwin64.tmp extobwin64.res
-	@cd $(TESTS) && $(RM) test.sym obwin64.lst obwin64.dbg obwin64.obf obwin64.exe obwin64.map
+$(TESTS)obwin64: $(UTILITIES)regtest$(PRG) $(TESTS)stdobrun.tst $(TESTS)extobrun.tst $(TESTS)generic.sym $(TOOLS)obamd64$(PRG) $(TOOLS)linkbin$(PRG) $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obwin64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obwin64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf) && obwin64.exe" stdobrun.tst obwin64.tmp stdobwin64.res
+	@cd $(TESTS) && $(PREV)$(UTILITIES)regtest$(PRG) "$(abspath $(TOOLS)obamd64$(PRG)) obwin64.tmp && $(abspath $(TOOLS)linkbin$(PRG)) obwin64.obf $(abspath $(RUNTIME)amd64run.obf $(RUNTIME)win64run.obf) && obwin64.exe" extobrun.tst obwin64.tmp extobwin64.res
 	@$(TC) $@
 
 tests: linktests doctests cdtests cpptests faltests obtests asmtests
@@ -1890,7 +1791,7 @@ codetarget: $(UTILITIES)ecsd$(PRG) $(addprefix $(TOOLS), $(addsuffix $(PRG), cpp
 $(foreach ENVIRONMENT, $(ENVIRONMENTS), $(eval $(ENVIRONMENT)target: $(UTILITIES)ecsd$(PRG) $(foreach TARGET, $(word $(call FINDMATCH, $(ENVIRONMENTS), $(ENVIRONMENT)), $(ENVIRONMENTTARGETS)), $(foreach ARCHITECTURE, $(word $(call FINDMATCH, $(ENVIRONMENTS), $(ENVIRONMENT)), $(ENVIRONMENTARCHITECTURES)), \
 	$(addprefix $(TOOLS), $(addsuffix $(PRG), cpp$(TARGET) ob$(TARGET) $(ARCHITECTURE)asm $(ARCHITECTURE)dism linklib linkbin linkmem mapsearch)) \
 	$(addprefix $(RUNTIME), $(TARGET)run.obf cpp$(TARGET)run.lib ob$(TARGET)run.lib $(ENVIRONMENT)run.obf)))))
-amd32linuxtarget amd64linuxtarget arma32linuxtarget arma64linuxtarget armt32linuxtarget armt32fpelinuxtarget mips32linuxtarget: %linuxtarget: $(TOOLS)dbgdwarf$(PRG) $(addprefix $(RUNTIME), %libdl.obf %libpthread.obf %libsdl.obf)
+amd32linuxtarget amd64linuxtarget arma32linuxtarget arma64linuxtarget armt32linuxtarget armt32fpelinuxtarget mips32linuxtarget xtensalinuxtarget: %linuxtarget: $(TOOLS)dbgdwarf$(PRG) $(addprefix $(RUNTIME), %libdl.obf %libpthread.obf %libsdl.obf)
 atmega32target atmega328target atmega8515target: $(TOOLS)linkhex$(PRG)
 tostarget: $(TOOLS)linkprg$(PRG) $(addprefix $(RUNTIME), tosapi.obf)
 win32target win64target: win%target: $(addprefix $(RUNTIME), win%api.obf win%sdl.obf)

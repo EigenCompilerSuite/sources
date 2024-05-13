@@ -1676,7 +1676,7 @@ bool CPP::IsMemberFunctionPointer (const Type& type)
 
 bool CPP::IsNamedNamespace (const Scope& scope)
 {
-	return scope.model == Scope::Namespace && scope.namespace_->entity;
+	return scope.model == Scope::Namespace && scope.namespace_->entity && (IsGlobal (*scope.enclosingScope) || IsNamedNamespace (*scope.enclosingScope));
 }
 
 bool CPP::IsLValueReference (const Type& type)
@@ -2237,8 +2237,7 @@ String CPP::GetName (const Entity& entity)
 		else if (entity.storage->linkage == LanguageLinkage::C || IsMainFunction (entity) || IsVariable (entity) && IsRegister (*entity.variable))
 			stream << entity.name;
 		else if (entity.storage->linkage == LanguageLinkage::Oberon)
-			assert (IsNamedNamespace (*entity.enclosingScope)),
-			stream << entity.enclosingScope->namespace_->entity->name << '.' << entity.name;
+			WriteQualified (stream, *entity.enclosingScope, false, Lexer::Colon, Lexer::Dot) << entity.name;
 		else
 			WriteQualified (stream, entity, HasInternalLinkage (entity));
 		break;
@@ -2674,41 +2673,41 @@ std::ostream& CPP::operator << (std::ostream& stream, const Scope& scope)
 	return stream << " in " << *scope.enclosingScope;
 }
 
-std::ostream& CPP::WriteQualified (std::ostream& stream, const Scope& scope, const bool internal)
+std::ostream& CPP::WriteQualified (std::ostream& stream, const Scope& scope, const bool internal, const Lexer::Symbol nested, const Lexer::Symbol symbol)
 {
 	switch (scope.model)
 	{
 	case Scope::Block:
 		assert (scope.enclosingScope);
-		WriteQualified (stream, *scope.enclosingScope, internal);
+		WriteQualified (stream, *scope.enclosingScope, internal, nested, nested);
 		break;
 
 	case Scope::Class:
-		if (scope.class_->entity) WriteQualified (stream, *scope.class_->entity, internal);
-		else WriteQualified (stream, *scope.enclosingScope, internal) << Lexer::LeftBrace << scope.class_->key << scope.class_->index << Lexer::RightBrace;
+		if (scope.class_->entity) WriteQualified (stream, *scope.class_->entity, internal, nested, nested);
+		else WriteQualified (stream, *scope.enclosingScope, internal, nested, nested) << Lexer::LeftBrace << scope.class_->key << scope.class_->index << Lexer::RightBrace;
 		break;
 
 	case Scope::Function:
 		assert (scope.function->entity);
-		return WriteQualified (stream, *scope.function->entity, internal);
+		return WriteQualified (stream, *scope.function->entity, internal, nested, nested);
 
 	case Scope::Namespace:
-		if (scope.namespace_->entity) WriteQualified (stream, *scope.namespace_->entity, internal);
-		else if (scope.enclosingScope) WriteQualified (stream, *scope.enclosingScope, internal) << Lexer::LeftBrace << Lexer::Namespace << scope.namespace_->index << Lexer::RightBrace;
+		if (scope.namespace_->entity) WriteQualified (stream, *scope.namespace_->entity, internal, nested, nested);
+		else if (scope.enclosingScope) WriteQualified (stream, *scope.enclosingScope, internal, nested, nested) << Lexer::LeftBrace << Lexer::Namespace << scope.namespace_->index << Lexer::RightBrace;
 		else if (internal) stream << Lexer::LeftBrace << std::hex << scope.namespace_->index << std::dec << Lexer::RightBrace;
 		else return stream;
 		break;
 
 	case Scope::Enumeration:
-		if (scope.enumeration->entity) WriteQualified (stream, *scope.enumeration->entity, internal);
-		else WriteQualified (stream, *scope.enclosingScope, internal) << Lexer::LeftBrace << Lexer::Enum << scope.enumeration->index << Lexer::RightBrace;
+		if (scope.enumeration->entity) WriteQualified (stream, *scope.enumeration->entity, internal, nested, nested);
+		else WriteQualified (stream, *scope.enclosingScope, internal, nested, nested) << Lexer::LeftBrace << Lexer::Enum << scope.enumeration->index << Lexer::RightBrace;
 		break;
 
 	default:
 		assert (Scope::Unreachable);
 	}
 
-	return stream << Lexer::DoubleColon;
+	return stream << symbol;
 }
 
 std::ostream& CPP::operator << (std::ostream& stream, const Types& types)
@@ -2773,9 +2772,9 @@ std::ostream& CPP::operator << (std::ostream& stream, const Entity& entity)
 	return WriteQualified (stream << " '", entity) << '\'';
 }
 
-std::ostream& CPP::WriteQualified (std::ostream& stream, const Entity& entity, const bool internal)
+std::ostream& CPP::WriteQualified (std::ostream& stream, const Entity& entity, const bool internal, const Lexer::Symbol nested, const Lexer::Symbol symbol)
 {
-	return WriteUnqualified (WriteQualified (stream, *entity.enclosingScope, internal), entity);
+	return WriteUnqualified (WriteQualified (stream, *entity.enclosingScope, internal, nested, symbol), entity);
 }
 
 std::ostream& CPP::WriteSerialized (std::ostream& stream, const Entity& entity)

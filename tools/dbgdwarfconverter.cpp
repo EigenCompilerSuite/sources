@@ -58,7 +58,6 @@ private:
 	const Platform& platform;
 	const Binary::Name compilationUnit, lineNumberProgram;
 
-	Object::Size types = 0;
 	Binary* abbreviation = nullptr;
 	std::vector<Abbreviation> abbreviations;
 
@@ -119,7 +118,7 @@ private:
 	static const Binary::Name DebugLine;
 
 	static const Platforms platforms;
-	static const Registers amd32, amd64, arm32, arm64;
+	static const Registers amd32, amd64, arm32, arm64, xtensa;
 };
 
 struct Context::Platform
@@ -143,6 +142,7 @@ const Context::Platforms Context::platforms {
 	{"arma32", {arm32, 11}},
 	{"arma64", {arm64, 29}},
 	{"armt32", {arm32, 11}},
+	{"xtensa", {arm32, 15}},
 };
 
 const Context::Registers Context::amd32 {
@@ -185,6 +185,10 @@ const Context::Registers Context::arm64 {
 	{"s16", 80}, {"s17", 81}, {"s18", 82}, {"s19", 83}, {"s20", 84}, {"s21", 85}, {"s22", 86}, {"s23", 87}, {"s24", 88}, {"s25", 89}, {"s26", 90}, {"s27", 91}, {"s28", 92}, {"s29", 93}, {"s30", 94},
 	{"d0", 64}, {"d1", 65}, {"d2", 66}, {"d3", 67}, {"d4", 68}, {"d5", 69}, {"d6", 70}, {"d7", 71}, {"d8", 72}, {"d9", 73}, {"d10", 74}, {"d11", 75}, {"d12", 76}, {"d13", 77}, {"d14", 78}, {"d15", 79},
 	{"d16", 80}, {"d17", 81}, {"d18", 82}, {"d19", 83}, {"d20", 84}, {"d21", 85}, {"d22", 86}, {"d23", 87}, {"d24", 88}, {"d25", 89}, {"d26", 90}, {"d27", 91}, {"d28", 92}, {"d29", 93}, {"d30", 94},
+};
+
+const Context::Registers Context::xtensa {
+	{"a0", 0}, {"a1", 1}, {"a2", 2}, {"a3", 3}, {"a4", 4}, {"a5", 5}, {"a6", 6}, {"a7", 7}, {"a8", 8}, {"a9", 9}, {"a10", 10}, {"a11", 11}, {"a12", 12}, {"a13", 13}, {"a14", 14}, {"a15", 15}, {"sp", 1},
 };
 
 void DWARFConverter::Process (const Information& information, const Source& source, Object::Binaries& binaries) const
@@ -234,6 +238,7 @@ void Context::Emit (const Entry& entry)
 		EmitAttribute (entry.type);
 		Emit (Attribute::LowPC, Form::Address, entry.name, Patch::Absolute, 0);
 		Emit (Attribute::HighPC, Form::Address, entry.name, Patch::Extent, 0);
+		Emit (Attribute::External, Form::FlagPresent);
 		EmitAttributeSentinel ();
 		for (auto& symbol: entry.symbols) if (IsParameter (symbol)) Emit (symbol);
 		Emit (entry, Block {entry});
@@ -329,7 +334,7 @@ void Context::EmitAttribute (const Value& value)
 
 void Context::EmitAttribute (const Type& type)
 {
-	const auto name = IsName (type) ? DebugInformation + "type_" + type.name : compilationUnit + "type" + std::to_string (types++); Emit (Attribute::Type, Form::ReferenceAddress, name, Patch::Position, 0);
+	const auto name = DebugInformation + "type_" + (IsName (type) ? type.name : Format ("(%0)", type)); Emit (Attribute::Type, Form::ReferenceAddress, name, Patch::Position, 0);
 	if (IsName (type)) if (IsDefined (name)) return; else for (auto& entry: information.entries) if (IsType (entry) && entry.name == type.name) return;
 	const auto previous = current, abbreviation = this->abbreviation; Begin (name, false, IsName (type)); Group (DebugInformation + "section"); Emit (type, nullptr); current = previous; this->abbreviation = abbreviation;
 }
@@ -419,9 +424,9 @@ void Context::Emit (const Type& type, const Entry*const entry)
 
 void Context::Emit (const Field& field)
 {
-	if (IsBitField (field)) EmitEntry ("bit_field", Tag::Member, false); else if (IsBase (field)) EmitEntry ("base", Tag::Inheritance, false); else EmitEntry ("field", Tag::Member, false);
-	EmitAttribute (field.name);
-	EmitAttribute (field.location);
+	EmitEntry (IsBase (field) ? "base" : IsBitField (field) ? "bit_field" : IsValid (field.location) ? "field" : "member", IsBase (field) ? Tag::Inheritance : Tag::Member, false);
+	if (!IsBase (field)) EmitAttribute (field.name);
+	if (IsValid (field.location)) EmitAttribute (field.location);
 	EmitAttribute (field.type);
 	Emit (Attribute::DataMemberLocation, field.offset);
 	if (IsBitField (field)) Emit (Attribute::DataBitOffset, CountTrailingZeros (field.mask)), Emit (Attribute::DataBitSize, CountOnes (field.mask));
@@ -430,9 +435,9 @@ void Context::Emit (const Field& field)
 
 void Context::Emit (const Enumerator& enumerator)
 {
-	EmitEntry ("enumerator", Tag::Enumerator, false);
+	EmitEntry (IsValid (enumerator.location) ? "enumerator" : "value", Tag::Enumerator, false);
 	EmitAttribute (enumerator.name);
-	EmitAttribute (enumerator.location);
+	if (IsValid (enumerator.location)) EmitAttribute (enumerator.location);
 	EmitAttribute (enumerator.value);
 	EmitAttributeSentinel ();
 }
@@ -505,9 +510,10 @@ void Context::EmitAttribute (const Directory& directory)
 
 void Context::EmitAttribute (const Location& location)
 {
-	Emit (Attribute::DeclarationFile, IsValid (location) ? location.index + 1 : 0);
-	Emit (Attribute::DeclarationLine, IsValid (location) ? location.line : 0);
-	Emit (Attribute::DeclarationColumn, IsValid (location) ? location.column : 0);
+	assert (IsValid (location));
+	Emit (Attribute::DeclarationFile, location.index + 1);
+	Emit (Attribute::DeclarationLine, location.line);
+	Emit (Attribute::DeclarationColumn, location.column);
 }
 
 void Context::EmitAttribute (const Symbol& symbol)

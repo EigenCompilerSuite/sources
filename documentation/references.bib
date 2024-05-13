@@ -12,29 +12,30 @@
 
 % general references
 
-@string{author = {Florian Negele}}
-@manual{manual, author = author, year = {\today}, title = {\href{manual}{\ecs{}: User Manual}}}
-@manual{guide, author = author, year = {\today}, title = {\href{guide}{\ecs{}: User Guide}}}
-@manual{cpp, author = author, year = {\today}, title = {\href{cpp}{\ecs{}: User Manual for \cpp{}}}}
-@manual{false, author = author, year = {\today}, title = {\href{false}{\ecs{}: User Manual for FALSE}}}
-@manual{oberon, author = author, year = {\today}, title = {\href{oberon}{\ecs{}: User Manual for Oberon}}}
-@manual{assembly, author = author, year = {\today}, title = {\href{assembly}{\ecs{}: Generic Assembly Language Specification}}}
-@manual{amd64, author = author, year = {\today}, title = {\href{amd64}{\ecs{}: AMD64 Hardware Architecture Support}}}
-@manual{arm, author = author, year = {\today}, title = {\href{arm}{\ecs{}: ARM Hardware Architecture Support}}}
-@manual{avr, author = author, year = {\today}, title = {\href{avr}{\ecs{}: AVR Hardware Architecture Support}}}
-@manual{avr32, author = author, year = {\today}, title = {\href{avr32}{\ecs{}: AVR32 Hardware Architecture Support}}}
-@manual{m68k, author = author, year = {\today}, title = {\href{m68k}{\ecs{}: M68000 Hardware Architecture Support}}}
-@manual{mibl, author = author, year = {\today}, title = {\href{mibl}{\ecs{}: MicroBlaze Hardware Architecture Support}}}
-@manual{mips, author = author, year = {\today}, title = {\href{mips}{\ecs{}: MIPS Hardware Architecture Support}}}
-@manual{mmix, author = author, year = {\today}, title = {\href{mmix}{\ecs{}: MMIX Hardware Architecture Support}}}
-@manual{or1k, author = author, year = {\today}, title = {\href{or1k}{\ecs{}: OpenRISC 1000 Hardware Architecture Support}}}
-@manual{ppc, author = author, year = {\today}, title = {\href{ppc}{\ecs{}: PowerPC Hardware Architecture Support}}}
-@manual{risc, author = author, year = {\today}, title = {\href{risc}{\ecs{}: RISC Hardware Architecture Support}}}
-@manual{wasm, author = author, year = {\today}, title = {\href{wasm}{\ecs{}: WebAssembly Architecture Support}}}
-@manual{documentation, author = author, year = {\today}, title = {\href{documentation}{\ecs{}: Generic Documentation Generation}}}
-@manual{debugging, author = author, year = {\today}, title = {\href{debugging}{\ecs{}: Debugging Information Representation}}}
-@manual{code, author = author, year = {\today}, title = {\href{code}{\ecs{}: Intermediate Code Representation}}}
-@manual{object, author = author, year = {\today}, title = {\href{object}{\ecs{}: Object File Representation}}}
+@string{author = {Florian Negele}} @string{year = {\today}}
+@manual{manual, author = author, year = year, title = {\href{manual}{\ecs{}: User Manual}}}
+@manual{guide, author = author, year = year, title = {\href{guide}{\ecs{}: User Guide}}}
+@manual{cpp, author = author, year = year, title = {\href{cpp}{\ecs{}: User Manual for \cpp{}}}}
+@manual{false, author = author, year = year, title = {\href{false}{\ecs{}: User Manual for FALSE}}}
+@manual{oberon, author = author, year = year, title = {\href{oberon}{\ecs{}: User Manual for Oberon}}}
+@manual{assembly, author = author, year = year, title = {\href{assembly}{\ecs{}: Generic Assembly Language Specification}}}
+@manual{amd64, author = author, year = year, title = {\href{amd64}{\ecs{}: AMD64 Hardware Architecture Support}}}
+@manual{arm, author = author, year = year, title = {\href{arm}{\ecs{}: ARM Hardware Architecture Support}}}
+@manual{avr, author = author, year = year, title = {\href{avr}{\ecs{}: AVR Hardware Architecture Support}}}
+@manual{avr32, author = author, year = year, title = {\href{avr32}{\ecs{}: AVR32 Hardware Architecture Support}}}
+@manual{m68k, author = author, year = year, title = {\href{m68k}{\ecs{}: M68000 Hardware Architecture Support}}}
+@manual{mibl, author = author, year = year, title = {\href{mibl}{\ecs{}: MicroBlaze Hardware Architecture Support}}}
+@manual{mips, author = author, year = year, title = {\href{mips}{\ecs{}: MIPS Hardware Architecture Support}}}
+@manual{mmix, author = author, year = year, title = {\href{mmix}{\ecs{}: MMIX Hardware Architecture Support}}}
+@manual{or1k, author = author, year = year, title = {\href{or1k}{\ecs{}: OpenRISC 1000 Hardware Architecture Support}}}
+@manual{ppc, author = author, year = year, title = {\href{ppc}{\ecs{}: PowerPC Hardware Architecture Support}}}
+@manual{risc, author = author, year = year, title = {\href{risc}{\ecs{}: RISC Hardware Architecture Support}}}
+@manual{wasm, author = author, year = year, title = {\href{wasm}{\ecs{}: WebAssembly Architecture Support}}}
+@manual{xtensa, author = author, year = year, title = {\href{xtensa}{\ecs{}: Xtensa Architecture Support}}}
+@manual{documentation, author = author, year = year, title = {\href{documentation}{\ecs{}: Generic Documentation Generation}}}
+@manual{debugging, author = author, year = year, title = {\href{debugging}{\ecs{}: Debugging Information Representation}}}
+@manual{code, author = author, year = year, title = {\href{code}{\ecs{}: Intermediate Code Representation}}}
+@manual{object, author = author, year = year, title = {\href{object}{\ecs{}: Object File Representation}}}
 
 @book{ieee1985,
 	author		= {{IEEE}},
@@ -150,8 +151,8 @@
 @manual{amd64:volume3,
 	organization	= {Advanced Micro Devices Inc.},
 	title		= {AMD64 Architecture Programmer's Manual Volume~3: General-Purpose and System Instructions},
-	year		= {October 2022},
-	note		= {Revision~3.34},
+	year		= {March 2024},
+	note		= {Revision~3.36},
 }
 
 @manual{amd64:volume4,
@@ -301,4 +302,13 @@
 	title		= {WebAssembly Specification},
 	year		= {February 2024},
 	note		= {Release~2.0},
+}
+
+% references for Xtensa
+
+@manual{xtensa:instructionset,
+	author		= {Cadence Design Systems},
+	title		= {Xtensa Instruction Set Architecture (ISA) Summary},
+	year		= {April 2022},
+	note		= {Product Release RI-2021.8},
 }

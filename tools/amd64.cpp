@@ -702,11 +702,11 @@ bool Format::Match (const Type type, const Operand& operand)
 	case one: return Match (Immediate, Byte, operand) && operand.immediate == 1;
 	case imm8: return Match (Immediate, Byte, operand) && operand.immediate >= -128 && operand.immediate < 256;
 	case imm16: return Match (Immediate, Word, operand) && operand.immediate >= -32768 && operand.immediate < 65536;
-	case imm32: return Match (Immediate, DWord, operand) && operand.immediate >= -2147483648 && operand.immediate < 4294967296;
+	case imm32: return Match (Immediate, DWord, operand) && operand.immediate >= -AMD64::Immediate (2147483648) && operand.immediate < AMD64::Immediate (4294967296);
 	case imm64: return Match (Immediate, QWord, operand);
 	case simm8: case rel8off: return Match (Immediate, Byte, operand) && operand.immediate >= -128 && operand.immediate < 128;
 	case simm16: case rel16off: return Match (Immediate, Word, operand) && operand.immediate >= -32768 && operand.immediate < 32768;
-	case simm32: case rel32off: return Match (Immediate, DWord, operand) && operand.immediate >= -2147483648 && operand.immediate < 2147483648;
+	case simm32: case rel32off: return Match (Immediate, DWord, operand) && operand.immediate >= -AMD64::Immediate (2147483648) && operand.immediate < AMD64::Immediate (2147483648);
 	case moffset: return operand.model == Memory && !operand.register_ && !operand.index;
 	case al: return Match (AL, operand);
 	case cl: return Match (CL, operand);

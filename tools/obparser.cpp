@@ -581,7 +581,7 @@ void Context::ParseTerm (Expression& expression)
 
 void Context::ParseFactor (Expression& expression)
 {
-	if (IsCurrent (Lexer::Integer) || IsCurrent (Lexer::BinaryInteger) || IsCurrent (Lexer::HexadecimalInteger) || IsCurrent (Lexer::Real)) ParseLiteral (expression);
+	if (IsCurrent (Lexer::Integer) || IsCurrent (Lexer::BinaryInteger) || IsCurrent (Lexer::OctalInteger) || IsCurrent (Lexer::HexadecimalInteger) || IsCurrent (Lexer::Real)) ParseLiteral (expression);
 	else if (IsCurrent (Lexer::Character) || IsCurrent (Lexer::SingleQuotedString) || IsCurrent (Lexer::DoubleQuotedString)) ParseLiteral (expression);
 	else if (IsCurrent (Lexer::Nil)) ParseLiteral (expression);
 	else if (IsCurrent (Lexer::LeftBrace)) Reset (expression.set.identifier), ParseSet (expression);

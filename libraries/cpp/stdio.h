@@ -28,10 +28,14 @@
 
 #include "cstdio"
 
-using std::FILE;
+using std::fclose;
 using std::fgetc;
+using std::FILE;
+using std::fopen;
 using std::fputc;
 using std::fputs;
+using std::fread;
+using std::fwrite;
 using std::getchar;
 using std::printf;
 using std::putchar;

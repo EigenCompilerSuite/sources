@@ -342,6 +342,15 @@ skip:	inc	eax
 	push	dword [esp + 4]	; uExitCode
 	call	dword [@_ExitProcess]
 
+; standard fclose function
+.code fclose
+
+	push	[esp + 4]	; hObject
+	call	dword [@_CloseHandle]
+	cmp	eax, 1
+	sbb	eax, eax
+	ret
+
 ; standard fgetc function
 .code fgetc
 

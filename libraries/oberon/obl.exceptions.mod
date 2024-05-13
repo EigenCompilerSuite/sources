@@ -32,7 +32,7 @@ MODULE Exceptions IN OBL;
 IMPORT SYSTEM;
 
 TYPE Variable = POINTER TO Exception;
-TYPE Descriptor = RECORD- size: LENGTH; table: ARRAY 8 OF POINTER TO - Descriptor END;
+TYPE Descriptor = RECORD- recordSize, extensionLevel: LENGTH; typeTable: ARRAY MAX (LENGTH) OF POINTER TO - Descriptor END;
 
 (** Represents a generic exception that can be raised and handled. *)
 TYPE Exception* = RECORD* previous: Variable; descriptor: POINTER TO - Descriptor; stack, frame: SYSTEM.PTR; caller: PROCEDURE END;
@@ -43,7 +43,7 @@ TYPE AllocationFailure* = RECORD- (Exception) END;
 VAR current: Variable;
 
 PROCEDURE (VAR descriptor-: Descriptor) Extends (base-: POINTER TO - Descriptor): BOOLEAN;
-VAR index: LENGTH; BEGIN FOR index := 1 TO LEN (descriptor.table) - 1 DO IF descriptor.table[index] = base THEN RETURN TRUE END END; RETURN FALSE;
+VAR index: LENGTH; BEGIN FOR index := 1 TO descriptor.extensionLevel DO IF descriptor.typeTable[index] = base THEN RETURN TRUE END END; RETURN FALSE;
 END Extends;
 
 (** Registers {{{exception}}} for exception handling and returns {{{TRUE}}}. *)
@@ -77,7 +77,7 @@ VAR descriptor: POINTER TO - Descriptor; stack, frame: SYSTEM.PTR; caller: PROCE
 BEGIN
 	SYSTEM.CODE ("mov ptr [$fp + descriptor], ptr [$fp + exception + ptralign]");
 	WHILE ~descriptor.Extends (current.descriptor) DO current := current.previous END;
-	SYSTEM.MOVE (SYSTEM.ADR (exception) + SIZE (Exception), SYSTEM.ADR (current^) + SIZE (Exception), current.descriptor.size - SIZE (Exception));
+	SYSTEM.MOVE (SYSTEM.ADR (exception) + SIZE (Exception), SYSTEM.ADR (current^) + SIZE (Exception), current.descriptor.recordSize - SIZE (Exception));
 	stack := current.stack;
 	frame := current.frame;
 	caller := current.caller;

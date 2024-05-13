@@ -18,6 +18,7 @@
 
 #include "system.hpp"
 
+#include <array>
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
@@ -59,8 +60,7 @@ try
 	auto current = entries.begin (), entry = current;
 	auto address = current != entries.end () ? current->address : 0;
 
-	static constexpr std::ostream& (*color[]) (std::ostream&) {sys::red, sys::green, sys::yellow, sys::blue, sys::purple, sys::cyan};
-	static constexpr auto colors = sizeof color / sizeof color[0];
+	static constexpr std::array colors {sys::red, sys::green, sys::yellow, sys::blue, sys::purple, sys::cyan};
 
 	do
 	{
@@ -69,14 +69,15 @@ try
 		char bytes[16]; binary.read (bytes, sizeof bytes);
 		for (auto byte = bytes, end = bytes + binary.gcount (); byte != end; ++byte, ++address)
 		{
+			if ((byte - bytes) % 8 == 0) std::cout << ' ';
 			while (current != entries.end () && current->address + current->size <= address) ++current;
-			std::cout << ' ' << (current != entries.end () && address - current->address < current->size ? color[(current - entries.begin ()) % colors] : sys::standard) << std::setw (2) << (*byte & 0xff);
+			std::cout << ' ' << (current != entries.end () && address - current->address < current->size ? colors[(current - entries.begin ()) % colors.size ()] : sys::standard) << std::setw (2) << (*byte & 0xff);
 		}
 
+		std::cout << sys::standard;
 		for (; entry != entries.end () && (entry->address < address || !binary.gcount ()); ++entry)
-			std::cout << ' ' << color[(entry - entries.begin ()) % colors] << entry->type << ' ' << std::quoted (entry->name) << ' ' << std::dec << entry->size;
-
-		std::cout << sys::standard << '\n';
+			std::cout << ' ' << ' ' << colors[(entry - entries.begin ()) % colors.size ()] << entry->type << ' ' << std::quoted (entry->name) << ' ' << std::dec << entry->size << sys::standard;
+		std::cout << '\n';
 	}
 	while (binary.gcount ());
 }

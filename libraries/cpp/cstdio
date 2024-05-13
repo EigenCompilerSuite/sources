@@ -29,7 +29,7 @@
 
 namespace std
 {
-	struct FILE;
+	struct FILE {};
 
 	using size_t = decltype (sizeof 0);
 
@@ -37,10 +37,14 @@ namespace std
 	extern "C" FILE*const stdin;
 	extern "C" FILE*const stdout;
 
+	extern "C" auto fclose (FILE*) noexcept -> int;
 	extern "C" auto fflush (FILE*) noexcept -> int;
 	extern "C" auto fgetc (FILE*) noexcept -> int;
+	extern "C" auto fopen (const char*, const char*) noexcept -> FILE*;
 	extern "C" auto fputc (int, FILE*) noexcept -> int;
 	extern "C" auto fputs (const char*, FILE*) noexcept -> int;
+	extern "C" auto fread (void*, size_t, size_t, FILE*) noexcept -> size_t;
+	extern "C" auto fwrite (const void*, size_t, size_t, FILE*) noexcept -> size_t;
 	extern "C" auto getchar () noexcept -> int;
 	extern "C" auto printf (const char*, ...) noexcept -> int;
 	extern "C" auto putchar (int) noexcept -> int;

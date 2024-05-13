@@ -53,6 +53,11 @@ namespace ECS::Object
 	using Patches = std::vector<Patch>;
 	using Size = std::size_t;
 
+	bool IsAssembly (const Section&);
+	bool IsEmpty (const Pattern&);
+	bool IsEntryPoint (const Section&);
+	bool IsExecutable (const Section&);
+
 	bool operator == (const Alias&, const Alias&);
 	bool operator == (const Binary&, const Binary&);
 	bool operator == (const Link&, const Link&);
@@ -185,11 +190,8 @@ struct ECS::Object::Binary : Section
 namespace ECS::Object
 {
 	bool HasConditionals (const Section::Name&);
-	bool IsAssembly (const Section&);
 	bool IsCode (Section::Type);
 	bool IsData (Section::Type);
-	bool IsEmpty (const Pattern&);
-	bool IsEntryPoint (const Section&);
 	bool IsType (Section::Type);
 	bool IsValid (const Section::Name&);
 

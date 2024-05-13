@@ -24,7 +24,7 @@ using namespace ECS;
 using namespace WebAssembly;
 
 Assembler::Assembler (Diagnostics& d, Charset& c) :
-	Assembly::Assembler {d, c, 1, 1, Endianness::Little, 0}
+	Assembly::Assembler {d, c, 1, 1, 1, Endianness::Little, 0}
 {
 }
 

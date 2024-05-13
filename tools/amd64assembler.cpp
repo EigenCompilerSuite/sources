@@ -24,7 +24,7 @@ using namespace ECS;
 using namespace AMD64;
 
 Assembler::Assembler (Diagnostics& d, Charset& c, const OperatingMode mode) :
-	Assembly::Assembler {d, c, 1, 1, Endianness::Little, mode}
+	Assembly::Assembler {d, c, 1, 1, 1, Endianness::Little, mode}
 {
 }
 

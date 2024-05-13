@@ -114,6 +114,8 @@ void Lexer::ReadNumber (std::istream& stream, Position& position, char character
 		token.symbol = Character;
 	else if (stream.peek () == 'H' && Advance (stream, position, character))
 		token.symbol = HexadecimalInteger;
+	else if (stream.peek () == 'O' && Advance (stream, position, character))
+		token.symbol = token.string.find_first_not_of ("01234567'") == token.string.npos ? OctalInteger : Invalid;
 	else if (token.string.back () == 'B')
 		if (token.string.pop_back (), token.string.back () == '\'') Regress (stream, position, token.string.back ()), token.string.pop_back (), token.symbol = Integer;
 		else token.symbol = token.string.find_first_not_of ("01'") == token.string.npos ? BinaryInteger : Invalid;
@@ -156,7 +158,7 @@ bool Lexer::Evaluate (const Literal& literal, Oberon::Unsigned& value)
 {
 	assert (IsInteger (literal.symbol)); auto number = literal.string;
 	number.erase (std::remove (number.begin (), number.end (), '\''), number.end ());
-	const auto base = literal.symbol == BinaryInteger ? 2 : literal.symbol == HexadecimalInteger || literal.symbol == Character ? 16 : 10;
+	const auto base = literal.symbol == BinaryInteger ? 2 : literal.symbol == OctalInteger ? 8 : literal.symbol == HexadecimalInteger || literal.symbol == Character ? 16 : 10;
 	errno = 0; value = std::strtoull (number.c_str (), nullptr, base); return errno != ERANGE;
 }
 
@@ -167,7 +169,7 @@ Lexer::Token::Token (const Position& p) :
 
 bool Oberon::IsInteger (const Lexer::Symbol symbol)
 {
-	return symbol == Lexer::Integer || symbol == Lexer::BinaryInteger || symbol == Lexer::HexadecimalInteger || symbol == Lexer::Character;
+	return symbol == Lexer::Integer || symbol == Lexer::OctalInteger || symbol == Lexer::BinaryInteger || symbol == Lexer::HexadecimalInteger || symbol == Lexer::Character;
 }
 
 bool Oberon::IsReal (const Lexer::Symbol symbol)
@@ -187,6 +189,7 @@ std::ostream& Oberon::operator << (std::ostream& stream, const Lexer::Literal& l
 	case Lexer::Nil: return stream << literal.symbol;
 	case Lexer::Integer: case Lexer::Real: return stream << literal.string;
 	case Lexer::BinaryInteger: return stream << literal.string << 'B';
+	case Lexer::OctalInteger: return stream << literal.string << 'O';
 	case Lexer::HexadecimalInteger: return stream << literal.string << 'H';
 	case Lexer::Character: return stream << literal.string << 'X';
 	case Lexer::SingleQuotedString: return stream << '\'' << literal.string << '\'';

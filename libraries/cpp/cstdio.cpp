@@ -27,9 +27,9 @@ using namespace std;
 
 // standard fputs function
 
-int std::fputs (const char* string, FILE*const file) noexcept
+int std::fputs [[ecs::replaceable]] (const char* string, FILE*const file) noexcept
 {
-	while (*string) fputc (*string, file), ++string;
+	while (*string) if (fputc (*string++, file) == EOF) return EOF;
 	return 0;
 }
 

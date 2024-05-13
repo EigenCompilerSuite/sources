@@ -706,7 +706,7 @@ std::ostream& Context::PrintBasic (std::ostream& stream, const Expression& expre
 		return PrintGuard (stream, *expression.typeGuard.designator, *expression.type, false);
 
 	case Expression::Conversion:
-		return Print (Print (stream, expression.conversion.designator->identifier) << " (", *expression.conversion.expression) << ')';
+		return Print (Print (stream, *expression.type) << " (", *expression.conversion.expression) << ')';
 
 	case Expression::Identifier:
 		if (IsReceiver (*expression.identifier.declaration)) return stream << (IsRecord (*expression.type) ? "(*this)" : "this");

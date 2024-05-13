@@ -172,7 +172,7 @@ See the instruction reference in Section~\ref{sec:cdreference} for detailed info
 
 The stack pointer always points to the topmost element on the stack.
 Operations like pushing and popping data to or from the stack access the topmost element and implicitly modify the stack pointer accordingly.
-The stack memory grows from top to bottom such that the topmost element on the stack has the lowermost address.
+The stack memory grows from top to bottom such that the topmost element on the stack has the lowermost address in memory.
 By pushing data on the stack, the stack pointer is therefore first decremented and afterward used to store the data at the decremented memory address.
 The actual size of this decrement depends on the target hardware architecture.
 There are architectures that require the stack pointer address to conform to some alignment constraints.
@@ -309,7 +309,7 @@ Strings can contain standard escape sequences to carry special characters.
 
 \item\cdoperand{Type}\alignright\syntax{<Type>}\nopagebreak
 
-The type operand model specifies a single type as defined in Section~\ref{sec:cdtypes}.
+The type operand model declares a single basic type as defined in Section~\ref{sec:cdtypes}.
 
 \item\cdoperand{Immediate} Value\alignright\syntax{<Type> <Number> $\mid$ <Type> $\pm$<Number>}\nopagebreak
 
@@ -356,7 +356,7 @@ Operands and their different models are described in Section~\ref{sec:cdoperands
 The operation of these instructions as well as all valid combinations of their operands are specified in the instruction reference in Section~\ref{sec:cdreference}.
 The instructions themselves are grouped together in code, data, or type sections as described in Section~\ref{sec:cdprogrammingmodel}.
 The actual section type defines which instruction subset is available for use.
-Table~\ref{tab:cdinstructions} classifies the instructions pairwise according to their operation and lists the section types they are available in.
+Table~\ref{tab:cdinstructions} categorizes all instructions pairwise according to their operation and lists the section types they are available in.
 A machine code generator is only required to implement instructions for data management, arithmetics, bit manipulations, function calls, and branching.
 
 \newcommand{\cdinstructionref}[3]{& #1 & \texttt{#2} & \ref{sec:cd#2} & \ifx#3\empty\else\texttt{#3} & \ref{sec:cd#3}\fi \\}
@@ -404,7 +404,7 @@ Category & Types & \multicolumn{2}{r}{See Section} & \multicolumn{2}{r@{}}{See S
 \cdinstructionref{all}{func}{enum}
 \bottomrule
 \end{tabular}
-\caption{Intermediate code instruction set classification}
+\caption{Intermediate code instruction categories}
 \label{tab:cdinstructions}
 \end{table}
 
@@ -464,13 +464,13 @@ The model of the actual operand has to be one of the models named in the operand
 \centering
 \begin{tabular}{@{}ll@{}}
 \toprule Name & Description \\ \midrule
-\cdoperand{Pointer} & Any operand model of type data pointer \\
-\cdoperand{Function} & Any operand model of type function pointer \\
 \cdoperand{StrTyp} & \cdoperandref{String} or \cdoperandref{Type} \\
 \cdoperand{ImmAdr} & \cdoperandref{Immediate} or \cdoperandref{Address} \\
 \cdoperand{RegMem} & \cdoperandref{Register} or \cdoperandref{Memory} \\
 \cdoperand{ImmRegMem} & \cdoperandref{Immediate}, \cdoperandref{Register}, or \cdoperandref{Memory} \\
 \cdoperand{ImmRegAdrMem} & \cdoperandref{Immediate}, \cdoperandref{Register}, \cdoperandref{Address}, or \cdoperandref{Memory} \\
+\cdoperand{Pointer} & \cdoperandref{ImmRegAdrMem} of type data pointer \\
+\cdoperand{Function} & \cdoperandref{ImmRegAdrMem} of type function pointer \\
 \bottomrule
 \end{tabular}
 \caption{Intermediate code operand classes}
@@ -481,7 +481,7 @@ The model of the actual operand has to be one of the models named in the operand
 
 \cdinstruction{add}{RegMem}{ImmRegAdrMem}{ImmRegAdrMem}{Addition}
 
-Adds the value of the second operand to the value of the third operand and stores the result in the first register or memory operand.
+Adds the value of the third operand to the value of the second operand and stores the result in the first register or memory operand.
 This operation is not available for function pointers.
 
 \cdinstruction{alias}{String}{}{}{Alias Name Definition}
@@ -539,7 +539,7 @@ Continues execution at the instruction specified by the relative instruction off
 \cdinstruction{call}{Function}{Size}{}{Function Call}
 
 Continues execution in the code section specified by the function pointer of the first operand and stores the address of the immediately following instruction in order to resume its execution after returning from the function.
-The address of the next instruction is either stored in the link register or pushed onto the stack if the architecture does not support the link register.
+This address is either stored in the link register or pushed onto the stack if the architecture does not support the link register.
 The second operand specifies the amount of octets to be additionally popped from the stack upon returning from a function that needed arguments.
 This number has to be aligned according to the stack alignment of the target platform.
 For more information about stack operations, see Section~\ref{sec:cdstackoperations}.
@@ -559,7 +559,7 @@ The third operand specifies the amount of octets to be copied.
 
 Enlarges the current data section by a single datum and initializes the resulting memory with the binary representation of the specified value.
 The datum has to be aligned according to the data alignment of the target platform.
-If the operand is an address, it may not be incremented by a register, since registers are only available in code sections.
+If the operand is an address, it cannot be incremented by a register, since registers are only available in code sections.
 
 \cdinstruction{div}{RegMem}{ImmRegMem}{ImmRegMem}{Division}
 
@@ -576,10 +576,10 @@ For more information about stack frames, see Section~\ref{sec:cdstackoperations}
 
 \cdinstruction{enum}{Offset}{}{}{Enumeration Type Declaration}
 
-Declares an enumeration type that stores a single integer value from a predefined set of named constants called enumerators.
+Declares an enumeration type that stores a single value from a predefined set of named constants called enumerators.
 The operand defines the extent of the declaration in terms of the instruction range given by the relative instruction offset.
 All enumerators declared within this extent belong to the most current enumeration declaration, see Section~\ref{sec:cdvalue}.
-This compound type declaration requires a subsequent declaration for its underlying integer type.
+This compound type declaration requires a subsequent declaration for its underlying type.
 
 \cdinstruction{field}{String}{Size}{Immediate}{Field Declaration}
 
@@ -621,7 +621,7 @@ For more information about stack frames, see Section~\ref{sec:cdstackoperations}
 \cdinstruction{loc}{String}{Size}{Size}{Source Code Location}
 
 Maps the current section or a preceding breakpoint, symbol declaration, or type declaration to its source code location.
-The first operand names the source file and the second and thirds operands a line and column within that file.
+The first operand names the source file and the second and third operands a line and column within that file.
 
 \cdinstruction{lsh}{RegMem}{ImmRegMem}{ImmRegMem}{Left Shift}
 
@@ -746,7 +746,7 @@ Unfixes the current mapping of a general-purpose register which was previously f
 
 \cdinstruction{value}{String}{Imm}{}{Enumerator Declaration}
 
-Declares an enumerator with a symbolic name and a constant integer value for the most current enumeration declaration, see Section~\ref{sec:cdenum}.
+Declares an enumerator with a symbolic name and a constant value for the most current enumeration declaration, see Section~\ref{sec:cdenum}.
 The first operand specifies the name of the enumerator and the second operand its value.
 Enumerator declarations require subsequent source code locations.
 
@@ -820,6 +820,7 @@ For this reason, all optimizations mentioned in Section~\ref{sec:cdoptimizations
 \cdppcb
 \cdrisc
 \cdwasm
+\cdxtensa
 \cppcode
 \falcode
 \obcode

@@ -412,7 +412,7 @@ void T32::Instruction::Adjust (Object::Patch& patch) const
 {
 	assert (entry);
 	if (patch.mode == Object::Patch::Absolute && entry->types[0] == Operand::O024) patch.displacement -= 4, patch.scale = 1, patch.mode = Object::Patch::Relative;
-	if (entry->types[0] == Operand::O024) patch.pattern = {{2, 0xff}, {3, 0x7}, {0, 0xff}, {1, 0x3}, {3, 0x28}, {1, 0x4}};
+	if (entry->types[0] == Operand::O024) patch.pattern = {{2, 0xff}, {3, 0x7}, {0, 0xff}, {1, 0x3}, {1, 0x4}};
 	if (entry->types[1] == Operand::I0164) patch.pattern = {{2, 0xff}, {3, 0x70}, {1, 0x04}, {0, 0x0f}};
 }
 

@@ -24,7 +24,7 @@ This chapter lists all \ref*{tools:all}~tools provided by the \ecs{} in alphabet
 All of them share the same command-line user interface as detailed in Chapter~\ref{interface}.
 The implementation-defined behavior of programming language-specific tools like pretty printers, semantic checkers, serializers, interpreters, and compilers is described in Chapters~\ref{cpp} to~\ref{oberon}.
 For more information about assembler and disassembler tools, see Chapter~\ref{assembly}.
-The hardware architectures targeted by all of these tools are described in Chapters~\ref{amd64} to~\ref{wasm} whereas Chapter~\ref{object} details linker tools and their functionality.
+The hardware architectures targeted by all of these tools are described in Chapters~\ref{amd64} to~\ref{xtensa} whereas Chapter~\ref{object} details linker tools and their functionality.
 For more information about debugging tools and documentation generators, see Chapters~\ref{code} to~\ref{documentation}.
 
 \epigraph{This world is but canvas to our imaginations.}{Henry David Thoreau}
@@ -71,6 +71,7 @@ For more information about debugging tools and documentation generators, see Cha
 \cdrisc
 \cdrun
 \cdwasm
+\cdxtensa
 \cppamda
 \cppamdb
 \cppamdc
@@ -99,6 +100,7 @@ For more information about debugging tools and documentation generators, see Cha
 \cpprisc
 \cpprun
 \cppwasm
+\cppxtensa
 \dbgdwarf
 \doccheck
 \dochtml
@@ -129,6 +131,7 @@ For more information about debugging tools and documentation generators, see Cha
 \falrisc
 \falrun
 \falwasm
+\falxtensa
 \linkbin
 \linkhex
 \linklib
@@ -173,6 +176,7 @@ For more information about debugging tools and documentation generators, see Cha
 \obrisc
 \obrun
 \obwasm
+\obxtensa
 \orokasm
 \orokdism
 \ppcaasm
@@ -183,6 +187,8 @@ For more information about debugging tools and documentation generators, see Cha
 \riscdism
 \wasmasm
 \wasmdism
+\xtensaasm
+\xtensadism
 \label{tools:all}
 \end{multicols}
 \end{small}
@@ -214,7 +220,8 @@ Table~\ref{tab:tools} lists all \ref*{tools:compilers}~compiler and assembler to
 \midrule \multicolumn{2}{@{}l}{OpenRISC 1000} & \compilers{or1k} \\ \architectureref{or1k} & \compilerrefs{or1k} \\
 \midrule PowerPC & 32-bit & \compilers{ppc32} \\ & & \compilerrefs{ppc32} \\ & 64-bit & \compilers{ppc64} \\ \architectureref{ppc} & \compilerrefs{ppc64} \\
 \midrule \multicolumn{2}{@{}l}{RISC} & \compilers{risc} \\ \architectureref{risc} & \compilerrefs{risc} \\
-\midrule \multicolumn{2}{@{}l}{WebAssembly} & \compilers{wasm} \label{tools:compilers} \\ \architectureref{wasm} & \compilerrefs{wasm} \\
+\midrule \multicolumn{2}{@{}l}{WebAssembly} & \compilers{wasm} \\ \architectureref{wasm} & \compilerrefs{wasm} \\
+\midrule \multicolumn{2}{@{}l}{Xtensa} & \compilers{xtensa} \label{tools:compilers} \\ \architectureref{xtensa} & \compilerrefs{xtensa} \\
 \bottomrule
 \end{tabular}
 \caption{References to all \ref*{tools:compilers}~compiler and assembler tools}

@@ -4768,6 +4768,10 @@ positive: rmpquery instruction
 
 	rmpquery
 
+positive: rmpread instruction
+
+	rmpread
+
 positive: rmpupdate instruction
 
 	rmpupdate

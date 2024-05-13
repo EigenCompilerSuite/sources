@@ -69,14 +69,16 @@ protected:
 	using BitMode = unsigned;
 	using CodeAlignment = std::size_t;
 	using DataAlignment = std::size_t;
+	using InstructionAlignment = std::size_t;
 	using Size = std::size_t;
 	using State = unsigned;
 
-	Assembler (Diagnostics&, Charset&, CodeAlignment, DataAlignment, Endianness, BitMode);
+	Assembler (Diagnostics&, Charset&, InstructionAlignment, CodeAlignment, DataAlignment, Endianness, BitMode);
 
 private:
 	class Context;
 
+	const InstructionAlignment instructionAlignment;
 	const CodeAlignment codeAlignment;
 	const DataAlignment dataAlignment;
 	const Endianness endianness;

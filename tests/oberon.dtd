@@ -25,6 +25,9 @@
 <!ENTITY % statement "(if | for | case | exit | loop | with | while | repeat | return | assignment | procedure-call)">
 <!ENTITY % type "(array | record | pointer | procedure-type)?">
 
+<!ELEMENT annotation (#PCDATA)>
+<!ATTLIST annotation line CDATA #REQUIRED column CDATA #REQUIRED>
+
 <!-- common attributes -->
 
 <!ENTITY % basic-declaration "name NMTOKEN #REQUIRED line CDATA #REQUIRED column CDATA #REQUIRED">
@@ -35,9 +38,6 @@
 
 <!ELEMENT module (annotation*, (%declaration;)*, body?)>
 <!ATTLIST module name NMTOKEN #REQUIRED line CDATA #REQUIRED column CDATA #REQUIRED package NMTOKEN #IMPLIED source CDATA #REQUIRED>
-
-<!ELEMENT annotation (#PCDATA)>
-<!ATTLIST annotation line CDATA #REQUIRED column CDATA #REQUIRED>
 
 <!ELEMENT import ((%expression;)*, module?)>
 <!ATTLIST import %basic-declaration; alias NMTOKEN #IMPLIED package NMTOKEN #IMPLIED>

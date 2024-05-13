@@ -160,6 +160,13 @@ static StreamDiagnostics diagnostics {std::cerr};
 	#define NAMEPREFIX "wasm"
 	static WebAssembly::Disassembler disassembler {charset};
 
+#elif defined XTENSAARCHITECTURE
+
+	#include "xtensadisassembler.hpp"
+
+	#define NAMEPREFIX "xtensa"
+	static Xtensa::Disassembler disassembler {charset};
+
 #else
 
 	#error unknown source architecture

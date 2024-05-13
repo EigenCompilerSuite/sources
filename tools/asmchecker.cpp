@@ -36,10 +36,10 @@ Checker::Checker (Diagnostics& d, Charset& c) :
 {
 }
 
-Context::Context (const Checker& c, Object::Section& s, const Origin o, const Alignment a, const Inlined i) :
-	charset {c.charset}, inlined {i}, alignment {a}, diagnostics {c.diagnostics}, section {s}, origin {o}
+Context::Context (const Checker& c, Object::Section& s, const Origin o, const InstructionAlignment ia, const SectionAlignment sa, const Inlined i) :
+	charset {c.charset}, instructionAlignment {ia}, sectionAlignment {sa}, inlined {i}, diagnostics {c.diagnostics}, section {s}, origin {o}
 {
-	assert (IsPowerOfTwo (alignment));
+	assert (IsPowerOfTwo (instructionAlignment)); assert (IsPowerOfTwo (sectionAlignment));
 }
 
 void Context::EmitError (const Message& message) const
@@ -74,24 +74,24 @@ void Context::Label (const Instruction& instruction)
 
 void Context::Process (const Instruction& instruction)
 {
-	auto& reserved = sizes[index++]; const auto origin = offset; location = &instruction.location;
+	const auto origin = offset; location = &instruction.location;
 
 	if (parsing && !instruction.label.empty () && instruction.directive != Lexer::Equals)
 		definitions[instruction.label].value = offset;
 
 	if (conditional == Including || conditional == IncludingElse)
 		if (instruction.directive) ProcessDirective (instruction);
-		else if (offset % alignment) EmitError ("misaligned instruction");
+		else if (offset % instructionAlignment) EmitError ("misaligned instruction");
 		else if (!instruction.mnemonic.empty ()) Assemble (instruction); else;
 	else if (IsConditional (instruction.directive)) ProcessDirective (instruction);
 
-	const auto size = offset - origin;
-	if (parsing) reserved = size; else if (size != reserved) EmitError ("resized instruction");
+	if (parsing) *size++ = offset - origin;
+	else if (offset - origin != *size++) EmitError ("resized instruction");
 }
 
 void Context::Reset ()
 {
-	assert (conditional == Including); offset = origin; index = 0;
+	assert (conditional == Including); offset = origin; size = sizes.data ();
 }
 
 void Context::Reserve (const Size size)
@@ -211,7 +211,7 @@ void Context::ProcessAlignmentDirective (const Expression& expression) const
 {
 	if (section.fixed) EmitError ("aligning fixed section");
 	if (parsing && section.alignment) EmitError ("section alignment already defined");
-	Value value; if (!GetValue (expression, value) || value <= 0 || value >= 0x10000000 || !IsPowerOfTwo (value) || value % alignment) EmitError ("invalid section alignment");
+	Value value; if (!GetValue (expression, value) || value <= 0 || value >= 0x10000000 || !IsPowerOfTwo (value) || value % sectionAlignment) EmitError ("invalid section alignment");
 	if (!parsing && section.alignment != Section::Alignment (value)) EmitError ("modified section alignment");
 	section.alignment = value;
 }
@@ -220,7 +220,7 @@ void Context::ProcessOriginDirective (const Expression& expression) const
 {
 	if (!section.fixed && section.alignment) EmitError ("fixing aligned section");
 	if (parsing && section.fixed) EmitError ("section origin already defined");
-	Value value; if (!GetValue (expression, value) || value < 0 || value > 0xc0000000 || value % alignment) EmitError ("invalid section origin");
+	Value value; if (!GetValue (expression, value) || value < 0 || value > 0xc0000000 || value % sectionAlignment) EmitError ("invalid section origin");
 	if (!parsing && section.origin != Section::Origin (value)) EmitError ("modified section origin");
 	section.fixed = true; section.origin = value;
 }
@@ -518,7 +518,7 @@ bool Context::GetValue (const Expression& expression, Value& value) const
 
 bool Context::GetOffset (const Expression& expression, Value& value) const
 {
-	if (IsLabel (expression)) return value = (expression.value - offset) * !parsing - GetDisplacement (sizes[index - 1]), true;
+	if (IsLabel (expression)) return value = (expression.value - offset) * !parsing - GetDisplacement (*size), true;
 	if (IsParenthesized (expression)) return GetOffset (expression.operands.front (), value); Expression definition;
 	return IsIdentifier (expression) && GetDefinition (expression.string, definition) && GetOffset (definition, value);
 }

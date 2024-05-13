@@ -552,7 +552,7 @@ void Context::MultiplyComplex (const Code::Operand& target, const Code::Operand&
 {
 	const auto value1Low = Load (value1, Low), value1High = Load (value1, High);
 	const auto value2Low = Load (value2, Low), value2High = Load (value2, High);
-	const auto resultLow = Acquire (target, Low), resultHigh = Acquire (target, High);
+	const auto resultLow = Acquire (target.type, Low), resultHigh = Acquire (target.type, High);
 	Emit (UMULL {resultLow, resultHigh, value1Low, value2Low});
 	Emit ({Instruction::MLA, resultHigh, value1Low, value2High, resultHigh});
 	Emit ({Instruction::MLA, resultHigh, value1High, value2Low, resultHigh});

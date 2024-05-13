@@ -302,7 +302,7 @@ Its contents can be listed by the disassembler using the following command-line 
 amd64dism assign.obf
 .code assign
    0  8b5c2408        mov  ebx, dword [rsp + 8]
-   4  891c2500000000  mov  dword [0], ebx  ; abs @Complex.variable
+   4  891c2500000000  mov  dword [0], ebx  ; @Complex.variable
   11  c3              ret
   12
 \end{verbatim}\end{quote}
@@ -502,7 +502,7 @@ echo 0x4011fe | ecsd -d complex.map assign.obf
 mapsearch: note: offset 4 in code section 'assign'
 .code assign
    0  8b5c2408        mov  ebx, dword [rsp + 8]
-   4  891c2500000000  mov  dword [0], ebx  ; abs @Complex.variable
+   4  891c2500000000  mov  dword [0], ebx  ; @Complex.variable
   11  c3              ret
   12
 \end{verbatim}\end{quote}

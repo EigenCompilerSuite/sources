@@ -377,6 +377,15 @@ base:	.equals	0x00008000
 	addi	r2, r0, 4001
 	syscall	; sys_exit
 
+; standard fclose function
+.code fclose
+
+	lw	r4, 0 (r29)
+	addi	r2, r0, 4006
+	syscall	; sys_close
+	jr	r31
+	nop
+
 ; standard fgetc function
 .code fgetc
 

@@ -25,7 +25,7 @@ using namespace ARM;
 using namespace A64;
 
 Assembler::Assembler (Diagnostics& d, Charset& c) :
-	A32::Assembler {d, c, 4, 1, Endianness::Little, 64}
+	A32::Assembler {d, c, 4, 4, 1, Endianness::Little, 64}
 {
 }
 

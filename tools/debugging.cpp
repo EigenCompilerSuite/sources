@@ -180,27 +180,6 @@ bool Debugging::IsType (const Entry& entry)
 	return entry.model == Entry::Type;
 }
 
-std::istream& Debugging::ReadValue (std::istream& stream, Value& value)
-{
-	if (stream >> std::ws && stream.peek () == '-') return value.model = Type::Signed, stream >> value.signed_;
-	return value.model = Type::Unsigned, stream >> value.unsigned_;
-}
-
-std::ostream& Debugging::WriteValue (std::ostream& stream, const Value& value)
-{
-	switch (value.model)
-	{
-	case Type::Signed:
-		return stream << value.signed_;
-	case Type::Unsigned:
-		return stream << value.unsigned_;
-	case Type::Float:
-		return stream << value.float_;
-	default:
-		assert (Type::Unreachable);
-	}
-}
-
 std::istream& Debugging::operator >> (std::istream& stream, Location& location)
 {
 	if (stream >> location.index >> location.line >> location.column && !IsValid (location)) stream.setstate (stream.failbit); return stream;
@@ -262,27 +241,47 @@ std::istream& Debugging::operator >> (std::istream& stream, Value& value)
 
 std::ostream& Debugging::operator << (std::ostream& stream, const Value& value)
 {
-	return WriteValue (WriteEnum (stream, value.model, types) << ' ', value);
+	WriteEnum (stream, value.model, types) << ' ';
+
+	switch (value.model)
+	{
+	case Type::Signed:
+		return stream << value.signed_;
+	case Type::Unsigned:
+		return stream << value.unsigned_;
+	case Type::Float:
+		return stream << value.float_;
+	default:
+		assert (Type::Unreachable);
+	}
 }
 
 std::istream& Debugging::operator >> (std::istream& stream, Field& field)
 {
-	return ReadString (stream, field.name, '"') >> field.location >> field.type >> field.offset >> field.mask;
+	ReadString (stream, field.name, '"');
+	if (stream >> std::ws && std::isdigit (stream.peek ())) stream >> field.location; else field.location = {};
+	return stream >> field.type >> field.offset >> field.mask;
 }
 
 std::ostream& Debugging::operator << (std::ostream& stream, const Field& field)
 {
-	return WriteString (stream, field.name, '"') << ' ' << field.location << ' ' << field.type << ' ' << field.offset << ' ' << field.mask;
+	WriteString (stream, field.name, '"');
+	if (IsValid (field.location)) stream << ' ' << field.location;
+	return stream << ' ' << field.type << ' ' << field.offset << ' ' << field.mask;
 }
 
 std::istream& Debugging::operator >> (std::istream& stream, Enumerator& enumerator)
 {
-	return ReadValue (ReadString (stream, enumerator.name, '"') >> enumerator.location, enumerator.value);
+	ReadString (stream, enumerator.name, '"');
+	if (stream >> std::ws && std::isdigit (stream.peek ())) stream >> enumerator.location; else enumerator.location = {};
+	return stream >> enumerator.value;
 }
 
 std::ostream& Debugging::operator << (std::ostream& stream, const Enumerator& enumerator)
 {
-	return WriteValue (WriteString (stream, enumerator.name, '"') << ' ' << enumerator.location << ' ', enumerator.value);
+	WriteString (stream, enumerator.name, '"');
+	if (IsValid (enumerator.location)) stream << ' ' << enumerator.location;
+	return stream << ' ' << enumerator.value;
 }
 
 std::istream& Debugging::operator >> (std::istream& stream, Symbol& symbol)

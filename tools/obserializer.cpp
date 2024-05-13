@@ -247,7 +247,7 @@ void Context::Serialize (const Expression& expression)
 
 	case Expression::Conversion:
 		Open ("conversion");
-		Serialize (*expression.conversion.designator);
+		Serialize (*expression.conversion.identifier);
 		Serialize (*expression.conversion.expression);
 		break;
 

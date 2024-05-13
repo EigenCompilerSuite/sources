@@ -96,9 +96,9 @@ bool Operand::IsCompatibleWith (const Type type) const
 	case LaneIndex: return model == Integer && integer >= 0 && integer <= 255;
 	case NumberType: return model == TypeCode && (typeCode == TypeCode::I32 || typeCode == TypeCode::I64 || typeCode == TypeCode::F32 || typeCode == TypeCode::F64);
 	case ReferenceType: return model == TypeCode && (typeCode == TypeCode::FuncRef || typeCode == TypeCode::ExternRef);
-	case Signed32: return model == Integer && integer >= -2147483648 && integer <= 2147483647;
+	case Signed32: return model == Integer && integer >= -WebAssembly::Integer (2147483648) && integer <= WebAssembly::Integer (2147483647);
 	case Signed64: case Unsigned64: return model == Integer;
-	case Unsigned32: return model == Integer && integer >= 0 && integer <= 4294967295;
+	case Unsigned32: return model == Integer && integer >= 0 && integer <= WebAssembly::Integer (4294967295);
 	case VectorType: return model == TypeCode && typeCode == TypeCode::V128;
 	case ValueType: return IsCompatibleWith (NumberType) || IsCompatibleWith (VectorType) || IsCompatibleWith (ReferenceType);
 	default: return model == Empty;

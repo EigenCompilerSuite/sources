@@ -24,7 +24,7 @@ using namespace ECS;
 using namespace OR1K;
 
 Assembler::Assembler (Diagnostics& d, Charset& c) :
-	Assembly::Assembler {d, c, 4, 1, Endianness::Big, 0}
+	Assembly::Assembler {d, c, 4, 4, 1, Endianness::Big, 0}
 {
 }
 

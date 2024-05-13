@@ -24,7 +24,7 @@ using namespace ECS;
 using namespace MIPS;
 
 Assembler::Assembler (Diagnostics& d, Charset& c, const Architecture architecture, const Endianness endianness) :
-	Assembly::Assembler {d, c, 4, 1, endianness, architecture}
+	Assembly::Assembler {d, c, 4, 4, 1, endianness, architecture}
 {
 }
 

@@ -44,26 +44,31 @@
 \end{frame}
 
 \begin{frame}{Features}{Supported Hardware Architectures}
-\begin{columns}[T]
-\column{13em}
 \begin{block}{Architectures:}
 \begin{description}[FPGA:]
 \item[8-bit:] AVR
 \item[16-bit:] M68000
-\item[32-bit:] ARM A32, ARM T32, AVR32, MIPS32, PowerPC32, Wasm
+\item[32-bit:] ARM A32, ARM T32, AVR32, MIPS32, PowerPC32, WebAssembly, Xtensa
 \item[64-bit:] AMD64, ARM A64, MIPS64, PowerPC64
 \item[FPGA:] MicroBlaze, MMIX, OpenRISC 1000, RISC
 \end{description}
 \end{block}
-\column{7em}
 \begin{block}{Tools:}
+\begin{columns}[T]
+\column{7em}
 \begin{itemize}
 \item Compilers
+\end{itemize}
+\column{7em}
+\begin{itemize}
 \item Assemblers
+\end{itemize}
+\column{7em}
+\begin{itemize}
 \item Disassemblers
 \end{itemize}
-\end{block}
 \end{columns}
+\end{block}
 \end{frame}
 
 \begin{frame}{Features}{Supported Runtime Environments}
@@ -104,14 +109,14 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{Reliability}{29 Regression Test Suites} % ls tests/*.tst | wc -l
+\begin{frame}{Reliability}{30 Regression Test Suites} % ls tests/*.tst | wc -l
 \begin{center}
 \begin{tabular}{@{}lr@{}}
 \toprule Subject & Tests \\ \midrule
 \cpp{} & $3\,400$ \\ % wc -l tests/*cppprint*.res
 FALSE & $70$ \\ % wc -l tests/falprint*.res
 Oberon & $2\,400$ \\ % wc -l tests/*obprint*.res
-Assembly Code& $16\,000$ \\ % wc -l tests/*printasm.res
+Assembly Code& $16\,800$ \\ % wc -l tests/*printasm.res
 Intermediate Code & $4\,100$ \\ % wc -l tests/cdprint*.res
 Linker & $1\,100$ \\ % wc -l tests/link*.res
 \bottomrule
@@ -199,6 +204,7 @@ OpenRISC 1000 & \progress{100} & \\
 PowerPC & \progress{50} & Machine Code Generation \\
 RISC & \progress{100} \\
 WebAssembly & \progress{100} \\
+Xtensa & \progress{100} \\
 \bottomrule
 \end{tabular}
 }\end{center}

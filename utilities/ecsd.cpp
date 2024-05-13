@@ -92,6 +92,7 @@ static Target targets[] {
 	{"webassembly", "wasm", "wasm", "linkbin", false, "WebAssembly environments"},
 	{"win32", "amd32", "amd32", "linkbin", false, "32-bit Windows systems"},
 	{"win64", "amd64", "amd64", "linkbin", false, "64-bit Windows systems"},
+	{"xtensalinux", "xtensa", "xtensa", "linkbin", true, "Linux-based systems", "dbgdwarf"},
 
 	#define BACKEND(name) TARGET (name, name)
 	#define TARGET(backend, architecture) {#backend, #backend, #architecture, "linkbin"}
@@ -107,6 +108,7 @@ static Target targets[] {
 	BACKEND (ppc32), BACKEND (ppc64),
 	BACKEND (risc),
 	BACKEND (wasm),
+	BACKEND (xtensa),
 	#undef BACKEND
 	#undef TARGET
 };
@@ -222,7 +224,7 @@ static void Execute (const std::string& command)
 static void Set (const char*const name, const std::string& value)
 {
 	if (options[Option::Protect].value) return;
-	if (options[Option::Verbose].value) std::cerr << "ecsd: note: " << name << '=' << value << '\n';
+	if (options[Option::Verbose].value) std::cerr << "ecsd: note: set " << name << '=' << value << '\n';
 	if (!sys::set_variable (name, value)) throw "failed to set environment variable '"s + name + '\'';
 }
 
@@ -351,7 +353,7 @@ static void Print (const Array& array)
 static void Help ()
 {
 	std::cout << std::setfill (' ') << std::left;
-	std::cout << "ecsd Version 0.0.40 Build " __DATE__ " Copyright (C) Florian Negele\n";
+	std::cout << "ecsd Version 0.0.41 Build " __DATE__ " Copyright (C) Florian Negele\n";
 	std::cout << "This is free software; see the source for copying conditions. There is NO\n";
 	std::cout << "WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n";
 

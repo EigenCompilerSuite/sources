@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <random>
 #include <set>
 #include <stdexcept>
 
@@ -44,6 +45,26 @@ struct Report
 	void Add (const Test&, const std::set<Test>&, std::streamsize);
 };
 
+struct TemporaryDirectory
+{
+	std::filesystem::path current, previous;
+
+	TemporaryDirectory ();
+	~TemporaryDirectory ();
+};
+
+TemporaryDirectory::TemporaryDirectory ()
+{
+	std::random_device random; std::mt19937 engine {random ()}; std::error_code error; const auto temp = std::filesystem::temp_directory_path (error);
+	while (!error && !std::filesystem::create_directory (current = temp / ("regtest-" + std::to_string (engine ())), error));
+	if (error || (previous = std::filesystem::current_path (error), error) || (std::filesystem::current_path (current, error), error)) current.clear (), previous.clear ();
+}
+
+TemporaryDirectory::~TemporaryDirectory ()
+{
+	if (std::error_code error; !current.empty ()) std::filesystem::remove_all (current, error);
+}
+
 std::istream& Test::Read (std::istream& stream, std::streamoff& currentLine)
 {
 	while (stream.peek () == '\n' && stream.ignore () || stream.peek () == '#' && stream.ignore (std::numeric_limits<std::streamsize>::max (), '\n')) ++currentLine; line = currentLine;
@@ -58,10 +79,10 @@ void Report::Add (const Test& test, const std::set<Test>& results, const std::st
 	const auto result = results.find (test);
 	if (test.succeeded && result != results.end () && result->succeeded) return;
 
-	std::cout.width (indent); std::cout.fill (' '); std::cout << test.line << ": " << test.name << ": ";
-	if (test.succeeded) ++succeededThisTime, std::cout << sys::green << "succeeded";
-	else std::cout << (result != results.end () && result->succeeded ? ++failedThisTime, sys::yellow : sys::red) << "failed";
-	std::cout << sys::standard << '\n';
+	std::cout.width (indent); std::cout.fill (' '); std::cout << test.line << ": ";
+	if (test.succeeded) ++succeededThisTime, std::cout << sys::green << "success";
+	else std::cout << (result != results.end () && result->succeeded ? ++failedThisTime, sys::yellow : sys::red) << "failure";
+	std::cout << sys::standard << ": " << test.name << '\n';
 }
 
 int main (const int argc, char*const argv[])
@@ -83,7 +104,8 @@ try
 
 	std::cout << sys::white << "Output of command '" << argv[1] << "':" << sys::standard << std::endl;
 
-	std::streamoff line = 1; auto start = std::chrono::steady_clock::now (), then = start;
+	TemporaryDirectory directory; std::streamoff line = 1;
+	auto start = std::chrono::steady_clock::now (), then = start;
 	for (Test test; test.Read (testFile, line);)
 	{
 		std::ofstream tempFile {argv[3]};
@@ -111,13 +133,11 @@ try
 		std::cout << remaining / std::chrono::seconds {1} % 60 << "s remaining)" << std::endl;
 	}
 
-	if (!tests.empty ()) std::filesystem::remove (argv[3]);
-
 	if (!testFile && !testFile.eof ()) return std::cerr << "regtest: error: invalid test description in line " << line << '\n', EXIT_FAILURE;
 
 	if (argc == 5)
 	{
-		std::ofstream resultFile {argv[4]};
+		std::ofstream resultFile {directory.previous / argv[4]};
 		if (!resultFile.is_open ()) return std::cerr << "regtest: error: failed to open result file '" << argv[4] << "'\n", EXIT_FAILURE;
 		for (auto& test: tests) resultFile << test.succeeded << ' ' << test.name << '\n'; resultFile.close ();
 		if (!resultFile) return std::cerr << "regtest: error: failed to write result file '" << argv[4] << "'\n", EXIT_FAILURE;
@@ -130,10 +150,10 @@ try
 	else if (report.tests == report.succeeded && !report.succeededThisTime) std::cout << sys::green << "all tests succeeded\n" << sys::standard;
 
 	std::cout << sys::white << "\nSummary:\n" << sys::standard;
-	std::cout << "number of tests:  " << report.tests << '\n';
-	std::cout << "successful tests: " << (report.succeeded ? sys::green : sys::red) << report.succeeded << sys::standard;
+	std::cout << "number of tests: " << report.tests << '\n';
+	std::cout << "succeeded tests: " << (report.succeeded ? sys::green : sys::red) << report.succeeded << sys::standard;
 	if (!results.empty () && report.succeededThisTime) std::cout << "\t(+" << report.succeededThisTime << ')'; std::cout << '\n';
-	std::cout << "failed tests:     " << (report.succeeded == report.tests ? sys::green : sys::red) << report.tests - report.succeeded << sys::standard;
+	std::cout << "failed tests:    " << (report.succeeded == report.tests ? sys::green : sys::red) << report.tests - report.succeeded << sys::standard;
 	if (!results.empty () && report.failedThisTime) std::cout << "\t(+" << report.failedThisTime << ')'; std::cout << '\n';
 
 	if (report.tests && report.tests != report.succeeded) return EXIT_FAILURE;

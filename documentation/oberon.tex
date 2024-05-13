@@ -50,6 +50,10 @@ The first character must still be a letter.
 
 If an integer constant is specified with the suffix \texttt{B}, its digits and representation are binary.
 
+\item Octal integer constants\obref{3.2}
+
+If an integer constant is specified with the suffix \texttt{O}, its digits and representation are octal.
+
 \item Digit grouping\obref{3.2}
 
 The integer part of a number may contain separating single quotes between its digits which are ignored when determining its value.
@@ -225,6 +229,7 @@ number
 \midrule PowerPC & 32-bit & \tool{obppc32} & 4 & 4 & 4 \\ & 64-bit & \tool{obppc64} & 4 & 4 & 4 \\
 \midrule \multicolumn{2}{@{}l}{RISC} & \tool{obrisc} & 4 & 4 & 4 \\
 \midrule \multicolumn{2}{@{}l}{WebAssembly} & \tool{obwasm} & 4 & 8 & 4 \\
+\midrule \multicolumn{2}{@{}l}{Xtensa} & \tool{obxtensa} & 4 & 4 & 4 \\
 \bottomrule
 \end{tabular}
 \caption{Sizes of hardware-dependent Oberon types}
@@ -333,7 +338,7 @@ The corresponding export marks of a forward declaration and its actual declarati
 <ForwardDeclaration> = "PROCEDURE" \changed{$[$"*"$\mid$"-"$]$} "^" $[$<Receiver>$]$ <IdentDef> $[$<FormalParameters>$]$ \par
 \end{grammar}\end{quote}
 
-An abstract procedure has no procedure body and causes all record types to which it is bound to be abstract as well.
+An abstract procedure has no procedure body and requires all record types to which it is bound to be abstract as well.
 A final procedure is not redefinable.
 
 \item Read-only parameters\obref{10.1}
@@ -562,8 +567,7 @@ Instead, the \ecs{} provides tools that can generate cross-referenced documents 
 
 \item Run Time Data Structures\obref{D5}
 
-The are at most eight different extension levels for record types.
-All other quantities like the number of modules, imports, declarations, fields, parameters and statements, or the length of identifiers, strings, and arrays have no intrinsic limit and are only restricted by available memory.
+All quantities like the number of modules, imports, declarations, type extension levels, fields, parameters, statements and expressions, or the length of identifiers, strings, and arrays have no intrinsic limit and are only restricted by available memory.
 The actual limit therefore depends only on the execution environment of the tool used to process the Oberon module.
 
 \item Trap Numbers
@@ -611,8 +615,9 @@ The remainder of this section lists all modules provided by the Oberon Library i
 \obmoduleref{Coroutines}{Functions}
 \obmoduleref{Generators}{}
 \midrule Input/
-\obmoduleref{In}{Out}
+\obmoduleref{Devices}{Files}
 Output
+\obmoduleref{In}{Out}
 \obmoduleref{Streams}{}
 \midrule Numerics
 \obmoduleref{Math}{Random}
@@ -644,12 +649,16 @@ The remainder of this section lists all supported modules of the Oakwood Library
 \begin{tabular}{@{}llr@{}}
 \toprule Category & \multicolumn{2}{l@{}}{Module \alignright Section} \\
 \midrule Basic Modules
-\obmoduleref{Strings}
+\obmoduleref{In}
 \obmoduleref{Math}
 \obmoduleref{MathL}
+\obmoduleref{Out}
+\obmoduleref{Strings}
 \obmoduleref{XYplane}
 \midrule Additional Modules
 \obmoduleref{Coroutines}
+\obmoduleref{MathC}
+\obmoduleref{MathLC}
 \bottomrule
 \end{tabular}
 \caption{Modules of the Oakwood Library}
@@ -800,7 +809,7 @@ END Module.
 \section{Runtime Support}\label{sec:obruntimesupport}\index{Runtime support!for Oberon}
 
 Some language features of Oberon such as predeclared procedures require some additional runtime support.
-This runtime support is stored in library files which are collections of object files. \seeobject
+This runtime support is stored in library files which are combinations of object files. \seeobject
 The \ecs{} provides the required runtime support in one library file for each hardware architecture it supports.
 The name of the corresponding library file consists of a leading \file{ob}, the name of the target hardware architecture, and a trailing \file{run} as in \file{ob\-arma64\-run}.
 
@@ -864,6 +873,7 @@ When importing a module, its symbol file is first searched in the current workin
 \obppcb
 \obrisc
 \obwasm
+\obxtensa
 
 \section{Interoperability}
 

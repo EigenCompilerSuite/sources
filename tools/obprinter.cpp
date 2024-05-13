@@ -184,7 +184,7 @@ std::ostream& Context::Print (std::ostream& stream, const Declaration& declarati
 	case Declaration::Constant:
 		Indent (stream) << declaration.name;
 		if (declaration.isExported) stream << Lexer::Asterisk;
-		return stream << ' ' << Lexer::Equal << ' ' << *declaration.constant.expression << Lexer::Semicolon;
+		return stream << ' ' << Lexer::Equal << ' ' << *declaration.constant.expression << Lexer::Semicolon << '\n';
 
 	case Declaration::Type:
 		Indent (stream) << declaration.name;

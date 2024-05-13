@@ -24,7 +24,7 @@ using namespace ECS;
 using namespace PowerPC;
 
 Assembler::Assembler (Diagnostics& d, Charset& c, const Architecture architecture) :
-	Assembly::Assembler {d, c, 4, 1, Endianness::Big, architecture}
+	Assembly::Assembler {d, c, 4, 4, 1, Endianness::Big, architecture}
 {
 }
 

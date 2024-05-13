@@ -123,14 +123,14 @@ struct uu8 {u4 l; u4 h;};
 extern "C" s1 _conv_s1_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c << 1 >> 24) - 127; s4 r;
-	if (e < 0) r = 0; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
+	if (e <= 0) r = !e; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
 	if (a.c >> 31) r = -r; return s1 (r);
 }
 
 extern "C" s1 _conv_s1_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h << 1 >> 21) - 1023; s4 r;
-	if (e < 0) r = 0; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
+	if (e <= 0) r = !e; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
 	else if (e < 32) r = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e; else r = -1;
 	if (a.c.h >> 31) r = -r; return s1 (r);
 }
@@ -138,14 +138,14 @@ extern "C" s1 _conv_s1_f8 (const f8 x) noexcept
 extern "C" s2 _conv_s2_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c << 1 >> 24) - 127; s4 r;
-	if (e < 0) r = 0; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
+	if (e <= 0) r = !e; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
 	if (a.c >> 31) r = -r; return s2 (r);
 }
 
 extern "C" s2 _conv_s2_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h << 1 >> 21) - 1023; s4 r;
-	if (e < 0) r = 0; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
+	if (e <= 0) r = !e; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
 	else if (e < 32) r = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e; else r = -1;
 	if (a.c.h >> 31) r = -r; return s2 (r);
 }
@@ -153,14 +153,14 @@ extern "C" s2 _conv_s2_f8 (const f8 x) noexcept
 extern "C" s4 _conv_s4_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c << 1 >> 24) - 127; s4 r;
-	if (e < 0) r = 0; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
+	if (e <= 0) r = !e; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
 	if (a.c >> 31) r = -r; return r;
 }
 
 extern "C" s4 _conv_s4_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h << 1 >> 21) - 1023; s4 r;
-	if (e < 0) r = 0; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
+	if (e <= 0) r = !e; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
 	else if (e < 32) r = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e; else r = -1;
 	if (a.c.h >> 31) r = -r; return r;
 }
@@ -168,7 +168,7 @@ extern "C" s4 _conv_s4_f8 (const f8 x) noexcept
 extern "C" s8 _conv_s8_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c << 1 >> 24) - 127; union {s8 v; uu8 c;} r;
-	if (e < 0) r.c.l = 0, r.c.h = 0; else if (e < 32) r.c.l = 1 << e | a.c << 9 >> 32 - e, r.c.h = 0;
+	if (e <= 0) r.c.l = !e, r.c.h = 0; else if (e < 32) r.c.l = 1 << e | a.c << 9 >> 32 - e, r.c.h = 0;
 	else if (e < 64) r.c.l = a.c << 9 >> 64 - e, r.c.h = 1 << e - 32 | a.c << 9 >> 64 - e; else r.c.l = -1, r.c.h = -1;
 	if (a.c >> 31) r.v = -r.v; return r.v;
 }
@@ -176,7 +176,7 @@ extern "C" s8 _conv_s8_f4 (const f4 x) noexcept
 extern "C" s8 _conv_s8_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h << 1 >> 21) - 1023; union {s8 v; uu8 c;} r;
-	if (e < 0) r.c.l = 0, r.c.h = 0; else if (e < 20) r.c.l = 1 << e | a.c.h << 12 >> 32 - e, r.c.h = 0;
+	if (e <= 0) r.c.l = !e, r.c.h = 0; else if (e < 20) r.c.l = 1 << e | a.c.h << 12 >> 32 - e, r.c.h = 0;
 	else if (e < 32) r.c.l = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e, r.c.h = 0;
 	else if (e < 52) r.c.l = a.c.l >> 52 - e | a.c.h << e - 20, r.c.h = 1 << e - 32 | a.c.h << 12 >> 64 - e;
 	else if (e < 64) r.c.l = a.c.l << e - 52, r.c.h = 1 << e - 64 | a.c.h << 12 >> 64 - e | a.c.l >> 84 - e; else r.c.l = -1, r.c.h = -1;
@@ -186,14 +186,14 @@ extern "C" s8 _conv_s8_f8 (const f8 x) noexcept
 extern "C" u1 _conv_u1_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c >> 23) - 127; u4 r;
-	if (e < 0) r = 0; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
+	if (e <= 0) r = !e; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
 	return u1 (r);
 }
 
 extern "C" u1 _conv_u1_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h >> 20) - 1023; u4 r;
-	if (e < 0) r = 0; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
+	if (e <= 0) r = !e; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
 	else if (e < 32) r = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e; else r = -1;
 	return u1 (r);
 }
@@ -201,14 +201,14 @@ extern "C" u1 _conv_u1_f8 (const f8 x) noexcept
 extern "C" u2 _conv_u2_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c >> 23) - 127; u4 r;
-	if (e < 0) r = 0; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
+	if (e <= 0) r = !e; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
 	return u2 (r);
 }
 
 extern "C" u2 _conv_u2_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h >> 20) - 1023; u4 r;
-	if (e < 0) r = 0; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
+	if (e <= 0) r = !e; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
 	else if (e < 32) r = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e; else r = -1;
 	return u2 (r);
 }
@@ -216,14 +216,14 @@ extern "C" u2 _conv_u2_f8 (const f8 x) noexcept
 extern "C" u4 _conv_u4_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c >> 23) - 127; u4 r;
-	if (e < 0) r = 0; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
+	if (e <= 0) r = !e; else if (e < 32) r = 1 << e | a.c << 9 >> 32 - e; else r = -1;
 	return r;
 }
 
 extern "C" u4 _conv_u4_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h >> 20) - 1023; u4 r;
-	if (e < 0) r = 0; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
+	if (e <= 0) r = !e; else if (e < 20) r = 1 << e | a.c.h << 12 >> 32 - e;
 	else if (e < 32) r = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e; else r = -1;
 	return r;
 }
@@ -231,7 +231,7 @@ extern "C" u4 _conv_u4_f8 (const f8 x) noexcept
 extern "C" u8 _conv_u8_f4 (const f4 x) noexcept
 {
 	const union {f4 v; u4 c;} a {x}; const s4 e = (a.c >> 23) - 127; union {u8 v; uu8 c;} r;
-	if (e < 0) r.c.l = 0, r.c.h = 0; else if (e < 32) r.c.l = 1 << e | a.c << 9 >> 32 - e, r.c.h = 0;
+	if (e <= 0) r.c.l = !e, r.c.h = 0; else if (e < 32) r.c.l = 1 << e | a.c << 9 >> 32 - e, r.c.h = 0;
 	else if (e < 64) r.c.l = a.c << 9 >> 64 - e, r.c.h = 1 << e - 32 | a.c << 9 >> 64 - e; else r.c.l = -1, r.c.h = -1;
 	return r.v;
 }
@@ -239,7 +239,7 @@ extern "C" u8 _conv_u8_f4 (const f4 x) noexcept
 extern "C" u8 _conv_u8_f8 (const f8 x) noexcept
 {
 	const union {f8 v; uu8 c;} a {x}; const s4 e = (a.c.h >> 20) - 1023; union {u8 v; uu8 c;} r;
-	if (e < 0) r.c.l = 0, r.c.h = 0; else if (e < 20) r.c.l = 1 << e | a.c.h << 12 >> 32 - e, r.c.h = 0;
+	if (e <= 0) r.c.l = !e, r.c.h = 0; else if (e < 20) r.c.l = 1 << e | a.c.h << 12 >> 32 - e, r.c.h = 0;
 	else if (e < 32) r.c.l = 1 << e | a.c.h << 12 >> 32 - e | a.c.l >> 52 - e, r.c.h = 0;
 	else if (e < 52) r.c.l = a.c.l >> 52 - e | a.c.h << e - 20, r.c.h = 1 << e - 32 | a.c.h << 12 >> 64 - e;
 	else if (e < 64) r.c.l = a.c.l << e - 52, r.c.h = 1 << e - 64 | a.c.h << 12 >> 64 - e | a.c.l >> 84 - e; else r.c.l = -1, r.c.h = -1;
@@ -707,7 +707,7 @@ extern "C" u4 _mul_u4 (const u4 x, const u4 y) noexcept
 
 #else
 
-	extern "C" u8 _mul_u8 (const u8 x, const u8 y) noexcept
+	extern "C" u8 _mul_s8 ALIAS (_mul_u8) (const u8 x, const u8 y) noexcept
 	{
 		u8 a = x, b = y, r;
 		if (a > b) r = a, a = b, b = r;
@@ -1567,7 +1567,8 @@ extern "C" u2 _mod_u2 (const u2 x, const u2 y) noexcept
 	extern "C" s8 _lsh_s8 ALIAS (_lsh_u8) (const s8 x, const s8 y) noexcept
 	{
 		union {s8 v; us8 c;} a {x}, b {y}, r;
-		if (b.c.l >= 32) r.c.l = 0, r.c.h = a.c.l << b.c.l - 32;
+		if (b.c.l == 0) r.c.l = a.c.l, r.c.h = a.c.h;
+		else if (b.c.l >= 32) r.c.l = 0, r.c.h = a.c.l << b.c.l - 32;
 		else r.c.l = a.c.l << b.c.l, r.c.h = a.c.h << b.c.l | a.c.l >> 32 - b.c.l;
 		return r.v;
 	}
@@ -1673,7 +1674,8 @@ extern "C" u2 _mod_u2 (const u2 x, const u2 y) noexcept
 	extern "C" s8 _rsh_s8 (const s8 x, const s8 y) noexcept
 	{
 		union {s8 v; us8 c;} a {x}, b {y}, r;
-		if (b.c.l >= 32) r.c.l = a.c.h >> s4 (b.c.l) - 32, r.c.h = a.c.h >> 31;
+		if (b.c.l == 0) r.c.l = a.c.l, r.c.h = a.c.h;
+		else if (b.c.l >= 32) r.c.l = a.c.h >> s4 (b.c.l) - 32, r.c.h = a.c.h >> 31;
 		else r.c.l = a.c.l >> b.c.l | a.c.h << 32 - b.c.l, r.c.h = a.c.h >> s4 (b.c.l);
 		return r.v;
 	}
@@ -1681,7 +1683,8 @@ extern "C" u2 _mod_u2 (const u2 x, const u2 y) noexcept
 	extern "C" u8 _rsh_u8 (const u8 x, const u8 y) noexcept
 	{
 		union {u8 v; uu8 c;} a {x}, b {y}, r;
-		if (b.c.l >= 32) r.c.l = a.c.h >> b.c.l - 32, r.c.h = 0;
+		if (b.c.l == 0) r.c.l = a.c.l, r.c.h = a.c.h;
+		else if (b.c.l >= 32) r.c.l = a.c.h >> b.c.l - 32, r.c.h = 0;
 		else r.c.l = a.c.l >> b.c.l | a.c.h << 32 - b.c.l, r.c.h = a.c.h >> b.c.l;
 		return r.v;
 	}
@@ -1767,6 +1770,13 @@ long double std::copysignl LONGALIAS (copysign) (const long double mag, const lo
 	return r.v;
 }
 
+// standard fclose function
+
+int std::fclose [[ecs::replaceable]] (FILE*const) noexcept
+{
+	return EOF;
+}
+
 // standard fflush function
 
 int std::fflush [[ecs::replaceable]] (FILE*const) noexcept
@@ -1814,28 +1824,17 @@ int std::fflush [[ecs::replaceable]] (FILE*const) noexcept
 	asm (R"(
 		.code floorf
 			movsd		xmm0, [rsp + 8]
-			cvttss2si	rax, xmm0
-			cvtsi2ss	xmm1, rax
+			cvttss2si	eax, xmm0
+			cvtsi2ss	xmm1, eax
 			subss		xmm0, xmm1
-			movd		rbx, xmm0
-			bt		rbx, 63
-			sbb		rax, 0
-			cvtsi2ss	xmm0, rax
+			movd		ebx, xmm0
+			bt		ebx, 31
+			sbb		eax, 0
+			cvtsi2ss	xmm0, eax
 			ret
 	)");
 
-#elif defined __mmix__
-
-	asm (R"(
-		.code floorf
-			ldou	$0, $1, 8
-			fint	$0, 3, $0
-			ldou	$255, $1, 0
-			addu	$1, $1, 8
-			go	$255, $255, 0
-	)");
-
-#elif not defined __code__
+#else
 
 	extern "C" float floorf FLOATALIAS (floor) (const float x) noexcept
 	{
@@ -1897,19 +1896,7 @@ int std::fflush [[ecs::replaceable]] (FILE*const) noexcept
 			ret
 	)");
 
-#elif defined __mmix__
-
-	asm (R"(
-		.code floorl
-			.alias	floor
-			ldou	$0, $1, 8
-			fint	$0, 3, $0
-			ldou	$255, $1, 0
-			addu	$1, $1, 8
-			go	$255, $255, 0
-	)");
-
-#elif not defined __code__
+#else
 
 	extern "C" long double floorl LONGALIAS (floor) (const long double x) noexcept
 	{
@@ -1917,6 +1904,25 @@ int std::fflush [[ecs::replaceable]] (FILE*const) noexcept
 	}
 
 #endif
+
+// standard fopen function
+
+std::FILE* std::fopen [[ecs::replaceable]] (const char*const, const char*const) noexcept
+{
+	return nullptr;
+}
+
+// standard fread function
+std::size_t std::fread [[ecs::replaceable]] (void*const, const size_t, const size_t, FILE*const) noexcept
+{
+	return 0;
+}
+
+// standard fwrite function
+std::size_t std::fwrite [[ecs::replaceable]] (const void*const, const size_t, const size_t, FILE*const) noexcept
+{
+	return 0;
+}
 
 // standard getchar function
 
@@ -2117,6 +2123,7 @@ bool std::signbit LONGALIAS (std::signbit(double)) (const long double x) noexcep
 	}
 
 #endif
+
 // standard strcmp function
 
 int std::strcmp (const char* left, const char* right) noexcept

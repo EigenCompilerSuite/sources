@@ -42,7 +42,7 @@ void Printer::Print (const Document& document, std::ostream& stream) const
 }
 std::ostream& Context::Print (std::ostream& stream, const Document& document)
 {
-	Indent (stream) << "<?xml version=\"1.0\"?>\n";
+	Indent (stream) << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	if (!document.definition.empty ()) Indent (stream) << "<!DOCTYPE " << document.root.name << " SYSTEM \"" << document.definition << ".dtd\">\n";
 	return Print (stream, document.root);
 }

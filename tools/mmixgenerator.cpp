@@ -347,9 +347,9 @@ void Context::Generate (const Code::Instruction& instruction)
 		break;
 
 	case Code::Instruction::PUSH:
-		if (HasRegister (operand1) && operand1.register_ == Code::RSP) Load (R255, operand1);
+		if (operand1.Uses (Code::RSP)) Load (R255, operand1);
 		Emit (SUBU {registers[Code::RSP], registers[Code::RSP], Immediate (generator.platform.GetStackAlignment (operand1.type))});
-		if (HasRegister (operand1) && operand1.register_ == Code::RSP) Store (R255, Code::Mem {operand1.type, Code::RSP});
+		if (operand1.Uses (Code::RSP)) Store (R255, Code::Mem {operand1.type, Code::RSP});
 		else Move (Code::Mem {operand1.type, Code::RSP}, operand1);
 		break;
 

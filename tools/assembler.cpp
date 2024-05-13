@@ -164,6 +164,13 @@ static Assembly::Parser parser {diagnostics, stringPool, false};
 	#define NAMEPREFIX "wasm"
 	static WebAssembly::Assembler assembler {diagnostics, charset};
 
+#elif defined XTENSAARCHITECTURE
+
+	#include "xtensaassembler.hpp"
+
+	#define NAMEPREFIX "xtensa"
+	static Xtensa::Assembler assembler {diagnostics, charset};
+
 #else
 
 	#error unknown target architecture

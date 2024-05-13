@@ -546,7 +546,7 @@ See Section~\ref{sec:asmgroup} for more information about the section group dire
 The actually available set of instructions and its textual representation are defined by the target hardware architecture.
 The generic assembly language therefore does not know anything about the syntax or semantics of the concrete instruction set in use.
 For a complete description of the concrete instruction set and its usage, users have to refer to the documentation of the corresponding target hardware architecture.
-The remainder of this section lists all instructions sets supported by \ecs{}.
+The remainder of this section lists all instruction sets supported by \ecs{}.
 
 \renewcommand{\instruction}[2]{\pdftooltip{\texttt{#1}}{#2}\space}
 \renewcommand{\instructionset}[1]{\begin{quote}\sloppy\footnotesize\input{#1.set}\end{quote}}
@@ -655,6 +655,13 @@ They encode an immediate value of the respective type with a fixed size and can 
 \seewasm
 
 \instructionset{wasm}
+
+\subsection{Xtensa Instruction Set}
+
+The \ecs{} supports the Xtensa instruction set as listed below and uses the same assembly syntax as predefined by Cadence Design Systems~\cite{xtensa:instructionset}.
+\seextensa
+
+\instructionset{xtensa}
 
 \subsection{Intermediate Code Instruction Set}
 
@@ -834,7 +841,7 @@ If an operand for this directive is a string, each character of the string is ev
 The begin macro definition preprocessing directive allows defining pseudo instructions.
 Macros have a unique name and contain any sequence of assembly code until the next end macro definition directive.
 As long as a macro is defined, its name can be used as the mnemonic of a new pseudo instruction that takes up to ten operands separated by commas.
-This process is called macro expansion and replaces the instruction by the code sequence encompassed by the corresponding macro.
+This instruction is then replaced by the code sequence encompassed by the corresponding macro in a process called macro expansion.
 While expanding, number sign characters followed by a single decimal digit within any character or string literal, identifier, address, or label are replaced by the operand identified by that zero-based index.
 Two consecutive sign characters are replaced by the decimal line number of the macro expansion and allow defining unique labels.
 This directive may not be labeled and requires a subsequent end macro definition directive.
@@ -1054,6 +1061,7 @@ Figure~\ref{fig:asmdataflow} shows all stages and the different representations.
 \ppcbasm
 \riscasm
 \wasmasm
+\xtensaasm
 
 \section{Disassembler Tools}
 
@@ -1090,5 +1098,6 @@ If no arguments are provided, object files are read from the standard input stre
 \ppcbdism
 \riscdism
 \wasmdism
+\xtensadism
 
 \concludechapter

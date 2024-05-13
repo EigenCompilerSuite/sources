@@ -447,6 +447,14 @@ base:	.equals	0x08048000
 	mov	ebx, [esp + 4]
 	int	80h	; sys_exit
 
+; standard fclose function
+.code fclose
+
+	mov	eax, 6
+	mov	ebx, [esp + 4]
+	int	80h	; sys_close
+	ret
+
 ; standard fgetc function
 .code fgetc
 
@@ -464,6 +472,24 @@ base:	.equals	0x08048000
 fail:	mov	eax, -1
 	ret
 
+; standard fopen function
+.code fopen
+
+	mov	eax, 5
+	mov	ebx, [esp + 4]
+	mov	ecx, [esp + 8]
+	cmp	byte [ecx], 'w'
+	mov	ecx, 0
+	jne	skip
+	mov	ecx, 01 + 0100
+skip:	mov	edx, 04 + 040 + 0200 + 0400
+	int	80h	; sys_open
+	cmp	eax, -1
+	je	fail
+	ret
+fail:	mov	eax, 0
+	ret
+
 ; standard fputc function
 .code fputc
 
@@ -476,7 +502,27 @@ fail:	mov	eax, -1
 	jne	fail
 	mov	eax, [esp + 4]
 	ret
-fail:	mov	eax, -1
+fail:	mov	eax, 0
+	ret
+
+; standard fread function
+.code fread
+
+	mov	eax, 3
+	mov	ebx, [esp + 16]
+	mov	ecx, [esp + 4]
+	mov	edx, [esp + 12]
+	int	80h	; sys_read
+	ret
+
+; standard fwrite function
+.code fwrite
+
+	mov	eax, 4
+	mov	ebx, [esp + 16]
+	mov	ecx, [esp + 4]
+	mov	edx, [esp + 12]
+	int	80h	; sys_write
 	ret
 
 ; standard getenv function

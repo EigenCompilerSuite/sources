@@ -25,7 +25,6 @@
 #include "utilities.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -195,7 +194,7 @@ private:
 	Sections sections, assembledSections;
 	mutable std::set<Section::Name> unresolved;
 	std::map<Section::Name, Reference> directory;
-	Segment &abort, &exit, &fflush, &floor, &fputc, &free, &getchar, &malloc, &putchar;
+	Segment &abort, &exit, &fflush, &fputc, &free, &getchar, &malloc, &putchar;
 
 	bool IsRequired (const Section::Name&) const;
 
@@ -889,7 +888,7 @@ bool Thread::IsSymbolDeclaration (const Instruction& instruction) const
 }
 
 Context::Context (const Interpreter& i, const Sections& sections, Environment& e) :
-	interpreter {i}, platform {i.platform}, environment {e}, abort {AddFunction ("abort")}, exit {AddFunction ("_Exit")}, fflush (AddFunction ("fflush")), floor {AddFunction ("floor")},
+	interpreter {i}, platform {i.platform}, environment {e}, abort {AddFunction ("abort")}, exit {AddFunction ("_Exit")}, fflush (AddFunction ("fflush")),
 	fputc {AddFunction ("fputc")}, free {AddFunction ("free")}, getchar {AddFunction ("getchar")}, malloc {AddFunction ("malloc")}, putchar {AddFunction ("putchar")}
 {
 	AddVariable ("_argc", SImm {platform.integer, 0});
@@ -982,10 +981,10 @@ void Context::Add (const Section::Name& name, Segment& segment, const Offset off
 
 void Context::Replace (Segment& segment, const Reference& reference)
 {
-	assert (segment.section); auto iterator = directory.find (segment.section->name);
-	if (iterator != directory.end () && &iterator->second != &reference) directory.erase (iterator);
+	assert (segment.section);
+	if (const auto iterator = directory.find (segment.section->name); iterator != directory.end () && &iterator->second != &reference) directory.erase (iterator);
 	for (auto& instruction: segment.section->instructions) if (instruction.mnemonic == Instruction::ALIAS)
-		if (iterator = directory.find (instruction.operand1.address), iterator != directory.end () && &iterator->second != &reference) directory.erase (iterator);
+		if (const auto iterator = directory.find (instruction.operand1.address); iterator != directory.end () && &iterator->second != &reference) directory.erase (iterator);
 	segment.section = nullptr;
 }
 
@@ -1143,8 +1142,6 @@ bool Context::Call (const Section& function, const Thread& thread, Value& result
 		throw thread.GetArgument (0, platform.integer).simm;
 	else if (&function == fflush.section)
 		result = SImm {platform.integer, environment.Fflush (thread.GetArgument (0, platform.pointer).ptrimm)};
-	else if (&function == floor.section)
-		result = FImm {platform.float_, std::floor (thread.GetArgument (0, platform.float_).fimm)};
 	else if (&function == fputc.section)
 		result = SImm {platform.integer, environment.Fputc (thread.GetArgument (0, platform.integer).simm, thread.GetArgument (platform.GetStackSize (platform.integer), platform.pointer).ptrimm)};
 	else if (&function == free.section)

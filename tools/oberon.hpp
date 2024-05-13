@@ -147,6 +147,7 @@ namespace ECS::Oberon
 	bool IsReachable (const Body&);
 	bool IsReachable (const Scope&);
 	bool IsReachable (const Statement&);
+	bool IsReachable (const Type&);
 	bool IsReadOnly (const Declaration&, const Module&);
 	bool IsReadOnly (const Expression&);
 	bool IsReadOnlyParameter (const Declaration&);
@@ -289,7 +290,7 @@ struct ECS::Oberon::Type
 	{
 		struct {Size size;} boolean, character, signed_, unsigned_, integer, real, complex, set, basic, byte, any;
 		struct {Expression* length; Type* elementType;} array;
-		struct {Type* baseType; Declarations* declarations; Scope* scope; Declaration* declaration; Size level, procedures, abstractions; bool isAbstract, isFinal, isReachable;} record;
+		struct {Type* baseType; Declarations* declarations; Scope* scope; Declaration* declaration; Size extensionLevel, procedures, abstractions; bool isAbstract, isFinal, isReachable;} record;
 		struct {Type* baseType; bool isVariable, isReadOnly;} pointer;
 		struct {Signature signature;} procedure;
 	};
@@ -469,7 +470,7 @@ struct ECS::Oberon::Expression
 	{
 		struct {Expression* identifier; Expressions* elements;} set;
 		struct {Expression* designator; Expressions* arguments; Size temporary;} call;
-		struct {Expression* designator; Expression* expression;} index, conversion;
+		struct {Expression* designator; Expression* expression;} index;
 		struct {Expression* designator; Declaration* declaration;} super;
 		struct {Operator operator_; Expression* operand;} unary;
 		struct {Expression* left; Operator operator_; Expression* right;} binary;
@@ -477,6 +478,7 @@ struct ECS::Oberon::Expression
 		struct {Expression* designator; struct Identifier* identifier; Declaration* declaration;} selector;
 		struct {Expression* expression;} promotion, dereference, parenthesized;
 		struct {Expression* designator; Expression* identifier;} typeGuard;
+		struct {Expression* identifier; Expression* expression;} conversion;
 		struct QualifiedIdentifier identifier;
 	};
 
@@ -644,6 +646,11 @@ public:
 	Alignment GetAlignment (const Declaration&) const;
 
 	Type& GetCanonical (Type&);
+
+	Type& GetComplex (const Type&);
+	Type& GetComplex (const Declaration&);
+	Type& GetReal (const Type&);
+	Type& GetReal (const Declaration&);
 
 	Type& GetComplex (Size);
 	Type& GetReal (Size);

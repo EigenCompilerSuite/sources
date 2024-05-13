@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with the ECS.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "debugging.hpp"
 #include "driver.hpp"
 #include "stdcharset.hpp"
 #include "stringpool.hpp"
@@ -176,18 +175,33 @@ static StreamDiagnostics diagnostics {std::cerr};
 	#define NAMESUFFIX "wasm"
 	static WebAssembly::Generator generator {diagnostics, stringPool, charset};
 
+#elif defined XTENSABACKEND
+
+	#include "xtensagenerator.hpp"
+
+	#define NAMESUFFIX "xtensa"
+	static Xtensa::Generator generator {diagnostics, stringPool, charset, Xtensa::ESP32};
+
 #else
 
 	#error unknown back-end
 
 #endif
 
-static void Generate (const Code::Sections& sections, const Source& source)
-{
-	#if defined CODEBACKEND
+#if defined CODEBACKEND
+
+	static void Generate (const Code::Sections& sections, const Source& source)
+	{
 		File file {source, ".cod"};
 		generator.Generate (sections, source, file);
-	#else
+	}
+
+#else
+
+	#include "debugging.hpp"
+
+	static void Generate (const Code::Sections& sections, const Source& source)
+	{
 		Object::Binaries binaries;
 		Debugging::Information information;
 
@@ -205,8 +219,9 @@ static void Generate (const Code::Sections& sections, const Source& source)
 			File debugging {source, ".dbg"};
 			debugging << information;
 		#endif
-	#endif
-}
+	}
+
+#endif
 
 #if defined CODEFRONTEND
 
@@ -229,7 +244,6 @@ static void Generate (const Code::Sections& sections, const Source& source)
 
 	#include "cppemitter.hpp"
 	#include "cppparser.hpp"
-	#include "stringpool.hpp"
 
 	#define NAMEPREFIX "cpp"
 	static CPP::Platform platform {generator.layout};

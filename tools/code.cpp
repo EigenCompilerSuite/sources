@@ -458,11 +458,11 @@ bool Code::IsZero (const Operand& operand)
 	if (!IsImmediate (operand)) return false;
 	switch (operand.type.model)
 	{
-	case Type::Signed: return !operand.simm;
-	case Type::Unsigned: return !operand.uimm;
-	case Type::Float: return !operand.fimm;
-	case Type::Pointer: return !operand.ptrimm;
-	case Type::Function: return !operand.funimm;
+	case Type::Signed: return operand.simm == 0;
+	case Type::Unsigned: return operand.uimm == 0;
+	case Type::Float: return operand.fimm == 0;
+	case Type::Pointer: return operand.ptrimm == 0;
+	case Type::Function: return operand.funimm == 0;
 	default: assert (Type::Unreachable);
 	}
 }

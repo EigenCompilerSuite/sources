@@ -427,8 +427,8 @@ namespace ECS::CPP
 
 	std::ostream& WriteFormatted (std::ostream&, const Type&);
 	std::ostream& WritePrefixed (std::ostream&, const Type&);
-	std::ostream& WriteQualified (std::ostream&, const Entity&, bool = false);
-	std::ostream& WriteQualified (std::ostream&, const Scope&, bool = false);
+	std::ostream& WriteQualified (std::ostream&, const Entity&, bool = false, Lexer::Symbol = Lexer::DoubleColon, Lexer::Symbol = Lexer::DoubleColon);
+	std::ostream& WriteQualified (std::ostream&, const Scope&, bool = false, Lexer::Symbol = Lexer::DoubleColon, Lexer::Symbol = Lexer::DoubleColon);
 	std::ostream& WriteSerialized (std::ostream&, const Entity&);
 	std::ostream& WriteSuffixed (std::ostream&, const Type&);
 	std::ostream& WriteUnqualified (std::ostream&, const Entity&);

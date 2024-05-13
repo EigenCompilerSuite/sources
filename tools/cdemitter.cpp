@@ -396,11 +396,13 @@ void Context::BranchNotEqual (const Label& label, const Operand& value1, const O
 
 void Context::BranchLessThan (const Label& label, const Operand& value1, const Operand& value2)
 {
+	if (!IsFloat (value2) && !IsSigned (value2) && IsZero (value2)) return;
 	Branch (Instruction::BRLT, Compare<std::less>, label, value1, value2);
 }
 
 void Context::BranchGreaterEqual (const Label& label, const Operand& value1, const Operand& value2)
 {
+	if (!IsFloat (value2) && !IsSigned (value2) && IsZero (value2)) return Branch (label);
 	Branch (Instruction::BRGE, Compare<std::greater_equal>, label, value1, value2);
 }
 

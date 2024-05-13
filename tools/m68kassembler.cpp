@@ -24,7 +24,7 @@ using namespace ECS;
 using namespace M68K;
 
 Assembler::Assembler (Diagnostics& d, Charset& c) :
-	Assembly::Assembler {d, c, 2, 1, Endianness::Big, 0}
+	Assembly::Assembler {d, c, 2, 2, 1, Endianness::Big, 0}
 {
 }
 

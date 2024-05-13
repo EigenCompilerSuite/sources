@@ -389,6 +389,13 @@ base:	.equals	0x00008000
 	mov	w8, 93
 	svc	0
 
+; standard fclose function
+.code fclose
+
+	ldr	w0, [sp, 0]
+	svc	57	; sys_close
+	ret	x27
+
 ; standard fgetc function
 .code fgetc
 

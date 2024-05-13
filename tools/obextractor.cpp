@@ -162,6 +162,7 @@ Text& Context::Write (Text& text, const Scope& scope, const Scope*const sentinel
 Text& Context::Write (Text& text, const Declaration& declaration, const Scope*const sentinel)
 {
 	if (IsImport (declaration)) return Write (text, *declaration.import.scope, sentinel);
+	if (IsType (declaration) && !IsExported (declaration) && IsReachable (*declaration.type)) return Write (text, *declaration.type->record.baseType->identifier, sentinel);
 	if (declaration.scope != sentinel) Write (text, *declaration.scope, sentinel) << Lexer::Dot;
 	return IsExported (declaration) ? text << TextElement {WeakLink, GetName (declaration, true), declaration.name.string} : text << declaration.name.string;
 }
@@ -178,8 +179,7 @@ Text& Context::Write (Text& text, const QualifiedIdentifier& identifier)
 
 Text& Context::Write (Text& text, const QualifiedIdentifier& identifier, const Scope*const sentinel)
 {
-	if (IsExported (*identifier.declaration) && !IsPredeclared (*identifier.declaration)) return Write (text, *identifier.declaration, sentinel);
-	assert (identifier.name); if (identifier.parent) Write (text, *identifier.parent, sentinel) << Lexer::Dot; return text << identifier.name->string;
+	return IsPredeclared (*identifier.declaration) ? Write (text, identifier) : Write (text, *identifier.declaration, sentinel);
 }
 
 Text& Context::Write (Text& text, const Type& type)

@@ -391,6 +391,13 @@ base:	.equals	0x00008000
 	pop	{r0}
 	bx	lr
 
+; standard fclose function
+.code fclose
+
+	ldr	r0, [sp, 0]
+	svc	6	; sys_close
+	bx	lr
+
 ; standard fputc function
 .code fputc
 

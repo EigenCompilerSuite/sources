@@ -96,17 +96,19 @@ Pattern& Pattern::operator += (const Mask mask)
 
 void Pattern::Patch (Value value, const Span<Byte> bytes) const
 {
-	for (auto mask = masks; value && mask != masks + size; ++mask)
-	{
-		auto bitmask = mask->bitmask, &byte = bytes[mask->offset];
-		if (bitmask == 0xff) byte = Bits (value) & 0xff, value >>= 8;
-		else for (Bits index = 0; bitmask; ++index, bitmask >>= 1) if (bitmask & 1) byte |= Bits (value & 1) << index, value >>= 1;
-	}
+	for (auto mask = masks; mask != masks + size; ++mask)
+		if (auto bitmask = mask->bitmask, &byte = bytes[mask->offset]; byte &= ~bitmask, bitmask == 0xff) byte |= Byte (value), value >>= 8;
+		else for (Bits index = 0; bitmask; ++index, bitmask >>= 1) if (bitmask & 1) byte |= Byte (value & 1) << index, value >>= 1;
 }
 
 bool Object::IsEntryPoint (const Section& section)
 {
 	return section.type == Section::Code && section.group.empty () && section.name == Section::EntryPoint;
+}
+
+bool Object::IsExecutable (const Section& section)
+{
+	return IsCode (section.type) && (section.type != Section::Code || section.fixed);
 }
 
 bool Object::IsValid (const Section::Name& name)

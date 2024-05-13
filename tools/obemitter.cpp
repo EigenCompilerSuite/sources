@@ -42,7 +42,7 @@ public:
 
 private:
 	enum TrapNumber {Assert, Case, Index, TypeGuard, With};
-	enum DescriptorLayout {RecordSizeOffset, TypeTableOffset, TypeTableSize = 8, ProcedureTableOffset = TypeTableOffset + TypeTableSize};
+	enum DescriptorLayout {ProcedureTableOffset = 0, RecordSizeOffset = 0, ExtensionLevelOffset = 1, TypeTableOffset = 2};
 
 	struct Array {SmartOperand address, length;};
 	struct Complex {SmartOperand real, imag;};
@@ -50,7 +50,7 @@ private:
 	struct TypeBound {SmartOperand procedure; Record record;};
 
 	using ProcedureTable = std::vector<const Declaration*>;
-	using TypeTable = const Type*[TypeTableSize];
+	using TypeTable = std::vector<const Type*>;
 
 	const Oberon::Emitter& emitter;
 	const Module& module;
@@ -104,9 +104,9 @@ private:
 	SmartOperand DesignateObject (const Declaration&);
 	SmartOperand DesignateExternal (const Declaration&);
 	SmartOperand DesignateArgument (const Expression&, Size);
-	SmartOperand EvaluateCall (const Expression&, const Operand&);
 	SmartOperand EvaluateArgument (const Expression&, Size, Hint = RVoid);
 	SmartOperand EvaluateArgument (const Expression&, Size, const Operand&);
+	SmartOperand EvaluateCall (const Expression&, const Operand&);
 	SmartOperand EvaluateElement (const Expression&, const Code::Type&, Hint);
 	SmartOperand EvaluateRange (const Expression&, const Code::Type&, Hint);
 	SmartOperand EvaluateBoolean (const Expression&, Hint);
@@ -121,9 +121,14 @@ private:
 	Record DesignateRecord (const Expression&);
 	Record DesignateRecord (const Declaration&);
 	Record DereferenceRecord (const Expression&);
+	SmartOperand EvaluateDescriptor (const Expression&);
+	SmartOperand DereferenceDescriptor (const Expression&);
+	SmartOperand DereferenceDescriptor (const Operand&, const Type&);
+	SmartOperand DesignateDescriptor (const Declaration&);
 	TypeBound EvaluateTypeBound (const Expression&);
 	Operand Evaluate (const Type&);
 
+	SmartOperand CallAbs (const Complex&);
 	#define FUNCTION(scope, procedure, name) SmartOperand Call##procedure (const Expression&, Hint);
 	#define PROCEDURE(scope, procedure, name) void Call##procedure (const Expression&);
 	#include "oberon.def"
@@ -147,7 +152,7 @@ private:
 	SmartOperand GetArraySize (const Type&, const Operand&);
 
 	void BranchConditional (const Expression&, bool, const Label&);
-	void BranchConditional (const Record&, const Type&, bool, const Label&);
+	void BranchConditional (const Operand&, const Type&, bool, const Label&);
 
 	void Compare (const Complex&, const Complex&, const bool, const Label&);
 	void CompareString (void (Context::*) (const Label&, const Operand&, const Operand&), const Expression&, const Expression&, const Label&);
@@ -371,7 +376,7 @@ void Context::Initialize (const Declaration& declaration)
 void Context::Initialize (const Module& module)
 {
 	assert (module.body); assert (IsTerminating (*module.body)); const auto name = GetName (*module.scope);
-	Begin (Section::InitCode, name + "._init", 0, true, true); Call (Adr {platform.function, name + "._body"}, 0);
+	Begin (Section::InitCode, name + "._call", 0, true, true); Call (Adr {platform.function, name + "._body"}, 0);
 }
 
 void Context::Initialize (const Scope& scope)
@@ -444,22 +449,23 @@ void Context::Emit (const Type& type)
 
 void Context::EmitTypeDescriptor (const Type& type)
 {
-	assert (IsRecord (type)); assert (!IsAlias (type)); assert (NeedsTypeDescriptor (type));
-	if (IsAbstract (type)) return Begin (Section::Const, GetName (type), 0, false, IsGeneric (module)), Reserve (1);
-	Begin (Section::Const, GetName (type), std::max (platform.GetAlignment (platform.pointer), platform.GetAlignment (platform.function)), false, IsGeneric (module));
-	TypeTable typeTable {}; ProcedureTable procedureTable (type.record.procedures); Populate (typeTable, procedureTable, type);
+	assert (IsRecord (type)); assert (!IsAlias (type)); assert (NeedsTypeDescriptor (type)); const auto name = GetName (type);
+	if (IsAbstract (type)) return Begin (Section::Const, name, 0, false, IsGeneric (module)), Reserve (1);
+	Begin (Section::Const, type.record.procedures ? name + "._descriptor" : name, std::max (platform.GetAlignment (platform.pointer), platform.GetAlignment (platform.function)), false, IsGeneric (module));
+	TypeTable typeTable (type.record.extensionLevel + 1); ProcedureTable procedureTable (type.record.procedures); Populate (typeTable, procedureTable, type);
+	Comment ("procedure table"); for (auto procedure: Reverse {procedureTable}) assert (procedure), Define (Designate (*procedure));
+	if (type.record.procedures) Alias (name);
 	Comment ("record size"); Define (SImm (GetType (emitter.platform.globalLengthType), emitter.platform.GetSize (type)));
+	Comment ("extension level"); Define (SImm (GetType (emitter.platform.globalLengthType), type.record.extensionLevel));
 	Comment ("type table"); for (auto type: typeTable) Define (type ? Evaluate (*type) : PtrImm {platform.pointer, 0});
-	if (!procedureTable.empty ()) Comment ("procedure table"); for (auto procedure: procedureTable) assert (procedure), Define (Designate (*procedure));
 }
 
 void Context::Populate (TypeTable& typeTable, ProcedureTable& procedureTable, const Type& type)
 {
 	assert (IsRecord (type)); assert (!IsAlias (type));
 	if (type.record.baseType) Populate (typeTable, procedureTable, *type.record.baseType->record.declaration->type);
-	if (type.record.level >= TypeTableSize) EmitFatalError (GetModule (*type.record.scope), type.record.baseType->position, "exceeded extension level limit");
 	for (auto& object: type.record.scope->objects) if (IsTypeBound (*object.second) && !IsAbstract (*object.second) && (!IsFinal (*object.second) || object.second->procedure.definition)) procedureTable[object.second->procedure.index - 1] = object.second;
-	typeTable[type.record.level] = &type;
+	typeTable[type.record.extensionLevel] = &type;
 }
 
 void Context::Declare (const Declarations& declarations)
@@ -484,8 +490,12 @@ void Context::Declare (const Declaration& declaration)
 	case Declaration::Type:
 	{
 		const auto name = GetName (declaration); DeclareType (name); if (!IsGlobal (*declaration.scope) || !InsertUnique (&declaration, cache.types)) break;
-		const RestoreState restore {*this}; Begin (Section::TypeSection, name, 0, false, IsGeneric (module));
-		if (!IsValid (*declaration.type)) DeclareVoid (); else if (IsAny (*declaration.type)) DeclarePointer (), Declare (emitter.platform.globalVoidType); else DeclareType (GetType (*declaration.type));
+		const RestoreState restore {*this}; Begin (Section::TypeSection, name, 0, false, IsGeneric (module)); auto end = CreateLabel ();
+		if (IsBoolean (*declaration.type)) DeclareEnumeration (end), DeclareType (GetType (*declaration.type)), DeclareEnumerator (GetName (emitter.platform.globalFalse), Evaluate (emitter.platform.globalFalseExpression)), DeclareEnumerator (GetName (emitter.platform.globalTrue), Evaluate (emitter.platform.globalTrueExpression));
+		else if (IsComplex (*declaration.type)) DeclareRecord (end, emitter.platform.GetSize (*declaration.type)), DeclareField ("real", 0, SImm {platform.integer, 0}), Declare (emitter.platform.GetReal (declaration)), DeclareField ("imag", GetType (*declaration.type).size, SImm {platform.integer, 0}), Declare (emitter.platform.GetReal (declaration));
+		else if (IsAny (*declaration.type)) DeclarePointer (), DeclareVoid ();
+		else if (IsValid (*declaration.type)) DeclareType (GetType (*declaration.type));
+		else DeclareVoid (); end ();
 		break;
 	}
 
@@ -630,8 +640,8 @@ void Context::BranchConditional (const Expression& expression, const bool value,
 		case Lexer::In:
 			return (this->*equal[!value]) (label, Evaluate (expression), Evaluate (false, expression));
 		case Lexer::Is:
-			if (IsPointer (*expression.binary.left->type)) return BranchConditional (DereferenceRecord (*expression.binary.left), *expression.binary.right->type->pointer.baseType, value, label);
-			return BranchConditional (DesignateRecord (*expression.binary.left), *expression.binary.right->type, value, label);
+			if (IsPointer (*expression.binary.left->type) || IsAny (*expression.binary.left->type)) return BranchConditional (DereferenceDescriptor (*expression.binary.left), *expression.binary.right->type->pointer.baseType, value, label);
+			return BranchConditional (EvaluateDescriptor (*expression.binary.left), *expression.binary.right->type, value, label);
 		}
 
 		auto left = Evaluate (*expression.binary.left); SaveRegister (left);
@@ -667,9 +677,11 @@ void Context::BranchConditional (const Expression& expression, const bool value,
 	}
 }
 
-void Context::BranchConditional (const Record& record, const Type& type, const bool value, const Label& label)
+void Context::BranchConditional (const Operand& descriptor, const Type& type, const bool value, const Label& label)
 {
-	(this->*equal[value]) (label, MakeMemory (platform.pointer, record.descriptor, (TypeTableOffset + type.record.level) * platform.pointer.size), Evaluate (type));
+	auto pointer = IsMemory (descriptor) || type.record.extensionLevel ? MakeRegister (descriptor) : descriptor; auto skip = CreateLabel ();
+	if (type.record.extensionLevel) (this->*less[true]) (value ? skip : label, MakeMemory (GetType (emitter.platform.globalLengthType), pointer, ExtensionLevelOffset * platform.pointer.size), SImm (GetType (emitter.platform.globalLengthType), type.record.extensionLevel));
+	(this->*equal[value]) (label, MakeMemory (platform.pointer, pointer, (TypeTableOffset + type.record.extensionLevel) * platform.pointer.size), Evaluate (type)); skip ();
 }
 
 void Context::Compare (const Complex& left, const Complex& right, const bool value, const Label& label)
@@ -954,7 +966,7 @@ try
 	{
 		assert (IsPointer (*expression.type));
 		auto record = DereferenceRecord (*expression.typeGuard.designator); auto skip = CreateLabel ();
-		BranchConditional (record, *expression.type->pointer.baseType, true, skip);
+		BranchConditional (record.descriptor, *expression.type->pointer.baseType, true, skip);
 		Trap (TypeGuard); skip (); return record.address;
 	}
 
@@ -1221,11 +1233,17 @@ Context::SmartOperand Context::EvaluateArgument (const Expression& expression, c
 Context::SmartOperand Context::CallAbs (const Expression& expression, const Hint hint)
 {
 	auto& argument = GetArgument (expression, 0);
-	if (IsComplex (*argument.type)) {auto value = EvaluateComplex (argument); return Convert (GetType (*expression.type), Call (platform.float_, Adr {platform.function, "sqrt"}, Push (Convert (platform.float_, Add (Multiply (value.real, value.real), Multiply (value.imag, value.imag))))));}
+	if (IsComplex (*argument.type)) return CallAbs (EvaluateComplex (argument));
 	auto skip = CreateLabel ();
 	auto result = MakeRegister (Evaluate (argument, hint), hint);
 	BranchGreaterEqual (skip, result, Imm {result.type, 0});
 	Negate (result, result); skip (); return result;
+}
+
+Context::SmartOperand Context::CallAbs (const Complex& value)
+{
+	const RestoreRegisterState restore {*this};
+	return Call (value.real.type, Adr {platform.function, value.real.type.size == 8 ? "sqrtl" : "sqrtf"}, Push (Add (Multiply (value.real, value.real), Multiply (value.imag, value.imag))));
 }
 
 Context::SmartOperand Context::CallAdr (const Expression& expression, const Hint hint)
@@ -1266,8 +1284,8 @@ Context::SmartOperand Context::CallChr (const Expression& expression, const Hint
 
 Context::SmartOperand Context::CallEntier (const Expression& expression, const Hint)
 {
-	const RestoreRegisterState restore {*this};
-	return Convert (GetType (*expression.type), Call (platform.float_, Adr {platform.function, "floor"}, Push (Convert (platform.float_, EvaluateArgument (expression, 0)))));
+	const RestoreRegisterState restore {*this}; auto argument = EvaluateArgument (expression, 0);
+	return Convert (GetType (*expression.type), Call (argument.type, Adr {platform.function, argument.type.size == 8 ? "floorl" : "floorf"}, Push (argument)));
 }
 
 Context::SmartOperand Context::CallIm (const Expression& expression, const Hint)
@@ -1588,7 +1606,12 @@ Context::SmartOperand Context::Designate (const Expression& expression)
 		return Add (Designate (*expression.selector.designator), expression.selector.declaration->variable.offset);
 
 	case Expression::TypeGuard:
-		return DesignateRecord (expression).address;
+	{
+		if (!IsPointer (*expression.type)) return DesignateRecord (expression).address;
+		auto pointer = Protect (MakeRegister (Designate (*expression.typeGuard.designator))); auto skip = CreateLabel ();
+		BranchConditional (DereferenceDescriptor (MakeMemory (platform.pointer, pointer), *expression.typeGuard.designator->type), *expression.type->pointer.baseType, true, skip);
+		Trap (TypeGuard); skip (); return Deprotect (pointer);
+	}
 
 	case Expression::Identifier:
 		return Designate (*expression.identifier.declaration);
@@ -1648,8 +1671,8 @@ Context::Array Context::DesignateIndex (const Expression& expression)
 	assert (IsIndex (expression)); auto skip = CreateLabel ();
 	auto array = DesignateArray (*expression.index.designator); SaveRegisters (array.address, array.length);
 	const auto index = Convert (array.address.type, Evaluate (*expression.index.expression)); RestoreRegisters (array.address, array.length);
-	if (!IsImmediate (array.length) || !IsImmediate (index) && array.length.simm < std::numeric_limits<Signed>::max () >> (sizeof (Signed) - array.length.type.size) * 8)
-		BranchLessThan (skip, index, Convert (index.type, array.length)), Trap (Index);
+	if (!IsImmediate (array.length) || !IsImmediate (index) && array.length.simm < ECS::ShiftRight (std::numeric_limits<Signed>::max (), (sizeof (Signed) - array.length.type.size) * 8))
+		if (!IsZero (index)) BranchLessThan (skip, index, Convert (index.type, array.length)), Trap (Index);
 	if (IsOpenArray (*expression.type)) Displace (array.length, GetSize (array.length)); skip ();
 	return {Add (array.address, Multiply (index, Convert (platform.pointer, GetArraySize (*expression.type, array.length)))), array.length};
 }
@@ -1710,6 +1733,38 @@ Operand Context::Evaluate (const Type& type)
 	assert (IsRecord (type)); return Adr {platform.pointer, IsAlias (type) ? GetCanonicalName (type) : GetName (type)};
 }
 
+Context::SmartOperand Context::EvaluateDescriptor (const Expression& expression)
+{
+	assert (IsRecord (*expression.type));
+
+	switch (expression.model)
+	{
+	case Expression::Call:
+	case Expression::Index:
+	case Expression::Selector:
+		return Evaluate (*expression.type);
+
+	case Expression::TypeGuard:
+	{
+		auto descriptor = EvaluateDescriptor (*expression.typeGuard.designator); auto skip = CreateLabel ();
+		BranchConditional (descriptor, *expression.type, true, skip);
+		Trap (TypeGuard); skip (); return descriptor;
+	}
+
+	case Expression::Identifier:
+		return DesignateDescriptor (*expression.identifier.declaration);
+
+	case Expression::Dereference:
+		return DereferenceDescriptor (*expression.dereference.expression);
+
+	case Expression::Parenthesized:
+		return EvaluateDescriptor (*expression.parenthesized.expression);
+
+	default:
+		assert (Expression::Unreachable);
+	}
+}
+
 Context::Record Context::DesignateRecord (const Expression& expression)
 {
 	assert (IsRecord (*expression.type));
@@ -1719,13 +1774,12 @@ Context::Record Context::DesignateRecord (const Expression& expression)
 	case Expression::Call:
 	case Expression::Index:
 	case Expression::Selector:
-		return {Designate (expression), Evaluate (*expression.type)};
+		return {Designate (expression), EvaluateDescriptor (expression)};
 
 	case Expression::TypeGuard:
 	{
 		auto record = DesignateRecord (*expression.typeGuard.designator); auto skip = CreateLabel ();
-		if (IsMemory (record.descriptor)) record.descriptor = MakeRegister (record.descriptor);
-		BranchConditional (record, *expression.type, true, skip);
+		BranchConditional (record.descriptor, *expression.type, true, skip);
 		Trap (TypeGuard); skip (); return record;
 	}
 
@@ -1745,16 +1799,34 @@ Context::Record Context::DesignateRecord (const Expression& expression)
 
 Context::Record Context::DesignateRecord (const Declaration& declaration)
 {
+	return {Designate (declaration), DesignateDescriptor (declaration)};
+}
+
+Context::SmartOperand Context::DesignateDescriptor (const Declaration& declaration)
+{
 	assert (IsObject (declaration)); assert (IsRecord (*declaration.object.type));
-	if (!HasDynamicType (declaration)) return {Designate (declaration), Evaluate (*declaration.object.type)};
-	return {Designate (declaration), MakeMemory (platform.pointer, DesignateObject (declaration), platform.GetStackSize (platform.pointer))};
+	if (!HasDynamicType (declaration)) return Evaluate (*declaration.object.type);
+	return MakeMemory (platform.pointer, DesignateObject (declaration), platform.GetStackSize (platform.pointer));
 }
 
 Context::Record Context::DereferenceRecord (const Expression& expression)
 {
-	if (!IsAny (*expression.type) && !HasDynamicType (*expression.type->pointer.baseType)) return {Evaluate (expression), Evaluate (*expression.type->pointer.baseType)};
+	if (!IsAny (*expression.type) && !HasDynamicType (*expression.type->pointer.baseType)) return {Evaluate (expression), DereferenceDescriptor (expression)};
 	if (IsVariablePointer (*expression.type)) {const auto pointer = MakeRegister (Designate (expression)); return {MakeMemory (platform.pointer, pointer), Protect (MakeMemory (platform.pointer, pointer, platform.pointer.size))};}
 	const auto pointer = MakeRegister (Evaluate (expression)); return {pointer, Protect (MakeMemory (platform.pointer, pointer, -Displacement (platform.pointer.size)))};
+}
+
+Context::SmartOperand Context::DereferenceDescriptor (const Expression& expression)
+{
+	if (!IsAny (*expression.type) && !HasDynamicType (*expression.type->pointer.baseType)) return Evaluate (*expression.type->pointer.baseType);
+	return DereferenceDescriptor (IsVariablePointer (*expression.type) ? Designate (expression) : Evaluate (expression), *expression.type);
+}
+
+Context::SmartOperand Context::DereferenceDescriptor (const Operand& operand, const Type& type)
+{
+	if (!IsAny (type) && !HasDynamicType (*type.pointer.baseType)) return Evaluate (*type.pointer.baseType);
+	if (IsVariablePointer (type)) return MakeMemory (platform.pointer, operand, platform.pointer.size);
+	return MakeMemory (platform.pointer, operand, -Displacement (platform.pointer.size));
 }
 
 Context::SmartOperand Context::GetFramePointer (const Scope& scope)
@@ -1790,7 +1862,7 @@ Context::TypeBound Context::EvaluateTypeBound (const Expression& expression)
 		const auto record = IsPointer (*designator.type) ? DereferenceRecord (designator) : DesignateRecord (designator);
 		if (!HasDynamicType (designator) || IsFinal (*expression.selector.declaration)) return {Designate (*expression.selector.declaration), record};
 		const auto address = record.address, descriptor = MakeRegister (record.descriptor);
-		return {MakeMemory (platform.function, descriptor, ProcedureTableOffset * platform.pointer.size + (expression.selector.declaration->procedure.index - 1) * platform.function.size), {address, descriptor}};
+		return {MakeMemory (platform.function, descriptor, ProcedureTableOffset * platform.function.size - Displacement (expression.selector.declaration->procedure.index) * platform.function.size), {address, descriptor}};
 	}
 
 	default:
@@ -1815,7 +1887,7 @@ void Context::Emit (const Elsif& elsif, const Label& end)
 void Context::Emit (const Guard& guard, const Label& end, const bool first)
 {
 	auto skip = CreateLabel (); if (!first) Comment (guard.position, guard), Break (module.source, guard.position);
-	if (IsPointer (guard.type)) BranchConditional (DereferenceRecord (guard.expression), *guard.type.pointer.baseType, false, skip);
-	else BranchConditional (DesignateRecord (guard.expression), guard.type, false, skip);
+	if (IsPointer (guard.type)) BranchConditional (DereferenceDescriptor (guard.expression), *guard.type.pointer.baseType, false, skip);
+	else BranchConditional (EvaluateDescriptor (guard.expression), guard.type, false, skip);
 	Emit (guard.statements); Branch (end); skip ();
 }

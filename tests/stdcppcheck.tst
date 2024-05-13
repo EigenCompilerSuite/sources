@@ -8723,7 +8723,7 @@ negative: fallthrough statement followed by if statement
 
 	void f () {switch (0) {[[fallthrough]]; if (false) ;}}
 
-negative: ffallthrough statement followed by switch statement
+negative: fallthrough statement followed by switch statement
 
 	void f () {switch (0) {[[fallthrough]]; switch (0) ;}}
 

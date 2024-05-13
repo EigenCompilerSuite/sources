@@ -103,6 +103,73 @@ positive: binary integer constant representation
 	BEGIN ASSERT (Integer = 82);
 	END Test.
 
+positive: octal integer constant with single digit
+
+	MODULE Test;
+	CONST Integer = 0O;
+	END Test.
+
+positive: octal integer constant with multiple digits
+
+	MODULE Test;
+	CONST Integer = 23542O;
+	END Test.
+
+negative: octal integer constant with decimal digits
+
+	MODULE Test;
+	CONST Integer = 123456789O;
+	END Test.
+
+negative: octal integer constant with hexadecimal digits
+
+	MODULE Test;
+	CONST Integer = 010ABCDEFO;
+	END Test.
+
+positive: octal integer constant beginning with octal digits
+
+	MODULE Test;
+	CONST Integer = 7240O;
+	END Test.
+
+positive: octal integer constant beginning with zero and octal digits
+
+	MODULE Test;
+	CONST Integer = 0327O;
+	END Test.
+
+negative: octal integer constant beginning with decimal digits
+
+	MODULE Test;
+	CONST Integer = 8041O;
+	END Test.
+
+negative: octal integer constant beginning with hexadecimal digits
+
+	MODULE Test;
+	CONST Integer = ABCO;
+	END Test.
+
+positive: octal integer constant with O suffix
+
+	MODULE Test;
+	CONST Integer = 321O;
+	END Test.
+
+negative: octal integer constant with o suffix
+
+	MODULE Test;
+	CONST Integer = 321o;
+	END Test.
+
+positive: octal integer constant representation
+
+	MODULE Test;
+	CONST Integer = 732O;
+	BEGIN ASSERT (Integer = 474);
+	END Test.
+
 positive: decimal integer constant with single quotes between digits
 
 	MODULE Test;
@@ -151,6 +218,31 @@ negative: binary integer constant ending with single quote
 
 	MODULE Test;
 	CONST Constant = 0'B;
+	END Test.
+
+positive: octal integer constant with single quotes between digits
+
+	MODULE Test;
+	CONST Constant = 2'7'3'1O;
+	BEGIN ASSERT (Constant = 1497);
+	END Test.
+
+negative: octal integer constant with consequtive single quotes between digits
+
+	MODULE Test;
+	CONST Constant = 5''6O;
+	END Test.
+
+negative: octal integer constant beginning with single quote
+
+	MODULE Test;
+	CONST Constant = '7O;
+	END Test.
+
+negative: octal integer constant ending with single quote
+
+	MODULE Test;
+	CONST Constant = 7'O;
 	END Test.
 
 positive: hexadecimal integer constant with single quotes between digits
@@ -2761,7 +2853,7 @@ negative: redefinition of type-bound procedure with unmatched variable receiver 
 negative: denoting redefined abstract procedure of extended record type
 
 	MODULE Test;
-	TYPE Base = RECORD END;
+	TYPE Base = RECORD* END;
 	TYPE Extension = RECORD (Base) END;
 	PROCEDURE* (VAR base: Base) Procedure;
 	PROCEDURE (VAR extension: Extension) Procedure;
@@ -2817,10 +2909,17 @@ positive: calling type-bound procedure with read-only receiver using read-only p
 	END Procedure;
 	END Test.
 
-positive: abstract type-bound procedure
+negative: abstract type-bound procedure of record type
 
 	MODULE Test;
 	TYPE Record = RECORD END;
+	PROCEDURE* (VAR record: Record) Procedure;
+	END Test.
+
+positive: abstract type-bound procedure of abstract record type
+
+	MODULE Test;
+	TYPE Record = RECORD* END;
 	PROCEDURE* (VAR record: Record) Procedure;
 	END Test.
 
@@ -2831,18 +2930,18 @@ negative: abstract type-bound procedure of final record type
 	PROCEDURE* (VAR record: Record) Procedure;
 	END Test.
 
-negative: abstract type-bound procedure of extended record type
+positive: abstract type-bound procedure of extended record type
 
 	MODULE Test;
 	TYPE Record = RECORD END;
-	TYPE Extension = RECORD- (Record) END;
+	TYPE Extension = RECORD* (Record) END;
 	PROCEDURE* (VAR record: Extension) Procedure;
 	END Test.
 
 negative: abstract type-bound procedure of final record extension
 
 	MODULE Test;
-	TYPE Record = RECORD END;
+	TYPE Record = RECORD* END;
 	TYPE Extension = RECORD- (Record) END;
 	PROCEDURE* (VAR record: Record) Procedure;
 	END Test.
@@ -2850,7 +2949,7 @@ negative: abstract type-bound procedure of final record extension
 negative: abstract type-bound procedure with procedure body
 
 	MODULE Test;
-	TYPE Record = RECORD END;
+	TYPE Record = RECORD* END;
 	PROCEDURE* (VAR record: Record) Procedure;
 	END Procedure;
 	END Test.
@@ -2864,7 +2963,7 @@ negative: abstract non-type-bound procedure
 positive: redefined abstract procedure
 
 	MODULE Test;
-	TYPE Base = RECORD END;
+	TYPE Base = RECORD* END;
 	TYPE Type = RECORD (Base) END;
 	PROCEDURE* (VAR base: Base) Procedure;
 	PROCEDURE (VAR type: Type) Procedure;
@@ -2875,7 +2974,7 @@ negative: redefining abstract procedure
 
 	MODULE Test;
 	TYPE Base = RECORD END;
-	TYPE Type = RECORD (Base) END;
+	TYPE Type = RECORD* (Base) END;
 	PROCEDURE (VAR base: Base) Procedure;
 	END Procedure;
 	PROCEDURE* (VAR type: Type) Procedure;
@@ -2884,7 +2983,7 @@ negative: redefining abstract procedure
 positive: abstract forward declaration of abstract procedure
 
 	MODULE Test;
-	TYPE Record = RECORD END;
+	TYPE Record = RECORD* END;
 	PROCEDURE* ^ (VAR record: Record) Procedure;
 	PROCEDURE* (VAR record: Record) Procedure;
 	END Test.
@@ -2892,7 +2991,7 @@ positive: abstract forward declaration of abstract procedure
 negative: abstract forward declaration of non-abstract procedure
 
 	MODULE Test;
-	TYPE Record = RECORD END;
+	TYPE Record = RECORD* END;
 	PROCEDURE* ^ (VAR record: Record) Procedure;
 	PROCEDURE (VAR record: Record) Procedure;
 	END Procedure;
@@ -2901,7 +3000,7 @@ negative: abstract forward declaration of non-abstract procedure
 negative: non-abstract forward declaration of abstract procedure
 
 	MODULE Test;
-	TYPE Record = RECORD END;
+	TYPE Record = RECORD* END;
 	PROCEDURE ^ (VAR record: Record) Procedure;
 	PROCEDURE* (VAR record: Record) Procedure;
 	END Test.
@@ -2909,7 +3008,7 @@ negative: non-abstract forward declaration of abstract procedure
 negative: allocating record with abstract procedure
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	VAR pointer: POINTER TO Type;
 	PROCEDURE* (VAR type: Type) Procedure;
 	BEGIN NEW (pointer);
@@ -2918,7 +3017,7 @@ negative: allocating record with abstract procedure
 positive: allocating record with redefined abstract procedure
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	VAR pointer: POINTER TO Extension;
 	PROCEDURE* (VAR type: Type) Procedure;
@@ -2930,7 +3029,7 @@ positive: allocating record with redefined abstract procedure
 positive: allocating extension of record with redefined abstract procedure
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	TYPE Record = RECORD (Extension) END;
 	VAR pointer: POINTER TO Record;
@@ -2943,7 +3042,7 @@ positive: allocating extension of record with redefined abstract procedure
 negative: using record with abstract procedure as variable
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	VAR variable: Type;
 	PROCEDURE* (VAR type: Type) Procedure;
 	END Test.
@@ -2951,7 +3050,7 @@ negative: using record with abstract procedure as variable
 positive: using record with redefined abstract procedure as variable
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	VAR variable: Extension;
 	PROCEDURE* (VAR type: Type) Procedure;
@@ -2962,7 +3061,7 @@ positive: using record with redefined abstract procedure as variable
 positive: using extension of record with redefined abstract procedure as variable
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	TYPE Record = RECORD (Extension) END;
 	VAR variable: Record;
@@ -2974,14 +3073,14 @@ positive: using extension of record with redefined abstract procedure as variabl
 negative: using record with abstract procedure as value parameter
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	PROCEDURE* (VAR type: Type) Procedure (parameter: Type);
 	END Test.
 
 positive: using record with redefined abstract procedure as value parameter
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	PROCEDURE* (VAR type: Type) Procedure (parameter: Extension);
 	PROCEDURE (VAR type: Extension) Procedure (parameter: Extension);
@@ -2991,7 +3090,7 @@ positive: using record with redefined abstract procedure as value parameter
 positive: using extension of record with redefined abstract procedure as value parameter
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	TYPE Record = RECORD (Extension) END;
 	PROCEDURE* (VAR type: Type) Procedure (parameter: Record);
@@ -3002,14 +3101,14 @@ positive: using extension of record with redefined abstract procedure as value p
 positive: using record with abstract procedure as variable parameter
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	PROCEDURE* (VAR type: Type) Procedure (VAR parameter: Type);
 	END Test.
 
 positive: using record with redefined abstract procedure as variable parameter
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	PROCEDURE* (VAR type: Type) Procedure (VAR parameter: Extension);
 	PROCEDURE (VAR type: Extension) Procedure (VAR parameter: Extension);
@@ -3019,7 +3118,7 @@ positive: using record with redefined abstract procedure as variable parameter
 positive: using extension of record with redefined abstract procedure as variable parameter
 
 	MODULE Test;
-	TYPE Type = RECORD END;
+	TYPE Type = RECORD* END;
 	TYPE Extension = RECORD (Type) END;
 	TYPE Record = RECORD (Extension) END;
 	PROCEDURE* (VAR type: Type) Procedure (VAR parameter: Record);

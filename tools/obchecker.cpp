@@ -51,11 +51,6 @@ private:
 	const Type* previousType = nullptr;
 	const VariableGuard* variableGuard = nullptr;
 	std::vector<Type*> pointerTypes;
-	std::vector<Type*> recordResultTypes;
-	std::vector<Type*> recordElementTypes;
-	std::vector<Declaration*> recordObjects;
-	std::vector<Statement*> recordAssignments;
-	std::vector<Expression*> recordAllocations;
 	std::vector<Expression*> typeBoundExpressions;
 
 	void Check (Declaration&);
@@ -234,8 +229,7 @@ void Context::EmitError (const Position& position, const Message& message) const
 
 void Context::EmitError (const Position& position, const Message& message, const Type& type) const
 {
-	assert (IsAbstract (type)); assert (!IsAnonymous (type)); checker.diagnostics.Emit (Diagnostics::Error, module.source, position, message);
-	if (type.record.isAbstract) checker.diagnostics.Emit (Diagnostics::Note, GetModule (*type.record.declaration->scope).source, type.record.declaration->position, "declared here as abstract");
+	assert (IsRecord (type)); checker.diagnostics.Emit (Diagnostics::Error, module.source, position, message);
 	for (auto& object: type.record.scope->objects) if (IsAbstract (*object.second)) checker.diagnostics.Emit (Diagnostics::Note, GetModule (*object.second->scope).source, object.second->position, Format ("with abstract %0", *object.second));
 	for (auto baseType = type.record.baseType; baseType; baseType = baseType->record.baseType) for (auto& object: baseType->record.scope->objects)
 		if (IsAbstract (*type.record.scope->Lookup (object.second->name, module))) checker.diagnostics.Emit (Diagnostics::Note, GetModule (*object.second->scope).source, object.second->position, Format ("with abstract %0 of base %1", *object.second, *baseType));
@@ -309,9 +303,9 @@ void Context::Check (Declaration& declaration)
 		if (declaration.variable.isForward) declaration.variable.definition = nullptr;
 		if (declaration.variable.type != previousType) Check (*declaration.variable.type), previousType = declaration.variable.type;
 		if (IsOpenArray (*declaration.variable.type)) EmitError (declaration.position, "variable of open array type");
-		if (IsAnonymous (*declaration.variable.type)) InsertUnique (declaration.variable.type, module.anonymousTypes);
+		if (IsAbstract (*declaration.variable.type)) EmitError (declaration.position, Format ("variable of abstract %0", *declaration.variable.type));
 		if (IsExternal (declaration)) CheckExternal (declaration);
-		if (IsRecord (*declaration.variable.type)) recordObjects.push_back (&declaration);
+		if (IsAnonymous (*declaration.variable.type)) InsertUnique (declaration.variable.type, module.anonymousTypes);
 		return Declare (declaration, *currentScope);
 
 	case Declaration::Procedure:
@@ -330,6 +324,7 @@ void Context::Check (Declaration& declaration)
 		if (declaration.procedure.isFinal && !signature.receiver) EmitError (declaration.position, "final non-type-bound procedure");
 		if (signature.receiver && IsLocal (*signature.scope->parent)) EmitError (declaration.position, "local type-bound procedure");
 		Declare (declaration, !signature.receiver ? *signature.scope->parent : IsRecordPointer (*signature.receiver->parameter.type) ? *signature.receiver->parameter.type->pointer.baseType->record.scope : *signature.receiver->parameter.type->record.scope);
+		if (declaration.procedure.isAbstract && !IsAbstract (*declaration.scope->record)) EmitError (declaration.position, "abstract procedure of non-abstract record", *declaration.scope->record->record.declaration);
 		signature.scope->model = Scope::Procedure; signature.scope->procedure = &declaration;
 		if (declaration.procedure.isAbstract || declaration.procedure.isForward) return;
 		if (declaration.procedure.declarations) Check (*declaration.procedure.declarations), CheckPointerTypes ();
@@ -340,8 +335,8 @@ void Context::Check (Declaration& declaration)
 	case Declaration::Parameter:
 		assert (declaration.parameter.type); assert (IsSignature (*currentScope));
 		if (declaration.parameter.type != previousType) Check (*declaration.parameter.type), previousType = declaration.parameter.type;
+		if (IsAbstract (*declaration.parameter.type) && !IsVariableParameter (declaration)) EmitError (declaration.position, Format ("value parameter of abstract %0", *declaration.parameter.type));
 		if (IsAnonymous (*declaration.parameter.type)) InsertUnique (declaration.parameter.type, module.anonymousTypes);
-		if (!IsVariableParameter (declaration) && IsRecord (*declaration.parameter.type)) recordObjects.push_back (&declaration);
 		return Declare (declaration, *currentScope);
 
 	default:
@@ -412,7 +407,8 @@ void Context::FinalizeCheck (Type& type)
 	assert (IsRecord (type)); assert (!IsAlias (type)); assert (!type.record.procedures);
 	if (const auto baseType = type.record.baseType) if (IsRecord (*baseType)) type.record.procedures = baseType->record.declaration->type->record.procedures, type.record.abstractions = baseType->record.declaration->type->record.abstractions;
 	for (auto& object: type.record.scope->objects) if (!IsUndefined (*object.second)) FinalizeCheck (*object.second);
-	if (IsFinal (type) && IsAbstract (type)) EmitError (type.position, "final abstract record type");
+	if (type.record.abstractions && !IsAbstract (type)) EmitError (type.position, "non-abstract record type", type);
+	if (IsAnonymous (type) && IsAbstract (type)) EmitError (type.position, "anonymous abstract record type");
 }
 
 void Context::FinalizeCheck (Declaration& declaration)
@@ -447,11 +443,6 @@ void Context::FinalizeChecks ()
 {
 	for (auto type: module.anonymousTypes) FinalizeCheck (*type);
 	for (auto expression: typeBoundExpressions) FinalizeCheck (*expression);
-	for (auto type: recordResultTypes) if (IsAbstract (*type)) EmitError (type->position, Format ("abstract %0 as result type", *type), *type);
-	for (auto type: recordElementTypes) if (IsAbstract (*type)) EmitError (type->position, Format ("abstract %0 as array element type", *type), *type);
-	for (auto declaration: recordObjects) if (IsAbstract (*declaration->object.type)) EmitError (declaration->position, Format ("%0 of abstract %1", *declaration, *declaration->object.type), *declaration->object.type);
-	for (auto expression: recordAllocations) if (IsAbstract (*expression->type->pointer.baseType)) EmitError (expression->position, Format ("allocating abstract %0", *expression->type->pointer.baseType), *expression->type->pointer.baseType);
-	for (auto statement: recordAssignments) if (IsAbstract (*statement->assignment.designator->type)) EmitError (statement->position, Format ("assigning to variable of abstract %0", *statement->assignment.designator->type), *statement->assignment.designator->type);
 }
 
 void Context::Declare (Declaration& declaration, Scope& scope)
@@ -590,7 +581,7 @@ void Context::Check (Expression& expression)
 		case Lexer::Nil:
 			Set (expression, nullptr);
 			return Attribute (expression, checker.platform.globalNilType);
-		case Lexer::Integer: case Lexer::BinaryInteger: case Lexer::HexadecimalInteger:
+		case Lexer::Integer: case Lexer::OctalInteger: case Lexer::BinaryInteger: case Lexer::HexadecimalInteger:
 		{
 			Unsigned value;
 			if (!Lexer::Evaluate (*expression.literal, value))
@@ -645,12 +636,12 @@ void Context::Check (Expression& expression)
 	case Expression::TypeGuard:
 		assert (expression.typeGuard.designator); assert (expression.typeGuard.identifier);
 		CheckType (*expression.typeGuard.identifier); CheckGuard (*expression.typeGuard.designator, *expression.typeGuard.identifier->type);
-		return Attribute (expression, *expression.typeGuard.identifier->type, IsVariable (*expression.typeGuard.designator) && !IsPointer (*expression.typeGuard.identifier->type), IsReadOnly (*expression.typeGuard.designator));
+		return Attribute (expression, *expression.typeGuard.identifier->type, IsVariable (*expression.typeGuard.designator), IsReadOnly (*expression.typeGuard.designator));
 
 	case Expression::Conversion:
-		assert (expression.conversion.designator); assert (IsType (*expression.conversion.designator)); assert (expression.conversion.expression);
+		assert (expression.conversion.identifier); assert (IsType (*expression.conversion.identifier)); assert (expression.conversion.expression);
 		Check (*expression.conversion.expression, IsBasic, &Context::CheckValue);
-		return Attribute (expression, *expression.conversion.designator->type);
+		return Attribute (expression, *expression.conversion.identifier->type);
 
 	case Expression::Identifier:
 	{
@@ -893,13 +884,13 @@ void Context::CheckGuard (const Expression& expression, const Type& type)
 {
 	if (!IsRecord (type) && !IsRecordPointer (type)) EmitError (type.position, Format ("type guard of %0", type));
 	if (!HasDynamicType (expression)) EmitError (expression.position, Format ("expression '%0' does not have a dynamic type", expression));
-	if (!type.Extends (*expression.type) && !IsAny (*expression.type)) EmitError (type.position, Format ("%0 does not extend '%1' of %2", type, expression, *expression.type));
+	if (!type.Extends (*expression.type) && (!IsAny (*expression.type) || !IsRecordPointer (type))) EmitError (type.position, Format ("%0 does not extend '%1' of %2", type, expression, *expression.type));
 }
 
 void Context::CheckCall (Expression& expression)
 {
 	assert (IsCall (expression)); assert (expression.call.designator); auto& designator = *expression.call.designator;
-	if (IsType (designator) && IsBasic (*designator.type)) return CheckArguments (expression, 1), expression.conversion.expression = &GetArgument (expression, 0), Model (expression, Expression::Conversion), expression.conversion.designator = &designator, Check (expression);
+	if (IsType (designator) && IsBasic (*designator.type)) return CheckArguments (expression, 1), expression.conversion.expression = &GetArgument (expression, 0), Model (expression, Expression::Conversion), expression.conversion.identifier = &designator, Check (expression);
 	if (IsTypeGuardCall (expression) && IsVariable (designator) && !IsProcedure (*designator.type)) return expression.typeGuard.identifier = &GetArgument (expression, 0), Model (expression, Expression::TypeGuard), expression.typeGuard.designator = &designator, Check (expression);
 	if (IsGeneric (designator) && expression.call.arguments) Batch (*expression.call.arguments, [this] (Expression& argument) {Check (argument);});
 	if (IsGeneric (designator)) return Attribute (expression, checker.platform.globalGenericType);
@@ -929,7 +920,7 @@ void Context::CheckArguments (Expression& expression, const Size size)
 void Context::CheckAbs (Expression& expression)
 {
 	CheckArguments (expression, 1); auto& argument = GetArgument (expression, 0);
-	Check (argument, IsNumeric); Attribute (expression, IsComplex (*argument.type) ? checker.platform.GetReal (argument.type->complex.size) : *argument.type);
+	Check (argument, IsNumeric); Attribute (expression, IsComplex (*argument.type) ? checker.platform.GetReal (*argument.type) : *argument.type);
 }
 
 void Context::CheckAdr (Expression& expression)
@@ -1104,7 +1095,7 @@ void Context::CheckNew (Expression& expression)
 	auto& argument = GetArgument (expression, 0); Check (argument, IsPointer, &Context::CheckModifiable);
 	CheckArguments (expression, CountOpenDimensions (*argument.type->pointer.baseType) + 1);
 	for (auto& length: *expression.call.arguments) if (&length != &argument) Check (length, checker.platform.globalLengthType);
-	if (IsRecord (*argument.type->pointer.baseType)) recordAllocations.push_back (&argument);
+	if (IsAbstract (*argument.type->pointer.baseType)) EmitError (argument.position, Format ("allocating abstract %0", *argument.type->pointer.baseType));
 	Attribute (expression, checker.platform.globalVoidType);
 }
 
@@ -1134,8 +1125,8 @@ void Context::CheckPut (Expression& expression)
 
 void Context::CheckRe (Expression& expression)
 {
-	CheckArguments (expression, 1); auto& argument = GetArgument (expression, 0); Check (argument, IsComplex);
-	Attribute (expression, checker.platform.GetReal (argument.type->complex.size));
+	CheckArguments (expression, 1); auto& argument = GetArgument (expression, 0);
+	Check (argument, IsComplex); Attribute (expression, checker.platform.GetReal (*argument.type));
 }
 
 void Context::CheckRot (Expression& expression)
@@ -1145,9 +1136,10 @@ void Context::CheckRot (Expression& expression)
 
 void Context::CheckSel (Expression& expression)
 {
-	CheckArguments (expression, 3); auto &condition = GetArgument (expression, 0), &trueArgument = GetArgument (expression, 1), &falseArgument = GetArgument (expression, 2);
-	CheckCondition (condition); if (IsConstant (condition)) Check (trueArgument, IsSelectable), Check (falseArgument, IsSelectable); else Check (trueArgument, IsScalar), Check (falseArgument, IsScalar);
-	Promote (trueArgument, falseArgument); if (!trueArgument.type->IsSameAs (*falseArgument.type)) EmitError (trueArgument.position, "incompatible binary selection arguments"); Attribute (expression, *trueArgument.type);
+	CheckArguments (expression, 3); auto &condition = GetArgument (expression, 0), &trueArgument = GetArgument (expression, 1), &falseArgument = GetArgument (expression, 2); CheckCondition (condition);
+	if (IsConstant (condition)) Check (trueArgument, IsSelectable), Check (falseArgument, IsSelectable); else Check (trueArgument, IsScalar), Check (falseArgument, IsScalar);
+	if (IsGeneric (trueArgument) || IsGeneric (falseArgument)) return Attribute (expression, checker.platform.globalGenericType); Promote (trueArgument, falseArgument);
+	if (!trueArgument.type->IsSameAs (*falseArgument.type)) EmitError (trueArgument.position, "incompatible binary selection arguments"); Attribute (expression, *trueArgument.type);
 }
 
 void Context::CheckShort (Expression& expression)
@@ -1203,6 +1195,8 @@ void Context::Promote (Expression& first, Expression& second)
 {
 	if (first.IsExpressionCompatibleWith (*second.type)) Promote (first, *second.type);
 	else if (second.IsExpressionCompatibleWith (*first.type)) Promote (second, *first.type);
+	else if (IsReal (*first.type) && IsComplex (*second.type)) Promote (first, checker.platform.GetComplex (*first.type)), Promote (second, *first.type);
+	else if (IsComplex (*first.type) && IsReal (*second.type)) Promote (second, checker.platform.GetComplex (*second.type)), Promote (first, *second.type);
 }
 
 void Context::Check (Type& type)
@@ -1214,24 +1208,24 @@ void Context::Check (Type& type)
 		Check (*type.array.elementType);
 		if (type.array.length) Check (*type.array.length, checker.platform.globalLengthType, &Context::CheckLength);
 		if (IsOpenArray (*type.array.elementType) && !IsOpenArray (type)) EmitError (type.array.elementType->position, "open array as array element type");
+		if (IsAbstract (*type.array.elementType)) EmitError (type.array.elementType->position, Format ("abstract %0 as array element type", *type.array.elementType));
 		if (IsAnonymous (*type.array.elementType)) module.anonymousTypes.push_back (type.array.elementType);
-		if (IsRecord (*type.array.elementType)) recordElementTypes.push_back (type.array.elementType);
 		break;
 
 	case Type::Record:
 	{
 		module.Create (type.record.scope, type, *currentScope);
 		type.record.declaration = nullptr; type.record.isReachable = false;
-		type.record.level = type.record.procedures = type.record.abstractions = 0;
+		type.record.extensionLevel = type.record.procedures = type.record.abstractions = 0;
 
 		if (type.record.baseType)
 		{
 			Check (*type.record.baseType);
-			if (IsFinal (*type.record.baseType)) EmitError (type.record.baseType->position, Format ("extending final %0", *type.record.baseType));
 			if (IsRecord (*type.record.baseType)) type.record.scope->size = type.record.baseType->record.scope->size, type.record.scope->count = type.record.baseType->record.scope->count,
 				type.record.scope->alignment = type.record.baseType->record.scope->alignment, type.record.scope->needsInitialization = type.record.baseType->record.scope->needsInitialization,
-				type.record.level = type.record.baseType->record.level + 1;
+				type.record.extensionLevel = type.record.baseType->record.extensionLevel + 1;
 			else if (!IsGeneric (*type.record.baseType)) EmitError (type.record.baseType->position, Format ("%0 as record base type", type.record.baseType->model));
+			if (IsFinal (*type.record.baseType)) EmitError (type.record.baseType->position, Format ("extending final %0", *type.record.baseType));
 		}
 
 		const Restore restoreScope {currentScope, type.record.scope};
@@ -1272,7 +1266,7 @@ void Context::CheckResult (Type& type)
 {
 	Check (type);
 	if (IsOpenArray (type)) EmitError (type.position, "open array as result type");
-	if (IsRecord (type)) recordResultTypes.push_back (&type);
+	if (IsAbstract (type)) EmitError (type.position, Format ("abstract %0 as result type", type));
 }
 
 void Context::CheckPointer (Type& type)
@@ -1424,7 +1418,7 @@ void Context::Check (Statement& statement)
 		if (IsGeneric (*variable.type) || IsGeneric (expression)) break;
 		if (expression.IsAssignmentCompatibleWith (*variable.type)) Promote (expression, *variable.type);
 		else EmitError (expression.position, Format ("assigning '%0' of %1 to variable of %2", expression, *expression.type, *variable.type));
-		if (IsRecord (*variable.type)) recordAssignments.push_back (&statement);
+		if (IsAbstract (*variable.type)) EmitError (statement.position, Format ("assigning to variable of abstract %0", *variable.type));
 		break;
 	}
 

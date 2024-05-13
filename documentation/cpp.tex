@@ -166,6 +166,7 @@ The interpreter and all other tools reuse the respective fundamental alignments 
 \midrule PowerPC & 32-bit & \tool{cppppc32} & 1 & 2 & 4 & 8 \\ & 64-bit & \tool{cppppc64} & 1 & 2 & 4 & 8 \\
 \midrule \multicolumn{2}{@{}l}{RISC} & \tool{cpprisc} & 1 & 2 & 4 & 4 \\
 \midrule \multicolumn{2}{@{}l}{WebAssembly} & \tool{cppwasm} & 1 & 2 & 4 & 8 \\
+\midrule \multicolumn{2}{@{}l}{Xtensa} & \tool{cpprisc} & 1 & 2 & 4 & 4 \\
 \bottomrule
 \end{tabular}
 \caption{Alignments of fundamental \cpp{} types}
@@ -251,6 +252,7 @@ The interpreter and all other tools reuse the respective type sizes of their own
 \midrule PowerPC & 32-bit & \tool{cppppc32} & 4 & 4 & 4 \\ & 64-bit & \tool{cppppc64} & 4 & 4 & 4 \\
 \midrule \multicolumn{2}{@{}l}{RISC} & \tool{cpprisc} & 4 & 4 & 4 \\
 \midrule \multicolumn{2}{@{}l}{WebAssembly} & \tool{cppwasm} & 4 & 8 & 4 \\
+\midrule \multicolumn{2}{@{}l}{Xtensa} & \tool{cppwasm} & 4 & 4 & 4 \\
 \bottomrule
 \end{tabular}
 \caption{Sizes of hardware-dependent \cpp{} types}
@@ -298,7 +300,7 @@ For debugging purposes, all names predefined in inline assembly code and their a
 
 Besides the two language linkages \texttt{"C"} and \texttt{"C++"} required by the \cpp{} Standard, the \ecs{} also supports the \texttt{"Oberon"} language linkage.
 It allows accessing global procedures and variables defined in Oberon modules.
-In order to identify the containing module, the corresponding functions and objects declared with this language linkage must be members of a named namespace.
+In order to identify the containing module and its package, the corresponding functions and objects declared with this language linkage must be members of named namespaces.
 \seeoberon
 
 \item Non-standard attributes \cppref{10.6.1}{dcl.attr.grammar}{6}
@@ -419,7 +421,7 @@ The macros \texttt{\_\_STDC\_\_} and \texttt{\_\_STDC\_VERSION\_\_} are not pred
 
 The macro \texttt{\_\_ecs\_\_} is predefined in order to enable programmers to detect the \ecs{} while processing compiler-specific source code.
 The value of the predefined macro \texttt{\_\_sizeof\_}\textit{type}\texttt{\_\_} where \textit{type} is either \texttt{double}, \texttt{float}, \texttt{int}, \texttt{long}, \texttt{long_double}, \texttt{pointer}, or \texttt{short} is the size of the corresponding type.
-The interpreter and all compilers predefine an additional macro name of the form \texttt{\_\_}\textit{target}\texttt{\_\_} for identifying the target environment where \textit{target} is either \texttt{amd16}, \texttt{amd32}, \texttt{amd64}, \texttt{arma32}, \texttt{arma64}, \texttt{armt32}, \texttt{armt32fpe}, \texttt{avr}, \texttt{avr32}, \texttt{code}, \texttt{m68k}, \texttt{mibl}, \texttt{mips32}, \texttt{mips64}, \texttt{mmix}, \texttt{or1k}, \texttt{ppc32}, \texttt{ppc64}, \texttt{risc}, \texttt{run}, or \texttt{wasm}.
+The interpreter and all compilers predefine an additional macro name of the form \texttt{\_\_}\textit{target}\texttt{\_\_} for identifying the target environment where \textit{target} is either \texttt{amd16}, \texttt{amd32}, \texttt{amd64}, \texttt{arma32}, \texttt{arma64}, \texttt{armt32}, \texttt{armt32fpe}, \texttt{avr}, \texttt{avr32}, \texttt{code}, \texttt{m68k}, \texttt{mibl}, \texttt{mips32}, \texttt{mips64}, \texttt{mmix}, \texttt{or1k}, \texttt{ppc32}, \texttt{ppc64}, \texttt{risc}, \texttt{run}, \texttt{wasm}, or \texttt{xtensa}.
 
 \end{itemize}
 
@@ -511,7 +513,7 @@ This section describes the contents of the extracted information and explains ho
 \section{Runtime Support}\label{sec:cppruntimesupport}\index{Runtime support!for C++@for \cpp{}}
 
 Some language features of \cpp{} such as exceptions require some additional runtime support.
-This runtime support is stored in library files which are collections of object files. \seeobject
+This runtime support is stored in library files which are combinations of object files. \seeobject
 The \ecs{} provides the required runtime support in one library file for each hardware architecture it supports.
 The name of the corresponding library file consists of a leading \file{cpp}, the name of the target hardware architecture, and a trailing \file{run} as in \file{cpp\-amd64\-run}.
 
@@ -569,6 +571,7 @@ Figure~\ref{fig:cppdataflow} shows all stages and the different representations.
 \cppppcb
 \cpprisc
 \cppwasm
+\cppxtensa
 
 \section{Interoperability}
 

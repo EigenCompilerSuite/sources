@@ -80,9 +80,6 @@ namespace ECS::Debugging
 	bool IsValid (const Location&);
 	bool IsVariable (const Symbol&);
 
-	std::istream& ReadValue (std::istream&, Value&);
-	std::ostream& WriteValue (std::ostream&, const Value&);
-
 	std::istream& operator >> (std::istream&, Breakpoint&);
 	std::istream& operator >> (std::istream&, Entry&);
 	std::istream& operator >> (std::istream&, Enumerator&);

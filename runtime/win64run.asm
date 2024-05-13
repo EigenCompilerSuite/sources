@@ -379,6 +379,17 @@ skip:	inc	rax
 	mov	ecx, [rsp + 40]	; uExitCode
 	call	qword [rip + @_ExitProcess]
 
+; standard fclose function
+.code fclose
+
+	sub	rsp, 32
+	push	[rsp + 40]	; hObject
+	call	qword [rip + @_CloseHandle]
+	add	rsp, 40
+	cmp	eax, 1
+	sbb	eax, eax
+	ret
+
 ; standard fgetc function
 .code fgetc
 

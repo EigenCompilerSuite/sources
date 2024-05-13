@@ -2674,8 +2674,8 @@ positive: COMPLEX32 absolute value
 	MODULE Test;
 	VAR value: COMPLEX32;
 	BEGIN
-		value := 3 + 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (3 + 4 * I));
-		value := -3 - 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (-3 - 4 * I));
+		value := 3 + 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (3 + 4 * I));
+		value := -3 - 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (-3 - 4 * I));
 	END Test.
 
 positive: COMPLEX64 absolute value
@@ -2683,8 +2683,8 @@ positive: COMPLEX64 absolute value
 	MODULE Test;
 	VAR value: COMPLEX64;
 	BEGIN
-		value := 3 + 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (3 + 4 * I));
-		value := -3 - 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (-3 - 4 * I));
+		value := 3 + 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (3 + 4 * I));
+		value := -3 - 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (-3 - 4 * I));
 	END Test.
 
 positive: HUGEINT absolute value
@@ -2710,8 +2710,8 @@ positive: SHORTCOMPLEX absolute value
 	MODULE Test;
 	VAR value: SHORTCOMPLEX;
 	BEGIN
-		value := 3 + 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (3 + 4 * I));
-		value := -3 - 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (-3 - 4 * I));
+		value := 3 + 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (3 + 4 * I));
+		value := -3 - 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (-3 - 4 * I));
 	END Test.
 
 positive: COMPLEX absolute value
@@ -2719,8 +2719,8 @@ positive: COMPLEX absolute value
 	MODULE Test;
 	VAR value: COMPLEX;
 	BEGIN
-		value := 3 + 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (3 + 4 * I));
-		value := -3 - 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (-3 - 4 * I));
+		value := 3 + 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (3 + 4 * I));
+		value := -3 - 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (-3 - 4 * I));
 	END Test.
 
 positive: LONGCOMPLEX absolute value
@@ -2728,8 +2728,8 @@ positive: LONGCOMPLEX absolute value
 	MODULE Test;
 	VAR value: LONGCOMPLEX;
 	BEGIN
-		value := 3 + 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (3 + 4 * I));
-		value := -3 - 4 * I; ASSERT (ABS (value) = 5); ASSERT (ABS (-value) = 5); ASSERT (ABS (value) = ABS (-3 - 4 * I));
+		value := 3 + 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (3 + 4 * I));
+		value := -3 - 4 * I; ASSERT (INTEGER (ABS (value)) = 5); ASSERT (INTEGER (ABS (-value)) = 5); ASSERT (INTEGER (ABS (value)) = ABS (-3 - 4 * I));
 	END Test.
 
 positive: SIGNED8 arithmetic shift
@@ -3406,7 +3406,7 @@ positive: deallocation on pointer to open array
 positive: deallocation on pointer to record
 
 	MODULE Test;
-	VAR p: POINTER TO RECORD a, b: INTEGER END;
+	VAR p: POINTER TO RECORD END;
 	BEGIN NEW (p); ASSERT (p # NIL); DISPOSE (p); ASSERT (p = NIL);
 	END Test.
 

@@ -13,7 +13,7 @@
 \providecommand{\cpp}{C\texttt{++}}
 \providecommand{\opt}{_\mathit{opt}}
 \providecommand{\tool}[1]{\texttt{#1}}
-\providecommand{\version}{Version 0.0.40}
+\providecommand{\version}{Version 0.0.41}
 \providecommand{\resource}[1]{*++\txt{#1}}
 \providecommand{\ecs}{Eigen Compiler Suite}
 \providecommand{\changed}[1]{\underline{#1}}
@@ -416,6 +416,7 @@ All product names used herein are for identification purposes only and may be tr
 \providecommand{\seeppc}{}\renewcommand{\seeppc}{\seedocumentationref{For more information about how the \ecs{} supports the PowerPC hardware architecture}{ppc}{PowerPC Hardware Architecture Support}}
 \providecommand{\seerisc}{}\renewcommand{\seerisc}{\seedocumentationref{For more information about how the \ecs{} supports the RISC hardware architecture}{risc}{RISC Hardware Architecture Support}}
 \providecommand{\seewasm}{}\renewcommand{\seewasm}{\seedocumentationref{For more information about how the \ecs{} supports the WebAssembly architecture}{wasm}{WebAssembly Architecture Support}}
+\providecommand{\seextensa}{}\renewcommand{\seextensa}{\seedocumentationref{For more information about how the \ecs{} supports the Xtensa hardware architecture}{xtensa}{Xtensa Hardware Architecture Support}}
 \providecommand{\seedocumentation}{}\renewcommand{\seedocumentation}{\seedocumentationref{For more information about generic documentations and their generation by the \ecs{}}{documentation}{Generic Documentation Generation}}
 \providecommand{\seedebugging}{}\renewcommand{\seedebugging}{\seedocumentationref{For more information about debugging information and its representation}{debugging}{Debugging Information Representation}}
 \providecommand{\seecode}{}\renewcommand{\seecode}{\seedocumentationref{For more information about intermediate code and its purpose}{code}{Intermediate Code Representation}}
@@ -658,6 +659,15 @@ It also creates a debugging information file as well as an assembly file contain
 \debuggingtool
 \flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdwasm} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
 \seeassembly\seewasm\seeobject\seecode\seedebugging
+}
+
+\providecommand{\cdxtensa}{
+\toolsection{cdxtensa} is a compiler for intermediate code targeting the Xtensa hardware architecture.
+It generates machine code for Xtensa processors from programs written in intermediate code and stores it in corresponding object files.
+It also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+\debuggingtool
+\flowgraph{\resource{intermediate\\code} \ar[r] & \toolbox{cdxtensa} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ & \resource{assembly\\listing} & \resource{debugging\\information}}
+\seeassembly\seextensa\seeobject\seecode\seedebugging
 }
 
 % C++ tools
@@ -927,6 +937,16 @@ Programs generated with this compiler require additional runtime support that is
 \seecpp\seeassembly\seewasm\seeobject\seedebugging
 }
 
+\providecommand{\cppxtensa}{
+\toolsection{cppxtensa} is a compiler for the \cpp{} programming language targeting the Xtensa hardware architecture.
+It generates machine code for Xtensa processors from programs written in \cpp{} and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+The macro \texttt{\_\_xtensa\_\_} is predefined in order to enable programmers to identify this tool and its target architecture while compiling.
+Programs generated with this compiler require additional runtime support that is stored in the \file{cpp\-xtensa\-run} library file.
+\flowgraph{\resource{\cpp{}\\source code} \ar[r] & \toolbox{cppxtensa} \ar[r] \ar[d] \ar[rd] & \resource{object file} \\ \variable{ECSINCLUDE} \ar[ru] & \resource{debugging\\information} & \resource{assembly\\listing}}
+\seecpp\seeassembly\seextensa\seeobject\seedebugging
+}
+
 % FALSE tools
 
 \providecommand{\falprint}{
@@ -1109,6 +1129,13 @@ It generates machine code for RISC processors from programs written in FALSE and
 It generates machine code for WebAssembly targets from programs written in FALSE and stores it in corresponding object files.
 \flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falwasm} \ar[r] & \resource{object file}}
 \seefalse\seewasm\seeobject
+}
+
+\providecommand{\falxtensa}{
+\toolsection{falxtensa} is a compiler for the FALSE programming language targeting the Xtensa hardware architecture.
+It generates machine code for Xtensa processors from programs written in FALSE and stores it in corresponding object files.
+\flowgraph{\resource{FALSE\\source code} \ar[r] & \toolbox{falxtensa} \ar[r] & \resource{object file}}
+\seefalse\seextensa\seeobject
 }
 
 % Oberon tools
@@ -1382,6 +1409,16 @@ In addition, it stores the interface of each module in a symbol file which is re
 Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-wasm\-run} library file.
 \flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obwasm} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
 \seeoberon\seeassembly\seewasm\seeobject\seedebugging
+}
+
+\providecommand{\obxtensa}{
+\toolsection{obxtensa} is a compiler for the Oberon programming language targeting the Xtensa hardware architecture.
+It generates machine code for Xtensa processors from modules written in Oberon and stores it in corresponding object files.
+For debugging purposes, it also creates a debugging information file as well as an assembly file containing a listing of the generated machine code.
+In addition, it stores the interface of each module in a symbol file which is required when other modules import the module.
+Programs generated with this compiler require additional runtime support that is stored in the \file{ob\-xtensa\-run} library file.
+\flowgraph{\resource{Oberon\\source code} \ar[r] & \toolbox{obxtensa} \ar[r] \ar@/l/[d] \ar[rd] & \resource{object file} \\ \variable{ECSIMPORT} \ar[ru] & \resource{symbol\\files} \ar@/r/[u] & \resource{debugging\\information}}
+\seeoberon\seeassembly\seextensa\seeobject\seedebugging
 }
 
 % converter tools
@@ -1668,6 +1705,21 @@ The names of all special registers are predefined and evaluate to the correspond
 It translates machine code from object files targeting WebAssembly targets into assembly code and writes it to the standard output stream.
 \flowgraph{\resource{object file} \ar[r] & \toolbox{wasmdism} \ar[r] & \resource{disassembly\\listing}}
 \seeassembly\seewasm\seeobject
+}
+
+\providecommand{\xtensaasm}{
+\toolsection{xtensaasm} is an assembler for the Xtensa hardware architecture.
+It translates assembly code into machine code for Xtensa processors and stores it in corresponding object files.
+The names of all special registers are predefined and evaluate to the corresponding number.
+\flowgraph{\resource{Xtensa assembly\\source code} \ar[r] & \toolbox{xtensaasm} \ar[r] & \resource{object file}}
+\seeassembly\seextensa\seeobject
+}
+
+\providecommand{\xtensadism}{
+\toolsection{xtensadism} is a disassembler for the Xtensa hardware architecture.
+It translates machine code from object files targeting Xtensa processors into assembly code and writes it to the standard output stream.
+\flowgraph{\resource{object file} \ar[r] & \toolbox{xtensadism} \ar[r] & \resource{disassembly\\listing}}
+\seeassembly\seextensa\seeobject
 }
 
 % linker tools

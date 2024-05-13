@@ -65,16 +65,16 @@ private:
 	bool GetDefinition (const Identifier&, Expression&) const override;
 };
 
-Assembler::Assembler (Diagnostics& d, Charset& c, const CodeAlignment ca, const DataAlignment da, const Endianness e, const BitMode bm) :
-	Checker {d, c}, codeAlignment {ca}, dataAlignment {da}, endianness {e}, bitmode {bm}
+Assembler::Assembler (Diagnostics& d, Charset& c, const InstructionAlignment ia, const CodeAlignment ca, const DataAlignment da, const Endianness e, const BitMode bm) :
+	Checker {d, c}, instructionAlignment {ia}, codeAlignment {ca}, dataAlignment {da}, endianness {e}, bitmode {bm}
 {
-	assert (IsPowerOfTwo (codeAlignment)); assert (IsPowerOfTwo (dataAlignment));
+	assert (IsPowerOfTwo (instructionAlignment)); assert (IsPowerOfTwo (codeAlignment)); assert (IsPowerOfTwo (dataAlignment)); assert (codeAlignment >= instructionAlignment);
 }
 
 void Assembler::Align (Binary& binary) const
 {
 	const auto alignment = IsCode (binary.type) ? codeAlignment : dataAlignment;
-	if (!binary.fixed && !binary.alignment) binary.alignment = alignment;
+	if (!binary.fixed && alignment > binary.alignment) binary.alignment = alignment;
 	assert ((binary.fixed ? binary.origin : binary.alignment) % alignment == 0);
 }
 
@@ -94,7 +94,7 @@ void Assembler::Assemble (const Section& section, Binaries& binaries) const
 }
 
 Context::Context (const Assembler& a, Binary& b, const Inlined i) :
-	Checker::Context {a, b, b.bytes.size (), IsCode (b.type) ? a.codeAlignment : a.dataAlignment, i},
+	Checker::Context {a, b, b.bytes.size (), a.instructionAlignment, IsCode (b.type) ? a.codeAlignment : a.dataAlignment, i},
 	assembler {a}, binary {b}, endianness {assembler.endianness}, bitmode {assembler.bitmode}
 {
 }
@@ -163,7 +163,7 @@ void Context::ProcessDirective (const Instruction& instruction)
 
 void Context::ProcessReserveDirective (const Expression& expression)
 {
-	Value value; if (!GetValue (expression, value) || value < 0 || value >= 0x10000000 || value % alignment) EmitError ("invalid data reservation");
+	Value value; if (!GetValue (expression, value) || value < 0 || value >= 0x10000000) EmitError ("invalid data reservation");
 	Reserve (value);
 }
 
@@ -175,7 +175,7 @@ void Context::ProcessPadDirective (const Expression& expression)
 
 void Context::ProcessAlignDirective (const Expression& expression)
 {
-	Value value; if (!GetValue (expression, value) || value <= 0 || value >= 0x10000000 || !IsPowerOfTwo (value) || value % alignment) EmitError ("invalid data alignment");
+	Value value; if (!GetValue (expression, value) || value <= 0 || value >= 0x10000000 || !IsPowerOfTwo (value)) EmitError ("invalid data alignment");
 	Reserve (ECS::Align (offset, Size (value)) - offset);
 }
 

@@ -36,7 +36,7 @@ private:
 
 	Size size;
 	std::vector<const Instruction*> declarations;
-	bool type = false, sectionType = false, location = false, sectionLocation;
+	bool location, sectionLocation, type, sectionType;
 
 	void Patch (Type&) const;
 	bool Check (Instruction&);
@@ -72,7 +72,7 @@ void Checker::Check (const Assembly::Section& section, Sections& sections) const
 }
 
 Context::Context (const Code::Checker& c, Section& s, const Inlined i) :
-	Assembly::Checker::Context {c, s, s.instructions.size (), 1, i}, section {s}, platform {c.platform}
+	Assembly::Checker::Context {c, s, s.instructions.size (), 1, 1, i}, section {s}, platform {c.platform}
 {
 }
 
@@ -96,14 +96,14 @@ bool Context::Check (Instruction& instruction)
 		size += instruction.operand1.size;
 
 	if (IsLocating (instruction.mnemonic))
-		if (location || !sectionLocation) location = false, sectionLocation = true; else EmitError ("invalid source code location");
+		if (location) location = false; else if (!sectionLocation) sectionLocation = true; else EmitError ("invalid source code location");
 	if (IsLocated (instruction.mnemonic))
-		if (location || !sectionLocation) location = false, EmitError ("missing source code location"); else location = true;
+		if (!location && sectionLocation || IsType (section.type) && !sectionLocation) location = true; else EmitError ("missing source code location");
 	if (IsTyping (instruction.mnemonic))
 		if (type) type = false; else if (!sectionType) sectionType = true;
 		else if (declarations.empty () || declarations.back ()->mnemonic != Instruction::FUNC) EmitError ("invalid type declaration");
 	if (IsTyped (instruction.mnemonic))
-		type = true;
+		if (!type && sectionType) type = true; else EmitError ("missing type declaration");
 
 	if (IsDeclaring (instruction.mnemonic)) declarations.push_back (&instruction);
 	if (instruction.mnemonic == Instruction::FIELD) if (declarations.empty () || declarations.back ()->mnemonic != Instruction::REC) EmitError ("invalid field declaration");
@@ -116,9 +116,9 @@ bool Context::Check (Instruction& instruction)
 void Context::Reset ()
 {
 	Assembly::Checker::Context::Reset ();
-	if (location) EmitError ("missing source code location");
-	if (type || IsType (section.type) && !sectionType && !parsing) EmitError ("missing type declaration");
-	size = 0; declarations.clear (); sectionType = false; sectionLocation = inlined;
+	if (!parsing && location && (!IsType (section.type) || sectionLocation)) EmitError ("missing source code location");
+	if (!parsing && (type || IsType (section.type) && !sectionType)) EmitError ("missing type declaration");
+	size = 0; declarations.clear (); location = type = false; sectionLocation = sectionType = inlined;
 }
 
 Context::Size Context::GetDisplacement (const Size) const

@@ -90,18 +90,20 @@ try
 		if (!section.group.empty ()) WriteIdentifier (listing << '\t' << Lexer::Group << '\t', section.group) << '\n';
 	}
 
-	if (IsCode (section.type)) binary->bytes.reserve (section.instructions.size () * generator.assembler.codeAlignment);
+	if (IsCode (section.type)) binary->bytes.reserve (section.instructions.size () * generator.assembler.instructionAlignment);
 	else if (IsData (section.type) && initializeData && HasDefinitions (section) && !section.required) Require ("_init_" + section.name);
 	else if (IsType (section.type)) AddTypeableEntry (Debugging::Entry::Type);
 	if (const auto original = binary) Preprocess (section), binary = original;
+	if (!pendingDefinitions.empty ()) ApplyLocalDefinitions (-1);
 	Batch (section.instructions, [this] (const Code::Instruction& instruction) {Emit (instruction);});
-	if (location) if (!IsType (*entry)) EmitError ("missing source code location"); else *location = {}, location = nullptr;
+	if (location) if (IsType (section.type)) *location = {}, location = nullptr; else EmitError ("missing source code location");
 	for (auto fixed: fixes) if (fixed) EmitError ("fixed register mapping");
 	if (!types.empty ()) EmitError ("missing type declaration");
 
 	for (auto symbol: symbols) assert (!symbol); symbols.clear (); declarations.clear ();
 	assert (std::count (uses, uses + Code::UserRegisters, 0) == Code::UserRegisters);
-	if (!pendingDefinitions.empty ()) ApplyLocalDefinitions (); appliedDefinitions.clear ();
+	if (!pendingDefinitions.empty ()) ApplyLocalDefinitions (0); appliedDefinitions.clear ();
+	if (binary) generator.assembler.Align (*binary);
 
 	if (listing && binary)
 	{
@@ -113,12 +115,12 @@ try
 	if (const auto original = binary) Postprocess (section), binary = original;
 
 	if (entry && binary) entry->size = binary->bytes.size ();
-	if (binary) generator.assembler.Align (*binary), labels[section.instructions.size ()] = binary->bytes.size ();
+	if (binary) labels[section.instructions.size ()] = binary->bytes.size ();
 	for (auto& fixup: fixups) FixupInstruction ({binary->bytes.data () + fixup.offset, fixup.size}, binary->bytes.data () + labels[fixup.index], fixup.code); fixups.clear ();
 }
 catch (const Error&)
 {
-	if (!pendingDefinitions.empty ()) ApplyLocalDefinitions (); appliedDefinitions.clear (); types.clear (); symbols.clear (); declarations.clear (); fixups.clear (); location = nullptr;
+	if (!pendingDefinitions.empty ()) ApplyLocalDefinitions (0); appliedDefinitions.clear (); types.clear (); symbols.clear (); declarations.clear (); fixups.clear (); location = nullptr;
 	for (auto& fixed: fixes) fixed = 0; for (auto& used: uses) if (used) Release (Code::Register (&used - uses), used); throw;
 }
 
@@ -319,14 +321,14 @@ try
 		break;
 
 	case Code::Instruction::FIELD:
-		if (location) EmitError ("missing source code location");
+		if (location) if (IsType (section->type)) *location = {}; else EmitError ("missing source code location");
 		if (declarations.empty () || !IsRecord (*declarations.back ().type)) EmitError ("invalid field declaration");
 		location = &declarations.back ().type->fields.emplace_back (instruction.operand1.address, instruction.operand2.size, Convert (instruction.operand3)).location;
 		types.push_back (&declarations.back ().type->fields.back ().type);
 		break;
 
 	case Code::Instruction::VALUE:
-		if (location) EmitError ("missing source code location");
+		if (location) if (IsType (section->type)) *location = {}; else EmitError ("missing source code location");
 		if (declarations.empty () || !IsEnumeration (*declarations.back ().type)) EmitError ("invalid enumerator declaration");
 		location = &declarations.back ().type->enumerators.emplace_back (instruction.operand1.address, GetValue (instruction.operand2)).location;
 		break;
@@ -369,8 +371,8 @@ try
 
 	if (listing && IsCode (section->type) && binary && listing.tellp () == position && position != -1 && !instruction.line) listing << '\n';
 	for (auto& symbol: symbols) if (symbol && symbol->lifetime.end == currentInstruction) Undeclare (*symbol), symbol = nullptr;
-	for (auto& definition: pendingDefinitions) if (binary->bytes.size () > definition.limit) return ApplyLocalDefinitions ();
 	while (!declarations.empty () && declarations.back ().extent <= currentInstruction) declarations.pop_back ();
+	for (auto& definition: pendingDefinitions) if (binary->bytes.size () > definition.limit) return ApplyLocalDefinitions (0);
 }
 catch (const RegisterShortage&)
 {
@@ -391,17 +393,13 @@ void Context::Encode (const Code::Instruction& instruction)
 	if (IsUser (modified)) registerTypes[modified] = type;
 
 	if (IsSupported (instruction)) return AcquireRegister (instruction), Generate (instruction), ReleaseRegisters (instruction);
-	if (instruction.mnemonic == Code::Instruction::TRAP) return Generate (Code::CALL {Code::Adr {generator.platform.function, "abort"}, Code::Size {0}});
+
+	const auto address = GetAddress (instruction);
+	if (instruction.mnemonic == Code::Instruction::TRAP) return Generate (Code::CALL {address, Code::Size {0}});
 
 	bool saved[Code::UserRegisters];
 	for (auto register_ = Code::R0; register_ <= Code::RRes; register_ = Code::Register (register_ + 1))
 		if (saved[register_] = register_ != modified && uses[register_] > instruction.Uses (register_)) Push (Code::Reg {registerTypes[register_], register_});
-
-	std::ostringstream address;
-	address << '_' << instruction.mnemonic;
-	if (HasType (instruction.operand1)) address << '_' << instruction.operand1.type;
-	if (HasType (instruction.operand2) && instruction.operand2.type != instruction.operand1.type) address << '_' << instruction.operand2.type;
-	if (HasType (instruction.operand3) && instruction.operand3.type != instruction.operand2.type) address << '_' << instruction.operand3.type;
 
 	Code::Size parameters = 0;
 	const auto modifying = IsModifying (instruction);
@@ -412,7 +410,7 @@ void Context::Encode (const Code::Instruction& instruction)
 	if (HasRegister (instruction.operand2)) Release (instruction.operand2.register_, 1);
 	if (HasRegister (instruction.operand3)) Release (instruction.operand3.register_, 1);
 
-	Generate (Code::CALL {Code::Adr {generator.platform.function, address.str ()}, parameters});
+	Generate (Code::CALL {address, parameters});
 	const Code::Reg result {modifying || modified != Code::RVoid ? type : Code::Unsigned {1}, Code::RRes};
 	if (modified != Code::RVoid) Acquire (modified, type, instruction);
 
@@ -430,6 +428,16 @@ void Context::Encode (const Code::Instruction& instruction)
 	if (HasRegister (instruction.operand1)) Release (instruction.operand1.register_, 1);
 }
 
+Code::Operand Context::GetAddress (const Code::Instruction& instruction) const
+{
+	if (instruction.mnemonic == Code::Instruction::TRAP) return Code::Adr {generator.platform.function, "abort"};
+	std::ostringstream address; address << '_' << instruction.mnemonic;
+	if (HasType (instruction.operand1)) address << '_' << instruction.operand1.type;
+	if (HasType (instruction.operand2) && instruction.operand2.type != instruction.operand1.type || instruction.mnemonic == Code::Instruction::CONV) address << '_' << instruction.operand2.type;
+	if (HasType (instruction.operand3) && instruction.operand3.type != instruction.operand2.type) address << '_' << instruction.operand3.type;
+	return Code::Adr {generator.platform.function, address.str ()};
+}
+
 void Context::AddFixup (const Label& label, const FixupCode code, const Code::Size size)
 {
 	assert (label.index < labels.size ()); assert (size);
@@ -438,7 +446,7 @@ void Context::AddFixup (const Label& label, const FixupCode code, const Code::Si
 
 Code::Offset Context::GetOffset (const Byte*const byte) const
 {
-	const Code::Size offset = byte - binary->bytes.data (); assert (offset < binary->bytes.size ()); return offset;
+	const Code::Size offset = byte - binary->bytes.data (); assert (offset <= binary->bytes.size ()); return offset;
 }
 
 Code::Offset Context::GetBranchOffset (const Label& label, const Code::Offset defaultOffset) const
@@ -515,11 +523,11 @@ Context::Label Context::DefineLocal (const Code::Operand& value, const Code::Siz
 	return pendingDefinitions.emplace_back (limit, *this, value).label;
 }
 
-void Context::ApplyLocalDefinitions ()
+void Context::ApplyLocalDefinitions (const Code::Offset offset)
 {
 	assert (!pendingDefinitions.empty ()); if (listing) listing << "\n\t; local definitions\n";
-	if (!IsSink (section->instructions[currentInstruction].mnemonic)) Generate (Code::BR {Code::Offset (0)});
-	for (auto& definition: pendingDefinitions) Apply (definition); Align (generator.assembler.codeAlignment);
+	if (offset || !IsSink (section->instructions[currentInstruction].mnemonic)) Generate (Code::BR {offset});
+	for (auto& definition: pendingDefinitions) Apply (definition); Align (generator.assembler.instructionAlignment);
 	appliedDefinitions.splice (appliedDefinitions.end (), pendingDefinitions);
 }
 
@@ -630,7 +638,8 @@ void Context::Align (const Code::Section::Alignment alignment)
 
 void Context::AddAlignment (const Code::Section::Alignment alignment)
 {
-	assert (IsPowerOfTwo (alignment)); if (alignment > generator.assembler.codeAlignment && !binary->fixed && alignment > binary->alignment) binary->alignment = alignment;
+	assert (IsPowerOfTwo (alignment)); assert (IsCode (section->type));
+	if (!binary->fixed && alignment > binary->alignment) binary->alignment = alignment;
 }
 
 Debugging::Index Context::Insert (const Source& source)
@@ -732,6 +741,21 @@ Debugging::Value Context::GetValue (const Code::Operand& operand)
 		return operand.funimm;
 	default:
 		assert (Code::Type::Unreachable);
+	}
+}
+
+std::ostream& Context::WriteValue (std::ostream& stream, const Debugging::Value& value)
+{
+	switch (value.model)
+	{
+	case Debugging::Type::Signed:
+		return stream << value.signed_;
+	case Debugging::Type::Unsigned:
+		return stream << value.unsigned_;
+	case Debugging::Type::Float:
+		return stream << value.float_;
+	default:
+		assert (Debugging::Type::Unreachable);
 	}
 }
 

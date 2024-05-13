@@ -87,7 +87,7 @@ try
 
 	if (!first)
 	{
-		std::cout << name << " Version 0.0.40 Build " __DATE__ " Copyright (C) Florian Negele\n"
+		std::cout << name << " Version 0.0.41 Build " __DATE__ " Copyright (C) Florian Negele\n"
 		"This is free software; see the source for copying conditions. There is NO\n"
 		"WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n";
 		process (std::cin, first = "stdin", {1, 1}); std::cin.clear ();

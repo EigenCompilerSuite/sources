@@ -675,6 +675,7 @@ MNEM (ret,               RET,               Near Return from Called Procedure)
 MNEM (retf,              RETF,              Far Return from Called Procedure)
 MNEM (rmpadjust,         RMPADJUST,         Adjust RMP Permissions)
 MNEM (rmpquery,          RMPQUERY,          Read RMP Permissions)
+MNEM (rmpread,           RMPREAD,           Read RMP Entry)
 MNEM (rmpupdate,         RMPUPDATE,         Write RMP Entry)
 MNEM (rol,               ROL,               Rotate Left)
 MNEM (ror,               ROR,               Rotate Right)
@@ -2689,6 +2690,8 @@ INSTR (RDTSCP,            none,       none,       none,       none,       0,    
 INSTR (RMPADJUST,         none,       none,       none,       none,       0,       0x0f01,    no,  no,  0xfe,  PF3 | SFX)
 
 INSTR (RMPQUERY,          none,       none,       none,       none,       0,       0x0f01,    no,  no,  0xfd,  PF3 | SFX)
+
+INSTR (RMPREAD,           none,       none,       none,       none,       0,       0x0f01,    no,  no,  0xfd,  PF2 | SFX)
 
 INSTR (RMPUPDATE,         none,       none,       none,       none,       0,       0x0f01,    no,  no,  0xfe,  PF2 | SFX)
 
